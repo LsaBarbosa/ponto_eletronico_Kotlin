@@ -1,7 +1,6 @@
 package br.com.santanna.ponto_eletronico.modelo
 
 import jakarta.persistence.*
-import org.jetbrains.annotations.NotNull
 
 @Entity
 @Table(name = "tb_employee")
