@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.modelo
+package br.com.santanna.ponto_eletronico.model
 
 import jakarta.persistence.*
 

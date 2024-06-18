@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.modelo.dto
+package br.com.santanna.ponto_eletronico.model.dto.employee
 
 
 data class EmployeeDto (
