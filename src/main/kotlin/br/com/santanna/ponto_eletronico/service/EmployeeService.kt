@@ -1,7 +1,7 @@
 package br.com.santanna.ponto_eletronico.service
 
-import br.com.santanna.ponto_eletronico.modelo.Employee
-import br.com.santanna.ponto_eletronico.modelo.dto.EmployeeDto
+import br.com.santanna.ponto_eletronico.model.Employee
+import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.repository.EmployeeRepository
 import org.springframework.stereotype.Service
 
