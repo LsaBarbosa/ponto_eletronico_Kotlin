@@ -11,5 +11,5 @@ data class Employee (
     var password:String? = null,
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY)
-    var workTime:List<TimeRecord?> = ArrayList()
+    var timeWorked:List<TimeRecord?> = ArrayList()
 )
