@@ -17,48 +17,47 @@ class EmployeeService(private val employeeRepository: EmployeeRepository) {
         return employeeRepository.findById(id).orElseThrow { Exception("not found") }
     }
 
-    fun getEmployeeByName(name: String): Employee? {
-        return employeeRepository.findByNameContainsIgnoreCase(name)
+    fun getEmployeeByNameAndSurname(name: String, surname: String): Employee? {
+        return employeeRepository.findByNameAndSurnameIgnoreCase(name, surname)
+            ?: throw Exception("Employee not found with name: $name and surname: $surname")
     }
 
     fun registerEmployee(employeeDto: EmployeeDto): EmployeeDto {
-        findByName(employeeDto)
+        if (employeeRepository.existsByNameAndSurnameIgnoreCase(employeeDto.name!!, employeeDto.surname!!)) {
+            throw  Exception("Employee with the same name already exists.")
+        }
         val employeeEntity = convertToEntity(employeeDto)
         val savedEmployeeEntity = employeeRepository.save(employeeEntity)
         return convertToDto(savedEmployeeEntity)
     }
 
     fun updateEmployee(employeeDto: EmployeeDto): EmployeeDto {
-        findByName(employeeDto)
-        val employeeEntity = convertToEntity(employeeDto)
-        employeeEntity.name = employeeDto.name ?: employeeEntity.name
-        employeeEntity.password = employeeDto.password ?: employeeEntity.password
-        val updatedEmployeeEntity = employeeRepository.save(employeeEntity)
+        val existingEmployeeEntity =
+            employeeRepository.findByNameAndSurnameIgnoreCase(employeeDto.name!!, employeeDto.surname!!)
+                ?: throw Exception("Employee not found with name: ${employeeDto.name} and surname: ${employeeDto.surname}")
+
+        existingEmployeeEntity.salary = employeeDto.salary ?: existingEmployeeEntity.salary
+        existingEmployeeEntity.password = employeeDto.password?: existingEmployeeEntity.password
+        existingEmployeeEntity.position = employeeDto.position ?: existingEmployeeEntity.position
+
+        val updatedEmployeeEntity = employeeRepository.save(existingEmployeeEntity)
         return convertToDto(updatedEmployeeEntity)
     }
 
-    fun deleteEmployee(name: String) {
-            val employeeToDelete = employeeRepository.findByNameContainsIgnoreCase(name) ?:
+    fun deleteEmployee(name: String, surname: String) {
+            val employeeToDelete = employeeRepository.findByNameAndSurnameIgnoreCase(name,surname) ?:
             throw Exception("not found")
             employeeRepository.delete(employeeToDelete)
     }
 
-    private fun findByName(employeeDto: EmployeeDto) {
-        val employee: Employee? = employeeDto.name?.let {
-            employeeRepository.findByNameContainsIgnoreCase(it)
-        }
-
-        if (employee != null && employee.id == employeeDto.id) {
-            throw Exception("Employee with the same name already exists.")
-        }
-    }
-
-
     private fun convertToEntity(employeeDto: EmployeeDto): Employee {
         return Employee(
-            id = employeeDto.id,
+
             name = employeeDto.name,
-            password = employeeDto.password
+            surname = employeeDto.surname,
+            salary = employeeDto.salary,
+            position = employeeDto.position,
+
         )
     }
 
@@ -66,7 +65,9 @@ class EmployeeService(private val employeeRepository: EmployeeRepository) {
         return EmployeeDto(
             id = employee.id,
             name = employee.name,
-            password = employee.password
+            surname = employee.surname,
+            position = employee.position,
+            salary = employee.salary
 
         )
     }
