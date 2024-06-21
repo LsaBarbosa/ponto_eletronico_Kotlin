@@ -5,6 +5,4 @@ data class RecordCheckoutDto(
     val endWorkTime: String? = null,
     val endWorkDate: String? = null,
     val timeWorked: String? = null,
-    val overtime: String? = null,
-
     )
