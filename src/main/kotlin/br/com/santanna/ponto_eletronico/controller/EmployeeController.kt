@@ -1,9 +1,8 @@
 package br.com.santanna.ponto_eletronico.controller
 
-import br.com.santanna.ponto_eletronico.modelo.Employee
-import br.com.santanna.ponto_eletronico.modelo.dto.EmployeeDto
+import br.com.santanna.ponto_eletronico.model.Employee
+import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.service.EmployeeService
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
@@ -22,6 +21,16 @@ class EmployeeController(val employeeService: EmployeeService) {
         try {
         val employee =employeeService.getEmployeeById(id)
         return ResponseEntity.ok(employee)
+        }catch (ex:Exception){
+            return ResponseEntity.notFound().build()
+        }
+    }
+
+    @GetMapping("/busca/{name}")
+    fun getEmployeeByName(@PathVariable("name") name: String): ResponseEntity<Employee?> {
+        try {
+            val employee = employeeService.getEmployeeByName(name)
+            return ResponseEntity.ok(employee)
         }catch (ex:Exception){
             return ResponseEntity.notFound().build()
         }

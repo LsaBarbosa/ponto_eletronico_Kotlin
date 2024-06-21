@@ -1,6 +1,6 @@
 package br.com.santanna.ponto_eletronico.repository
 
-import br.com.santanna.ponto_eletronico.modelo.Employee
+import br.com.santanna.ponto_eletronico.model.Employee
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
