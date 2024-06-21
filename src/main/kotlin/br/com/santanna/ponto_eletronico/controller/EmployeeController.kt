@@ -26,6 +26,16 @@ class EmployeeController(val employeeService: EmployeeService) {
         }
     }
 
+    @GetMapping("/busca/{name}")
+    fun getEmployeeByName(@PathVariable("name") name: String): ResponseEntity<Employee?> {
+        try {
+            val employee = employeeService.getEmployeeByName(name)
+            return ResponseEntity.ok(employee)
+        }catch (ex:Exception){
+            return ResponseEntity.notFound().build()
+        }
+    }
+
     @PostMapping
     fun registerNewEmployee(@RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
         try {
