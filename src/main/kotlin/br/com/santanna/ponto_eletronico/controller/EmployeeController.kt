@@ -26,12 +26,15 @@ class EmployeeController(val employeeService: EmployeeService) {
         }
     }
 
-    @GetMapping("/busca/{name}")
-    fun getEmployeeByName(@PathVariable("name") name: String): ResponseEntity<Employee?> {
+    @GetMapping("/busca") // Removemos o /{name} do path
+    fun getEmployeeByNameAndSurname(
+        @RequestParam("name") name: String,
+        @RequestParam("surname") surname: String
+    ): ResponseEntity<Employee?> {
         try {
-            val employee = employeeService.getEmployeeByName(name)
+            val employee = employeeService.getEmployeeByNameAndSurname(name, surname)
             return ResponseEntity.ok(employee)
-        }catch (ex:Exception){
+        } catch (ex: Exception) {
             return ResponseEntity.notFound().build()
         }
     }
@@ -48,19 +51,27 @@ class EmployeeController(val employeeService: EmployeeService) {
     }
 
     @PutMapping
-    fun updateEmployee(@RequestParam name: String, @RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
-      try {
-        employeeService.updateEmployee(employeeDto)
-        return ResponseEntity.ok(employeeDto)
-      }catch (ex:Exception){
-          return ResponseEntity.badRequest().build()
-      }
+    fun updateEmployee(@RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
+        try {
+            // Verifica se o nome e sobrenome foram fornecidos
+            if (employeeDto.name == null || employeeDto.surname == null) {
+                throw IllegalArgumentException("Name and surname are required for update.")
+            }
+
+            val updatedEmployeeDto = employeeService.updateEmployee(employeeDto)
+            return ResponseEntity.ok(updatedEmployeeDto)
+        } catch (ex: Exception) {
+            return ResponseEntity.notFound().build()
+        } catch (ex: IllegalArgumentException) {
+            return ResponseEntity.badRequest().build()
+        }
+
     }
 
-    @DeleteMapping("/{name}")
-    fun deleteEmployee(@PathVariable name: String): ResponseEntity<Void> {
+    @DeleteMapping
+    fun deleteEmployee(@RequestParam name: String ,surname: String): ResponseEntity<Void> {
         try {
-            employeeService.deleteEmployee(name)
+            employeeService.deleteEmployee(name,surname)
             return ResponseEntity.noContent().build()
         } catch (ex: Exception) {
             return ResponseEntity.notFound().build()

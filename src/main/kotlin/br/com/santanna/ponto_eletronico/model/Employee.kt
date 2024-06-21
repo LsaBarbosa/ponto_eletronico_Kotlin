@@ -7,6 +7,9 @@ data class Employee (
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
     var name:String? = null,
+    var surname:String? = null,
+    var salary:Double? = null,
+    var position:String? = null,
     var password:String? = null,
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY)

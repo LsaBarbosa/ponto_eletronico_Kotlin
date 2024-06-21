@@ -11,9 +11,10 @@ interface TimeRecordRepository : JpaRepository<TimeRecord, Long> {
 
     fun findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee: Employee): TimeRecord?
 
-    @Query("SELECT t FROM TimeRecord t WHERE t.employee.name = :name AND t.startWorkTime BETWEEN :startDate AND :endDate")
+    @Query("SELECT t FROM TimeRecord t WHERE t.employee.name = :name AND  t.employee.surname = :surname AND t.startWorkTime BETWEEN :startDate AND :endDate")
     fun findByEmployeeNameAndDateRange(
         @Param("name") name: String,
+        @Param("surname") surname: String,
         @Param("startDate") startDate: LocalDateTime,
         @Param("endDate") endDate: LocalDateTime
     ): List<TimeRecord>
