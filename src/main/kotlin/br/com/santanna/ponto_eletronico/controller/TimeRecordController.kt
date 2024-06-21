@@ -1,7 +1,6 @@
 package br.com.santanna.ponto_eletronico.controller
 
 import br.com.santanna.ponto_eletronico.model.dto.timeRecord.*
-import br.com.santanna.ponto_eletronico.service.EmployeeService
 import br.com.santanna.ponto_eletronico.service.TimeRecordService
 import org.modelmapper.ModelMapper
 import org.springframework.http.HttpStatus

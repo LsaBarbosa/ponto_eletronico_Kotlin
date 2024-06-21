@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.service
 
+import br.com.santanna.ponto_eletronico.model.Employee
 import br.com.santanna.ponto_eletronico.model.TimeRecord
 import br.com.santanna.ponto_eletronico.model.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.repository.TimeRecordRepository
@@ -10,6 +11,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.reflect.KMutableProperty1
 
 
 @Service
@@ -20,15 +22,15 @@ data class TimeRecordService(
 
     fun registerCheckin(name: String): RecordCheckinDto? {
         val employee = employeeService.getEmployeeByName(name) ?: throw Exception("Employee not found")
-
-        val lastRecord = timeRepository.findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee)
+        val lastRecord = findLastTimeRecord(employee)
         if (lastRecord != null) {
             throw Exception("Cannot check in without checking out the last time record.")
         }
-        val nowInBrasilia = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
+
+        val currentDateTimeInBrasilia = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
         val newRegister = TimeRecord().apply {
             this.employee = employee
-            this.startWorkTime = nowInBrasilia
+            this.startWorkTime = currentDateTimeInBrasilia
         }
 
         val saveCheckin = timeRepository.save(newRegister)
@@ -42,51 +44,32 @@ data class TimeRecordService(
     fun registerCheckout(name: String): RecordCheckoutDto? {
         val employee = employeeService.getEmployeeByName(name) ?: throw Exception("Employee not found")
 
-
-        val lastRecord = timeRepository.findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee)
+        val lastRecord = findLastTimeRecord(employee)
             ?: throw Exception("No check-in record found to check out.")
 
-        val nowInBrasilia = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
-        lastRecord.endWorkTime = nowInBrasilia
+        val currentDateTimeInBrasilia = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
+        lastRecord.endWorkTime = currentDateTimeInBrasilia
 
-        val duration = Duration.between(lastRecord.startWorkTime, lastRecord.endWorkTime)
+        val duration = Duration.between(lastRecord.startWorkTime, currentDateTimeInBrasilia)
         lastRecord.timeWorked = duration.toMinutes()
 
-        val saveCheckout = timeRepository.save(lastRecord)
-
-        val hoursWorked = duration.toHours()
-        val minutesWorked = duration.toMinutes() % 60
-        val formattedWorkTime = String.format("%02d:%02d", hoursWorked, minutesWorked)
+        val savedCheckout = timeRepository.save(lastRecord)
 
         return RecordCheckoutDto(
-            id = saveCheckout.id,
-            endWorkTime = saveCheckout.endWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
-            timeWorked = formattedWorkTime,
-            endWorkDate = saveCheckout.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE)
+            id = savedCheckout.id,
+            endWorkTime = savedCheckout.endWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            timeWorked = formatTimeWorked(savedCheckout.timeWorked),
+            endWorkDate = savedCheckout.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE)
         )
     }
 
     fun updateTimeRecord(updateTimeRecordDto: UpdateTimeRecordDto): UpdateTimeRecordDto {
         val timeRecord = timeRepository.findById(updateTimeRecordDto.id).orElseThrow { Exception("TimeRecord not found") }
 
-        updateTimeRecordDto.startWorkDate?.let { date ->
-            updateTimeRecordDto.startWorkTime?.let { time ->
-                val startWorkDateTime = LocalDateTime.parse("$date $time", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-                validateDateChange(timeRecord.startWorkTime, startWorkDateTime, "start")
-                timeRecord.startWorkTime = startWorkDateTime
-            }
-        }
+        updateTimeRecordField(timeRecord, updateTimeRecordDto.startWorkDate, updateTimeRecordDto.startWorkTime, TimeRecord::startWorkTime, "start")
+        updateTimeRecordField(timeRecord, updateTimeRecordDto.endWorkDate, updateTimeRecordDto.endWorkTime, TimeRecord::endWorkTime, "end")
 
-        updateTimeRecordDto.endWorkDate?.let { date ->
-            updateTimeRecordDto.endWorkTime?.let { time ->
-                val endWorkDateTime = LocalDateTime.parse("$date $time", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-                validateDateChange(timeRecord.endWorkTime, endWorkDateTime, "end")
-                timeRecord.endWorkTime = endWorkDateTime
-                val duration = java.time.Duration.between(timeRecord.startWorkTime, endWorkDateTime)
-                timeRecord.timeWorked = duration.toMinutes()
-            }
-        }
-     val saveUpdate=   timeRepository.save(timeRecord)
+        val saveUpdate=   timeRepository.save(timeRecord)
 
         return UpdateTimeRecordDto(
             id = saveUpdate.id!!,
@@ -97,10 +80,7 @@ data class TimeRecordService(
     }
 
     fun overtimeByDate(name: String, startDate: LocalDate, endDate: LocalDate): OvertimeDto {
-        val startDateTime = startDate.atStartOfDay()
-        val endDateTime = endDate.atTime(23, 59, 59)
-
-        val timeRecords = timeRepository.findByEmployeeNameAndDateRange(name, startDateTime, endDateTime)
+        val timeRecords =findTimeRecordsByDateRange(name,startDate,endDate)
 
         val totalMinutesWorked = timeRecords.sumOf { it.timeWorked ?: 0 }
         val totalExpectedMinutes = timeRecords.size * 8 * 60
@@ -116,12 +96,9 @@ data class TimeRecordService(
         )
     }
 
-
-
     fun getTimeRecordsByEmployeeNameAndDateRange(name: String, startDate: LocalDate, endDate: LocalDate): List<DetailedTimeRecordDto> {
-        val startDateTime = startDate.atStartOfDay()
-        val endDateTime = endDate.atTime(23, 59, 59)
-        val timeRecords = timeRepository.findByEmployeeNameAndDateRange(name, startDateTime, endDateTime)
+
+        val timeRecords =findTimeRecordsByDateRange(name,startDate,endDate)
 
         return timeRecords.map { timeRecord ->
             DetailedTimeRecordDto(
@@ -134,6 +111,7 @@ data class TimeRecordService(
             )
         }
     }
+
 
     private fun formatTimeWorked(timeWorkedMinutes: Long?): String? {
         return timeWorkedMinutes?.let {
@@ -159,4 +137,25 @@ data class TimeRecordService(
             throw Exception("Day cannot be changed to a future date for $dateType date")
         }
     }
+    private fun findLastTimeRecord(employee: Employee): TimeRecord? {
+        return timeRepository.findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee)
+    }
+    private fun findTimeRecordsByDateRange(name: String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
+        val startDateTime = startDate.atStartOfDay()
+        val endDateTime = endDate.atTime(23, 59, 59)
+        return timeRepository.findByEmployeeNameAndDateRange(name, startDateTime, endDateTime)
+    }
+    private fun updateTimeRecordField(timeRecord: TimeRecord, newDate: String?, newTime: String?, dateTimeField: KMutableProperty1<TimeRecord, LocalDateTime?>, dateType: String) {
+        if (newDate != null && newTime != null) {
+            val newDateTime = LocalDateTime.parse("$newDate $newTime", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+            validateDateChange(dateTimeField.get(timeRecord), newDateTime, dateType)
+            dateTimeField.set(timeRecord, newDateTime)
+
+            if (dateTimeField == TimeRecord::endWorkTime) {
+                val duration = Duration.between(timeRecord.startWorkTime, newDateTime)
+                timeRecord.timeWorked = duration.toMinutes()
+            }
+        }
+    }
+
 }
