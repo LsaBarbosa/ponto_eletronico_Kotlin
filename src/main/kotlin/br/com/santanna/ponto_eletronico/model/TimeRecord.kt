@@ -5,7 +5,7 @@ import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "tb_time_record")
+
 data class TimeRecord(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
