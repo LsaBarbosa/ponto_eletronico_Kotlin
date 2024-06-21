@@ -10,10 +10,12 @@ import java.time.LocalDateTime
 interface TimeRecordRepository : JpaRepository<TimeRecord, Long> {
 
     fun findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee: Employee): TimeRecord?
-    fun findByEmployeeAndStartWorkTimeBetween(
-        employee: Employee, startWorkTime: LocalDateTime, endWorkTime: LocalDateTime
-    ): List<TimeRecord>?
 
-    @Query("SELECT rp FROM TimeRecord rp WHERE rp.employee.name = :name AND rp.endWorkTime IS NULL")
-    fun findRegistrationCheckInActive(@Param("name") name: String): TimeRecord
+    @Query("SELECT t FROM TimeRecord t WHERE t.employee.name = :name AND t.startWorkTime BETWEEN :startDate AND :endDate")
+    fun findByEmployeeNameAndDateRange(
+        @Param("name") name: String,
+        @Param("startDate") startDate: LocalDateTime,
+        @Param("endDate") endDate: LocalDateTime
+    ): List<TimeRecord>
+
 }
