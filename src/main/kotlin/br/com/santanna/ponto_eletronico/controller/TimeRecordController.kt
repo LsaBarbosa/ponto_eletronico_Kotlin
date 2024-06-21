@@ -16,9 +16,9 @@ class TimeRecordController(
 ) {
 
     @PostMapping("/entrada")
-    fun registerCheckin(@RequestParam name: String): ResponseEntity<RecordCheckinDto> {
+    fun registerCheckin(@RequestParam name: String, surname:String): ResponseEntity<RecordCheckinDto> {
         return try {
-            val checkin = timeRecordService.registerCheckin(name)
+            val checkin = timeRecordService.registerCheckin(name, surname)
             ResponseEntity.ok().body(modelMapper.map(checkin, RecordCheckinDto::class.java))
         } catch (ex: Exception) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
@@ -26,9 +26,9 @@ class TimeRecordController(
     }
 
     @PostMapping("/saida")
-    fun registerCheckout(@RequestParam name: String): ResponseEntity<RecordCheckoutDto> {
+    fun registerCheckout(@RequestParam name: String, surname:String): ResponseEntity<RecordCheckoutDto> {
         return try {
-            val checkout = timeRecordService.registerCheckout(name)
+            val checkout = timeRecordService.registerCheckout(name,surname)
             ResponseEntity.ok().body(modelMapper.map(checkout, RecordCheckoutDto::class.java))
         } catch (ex: Exception) {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
@@ -53,13 +53,14 @@ class TimeRecordController(
     @GetMapping("/registros")
     fun getTimeRecordsByEmployeeNameAndDateRange(
         @RequestParam name: String,
+        @RequestParam surname: String,
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
     ): ResponseEntity<List<DetailedTimeRecordDto>> {
         return try {
             val startDate = LocalDate.parse(startDateStr)
             val endDate = LocalDate.parse(endDateStr)
-            val timeRecords = timeRecordService.getTimeRecordsByEmployeeNameAndDateRange(name, startDate, endDate)
+            val timeRecords = timeRecordService.getTimeRecordsByEmployeeNameAndDateRange(name,surname, startDate, endDate)
             val detailedTimeRecordDtos = timeRecords.map {
                 modelMapper.map(it, DetailedTimeRecordDto::class.java)
             }
@@ -72,13 +73,14 @@ class TimeRecordController(
     @GetMapping("/hora-extra")
     fun getOvertimeByEmployeeNameAndDateRange(
         @RequestParam name: String,
+        @RequestParam surname: String,
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
     ): ResponseEntity<OvertimeDto> {
         return try {
             val startDate = LocalDate.parse(startDateStr)
             val endDate = LocalDate.parse(endDateStr)
-            val timeRecords = timeRecordService.overtimeByDate(name, startDate, endDate)
+            val timeRecords = timeRecordService.overtimeByDate(name,surname, startDate, endDate)
             val overtimeDto = modelMapper.map(timeRecords, OvertimeDto::class.java)
             return ResponseEntity.ok().body(overtimeDto)
         } catch (ex: Exception) {

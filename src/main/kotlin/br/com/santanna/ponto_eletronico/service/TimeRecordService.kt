@@ -20,8 +20,8 @@ data class TimeRecordService(
     private val mapper: ModelMapper
 ) {
 
-    fun registerCheckin(name: String): RecordCheckinDto? {
-        val employee = employeeService.getEmployeeByName(name) ?: throw Exception("Employee not found")
+    fun registerCheckin(name: String, surname:String): RecordCheckinDto? {
+        val employee = employeeService.getEmployeeByNameAndSurname(name, surname) ?: throw Exception("Employee not found")
         val lastRecord = findLastTimeRecord(employee)
         if (lastRecord != null) {
             throw Exception("Cannot check in without checking out the last time record.")
@@ -41,8 +41,8 @@ data class TimeRecordService(
         )
     }
 
-    fun registerCheckout(name: String): RecordCheckoutDto? {
-        val employee = employeeService.getEmployeeByName(name) ?: throw Exception("Employee not found")
+    fun registerCheckout(name: String, surname:String): RecordCheckoutDto? {
+        val employee = employeeService.getEmployeeByNameAndSurname(name, surname) ?: throw Exception("Employee not found")
 
         val lastRecord = findLastTimeRecord(employee)
             ?: throw Exception("No check-in record found to check out.")
@@ -79,8 +79,8 @@ data class TimeRecordService(
             endWorkDate = saveUpdate.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE))
     }
 
-    fun overtimeByDate(name: String, startDate: LocalDate, endDate: LocalDate): OvertimeDto {
-        val timeRecords =findTimeRecordsByDateRange(name,startDate,endDate)
+    fun overtimeByDate(name: String,surname: String, startDate: LocalDate, endDate: LocalDate): OvertimeDto {
+        val timeRecords =findTimeRecordsByDateRange(name,surname,startDate,endDate)
 
         val totalMinutesWorked = timeRecords.sumOf { it.timeWorked ?: 0 }
         val totalExpectedMinutes = timeRecords.size * 8 * 60
@@ -96,9 +96,9 @@ data class TimeRecordService(
         )
     }
 
-    fun getTimeRecordsByEmployeeNameAndDateRange(name: String, startDate: LocalDate, endDate: LocalDate): List<DetailedTimeRecordDto> {
+    fun getTimeRecordsByEmployeeNameAndDateRange(name: String, surname:String, startDate: LocalDate, endDate: LocalDate): List<DetailedTimeRecordDto> {
 
-        val timeRecords =findTimeRecordsByDateRange(name,startDate,endDate)
+        val timeRecords =findTimeRecordsByDateRange(name,surname,startDate,endDate)
 
         return timeRecords.map { timeRecord ->
             DetailedTimeRecordDto(
@@ -140,10 +140,10 @@ data class TimeRecordService(
     private fun findLastTimeRecord(employee: Employee): TimeRecord? {
         return timeRepository.findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee)
     }
-    private fun findTimeRecordsByDateRange(name: String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
+    private fun findTimeRecordsByDateRange(name: String,surname: String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = endDate.atTime(23, 59, 59)
-        return timeRepository.findByEmployeeNameAndDateRange(name, startDateTime, endDateTime)
+        return timeRepository.findByEmployeeNameAndDateRange(name,surname, startDateTime, endDateTime)
     }
     private fun updateTimeRecordField(timeRecord: TimeRecord, newDate: String?, newTime: String?, dateTimeField: KMutableProperty1<TimeRecord, LocalDateTime?>, dateType: String) {
         if (newDate != null && newTime != null) {
