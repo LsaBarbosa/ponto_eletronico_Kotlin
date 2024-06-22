@@ -1,34 +1,30 @@
 package br.com.santanna.ponto_eletronico.service
 
-import br.com.santanna.ponto_eletronico.model.Company
 import br.com.santanna.ponto_eletronico.model.Employee
-import br.com.santanna.ponto_eletronico.model.TimeRecord
-import br.com.santanna.ponto_eletronico.model.dto.company.CompanyGetDto
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeGetDto
-import br.com.santanna.ponto_eletronico.model.dto.timeRecord.TimeRecordDto
 import br.com.santanna.ponto_eletronico.repository.CompanyRepository
 import br.com.santanna.ponto_eletronico.repository.EmployeeRepository
+import br.com.santanna.ponto_eletronico.util.employee.EmployeeUtils
 import org.springframework.stereotype.Service
 
 
 @Service
 class EmployeeService(private val employeeRepository: EmployeeRepository,private val companyRepository: CompanyRepository) {
-
     fun getAllEmployees(): List<EmployeeGetDto> {
-        val employees =  employeeRepository.findAll()
-        return employees.mapNotNull { convertToGetEmployeeDto(it) }
+        val employees = employeeRepository.findAll()
+        return employees.mapNotNull { EmployeeUtils.convertToGetEmployeeDto(it) }
     }
 
     fun getEmployeeById(id: Long): EmployeeGetDto? {
         val employee = employeeRepository.findById(id).orElseThrow { Exception("not found") }
-        return convertToGetEmployeeDto(employee)
+        return EmployeeUtils.convertToGetEmployeeDto(employee)
     }
 
     fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto? {
         val employee = employeeRepository.findByNameAndSurnameIgnoreCase(name, surname)
             ?: throw Exception("Employee not found with name: $name and surname: $surname")
-        return convertToGetEmployeeDto(employee)
+        return EmployeeUtils.convertToGetEmployeeDto(employee)
     }
 
     fun registerEmployee(employeeDto: EmployeeDto): EmployeeDto {
@@ -46,7 +42,7 @@ class EmployeeService(private val employeeRepository: EmployeeRepository,private
             company = company
         )
         val savedEmployeeEntity = employeeRepository.save(employeeEntity)
-        return convertToDto(savedEmployeeEntity)
+        return EmployeeUtils.convertToDto(savedEmployeeEntity)
     }
 
     fun updateEmployee(employeeDto: EmployeeDto): EmployeeDto {
@@ -59,58 +55,10 @@ class EmployeeService(private val employeeRepository: EmployeeRepository,private
         existingEmployeeEntity.position = employeeDto.position ?: existingEmployeeEntity.position
 
         val updatedEmployeeEntity = employeeRepository.save(existingEmployeeEntity)
-        return convertToDto(updatedEmployeeEntity)
+        return EmployeeUtils.convertToDto(updatedEmployeeEntity)
     }
 
     fun deleteEmployee(name: String, surname: String) {
-        val employeeToDelete = employeeRepository.findByNameAndSurnameIgnoreCase(name, surname)
-            ?: throw Exception("Employee not found with name: $name and surname: $surname")
-        employeeToDelete.id?.let { employeeRepository.deleteById(it) }
-    }
-
-
-    private fun convertToDto(employee: Employee): EmployeeDto {
-        return EmployeeDto(
-            id = employee.id,
-            name = employee.name,
-            surname = employee.surname,
-            position = employee.position,
-            salary = employee.salary,
-            companyName = employee.company?.nameCompany
-
-        )
-    }
-
-    private fun convertToGetEmployeeDto(employee: Employee): EmployeeGetDto? {
-        val timeWorkedDtos = employee.timeWorked.map { convertToDto(it!!) }
-
-
-        return EmployeeGetDto(
-            id = employee.id,
-            name = employee.name,
-            surname = employee.surname,
-            salary = employee.salary,
-            position = employee.position,
-            password = employee.password,
-            timeWorked = timeWorkedDtos,
-            company = employee.company?.convertToDto()
-        )
-    }
-
-    // Função auxiliar para converter TimeRecord para TimeRecordDto (dentro da classe EmployeeService)
-    private fun convertToDto(timeRecord: TimeRecord): TimeRecordDto {
-        return TimeRecordDto(
-            id = timeRecord.id,
-            startWorkTime = timeRecord.startWorkTime,
-            endWorkTime = timeRecord.endWorkTime,
-            timeWorked = timeRecord.timeWorked
-        )
-    }
-
-    fun Company.convertToDto(): CompanyGetDto {
-        return CompanyGetDto(
-            nameCompany = this.nameCompany
-        )
+        EmployeeUtils.deleteEmployee(employeeRepository, name, surname)
     }
 }
-

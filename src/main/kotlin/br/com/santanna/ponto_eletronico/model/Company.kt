@@ -10,8 +10,7 @@ data class Company (
     var nameCompany:String? = null,
     var companyCNPJ: String? = null,
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    @JsonIgnore
-    var employees:List<Employee?> = ArrayList()
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    var employees: List<Employee?> = ArrayList()
 
 )
