@@ -63,9 +63,9 @@ class EmployeeService(private val employeeRepository: EmployeeRepository,private
     }
 
     fun deleteEmployee(name: String, surname: String) {
-        val employeeToDelete =
-            employeeRepository.findByNameAndSurnameIgnoreCase(name, surname) ?: throw Exception("not found")
-        employeeRepository.delete(employeeToDelete)
+        val employeeToDelete = employeeRepository.findByNameAndSurnameIgnoreCase(name, surname)
+            ?: throw Exception("Employee not found with name: $name and surname: $surname")
+        employeeToDelete.id?.let { employeeRepository.deleteById(it) }
     }
 
 

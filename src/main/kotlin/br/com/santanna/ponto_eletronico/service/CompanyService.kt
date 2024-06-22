@@ -19,7 +19,7 @@ class CompanyService(private val companyRepository: CompanyRepository) {
         return convertToDtoCompany(company)
     }
 
-    fun getCompaniesByName(nameCompany: String?): CompanyDTO {
+    fun getCompaniesByName(nameCompany: String): CompanyDTO {
         val company = companyRepository.findByNameCompanyContainsIgnoreCase(nameCompany)
     return convertToDtoCompany(company)
     }
@@ -45,7 +45,7 @@ class CompanyService(private val companyRepository: CompanyRepository) {
 
     fun deleteCompany(nameCompany: String) {
         val companyToDelete = companyRepository.findByNameCompanyContainsIgnoreCase(nameCompany)
-        companyRepository.delete(companyToDelete)
+        companyToDelete.id?.let { companyRepository.deleteById(it) }
     }
 
     private fun convertToEntity(companyDto: CompanyDTO): Company {
