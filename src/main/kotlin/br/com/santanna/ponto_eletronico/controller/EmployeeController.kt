@@ -53,7 +53,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     @PutMapping
     fun updateEmployee(@RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
         try {
-            // Verifica se o nome e sobrenome foram fornecidos
+
             if (employeeDto.name == null || employeeDto.surname == null) {
                 throw IllegalArgumentException("Name and surname are required for update.")
             }

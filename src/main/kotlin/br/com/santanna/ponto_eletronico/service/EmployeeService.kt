@@ -2,12 +2,13 @@ package br.com.santanna.ponto_eletronico.service
 
 import br.com.santanna.ponto_eletronico.model.Employee
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeDto
+import br.com.santanna.ponto_eletronico.repository.CompanyRepository
 import br.com.santanna.ponto_eletronico.repository.EmployeeRepository
 import org.springframework.stereotype.Service
 
 
 @Service
-class EmployeeService(private val employeeRepository: EmployeeRepository) {
+class EmployeeService(private val employeeRepository: EmployeeRepository,private val companyRepository: CompanyRepository) {
 
     fun getAllEmployees(): List<Employee> {
         return employeeRepository.findAll()
@@ -26,7 +27,16 @@ class EmployeeService(private val employeeRepository: EmployeeRepository) {
         if (employeeRepository.existsByNameAndSurnameIgnoreCase(employeeDto.name!!, employeeDto.surname!!)) {
             throw  Exception("Employee with the same name already exists.")
         }
-        val employeeEntity = convertToEntity(employeeDto)
+
+        val company = companyRepository.findByNameCompanyContainsIgnoreCase(employeeDto.companyName)
+
+        val employeeEntity = Employee(
+            name = employeeDto.name,
+            surname = employeeDto.surname,
+            salary = employeeDto.salary,
+            position = employeeDto.position,
+            company = company
+        )
         val savedEmployeeEntity = employeeRepository.save(employeeEntity)
         return convertToDto(savedEmployeeEntity)
     }
@@ -58,6 +68,7 @@ class EmployeeService(private val employeeRepository: EmployeeRepository) {
             salary = employeeDto.salary,
             position = employeeDto.position,
 
+
         )
     }
 
@@ -67,7 +78,8 @@ class EmployeeService(private val employeeRepository: EmployeeRepository) {
             name = employee.name,
             surname = employee.surname,
             position = employee.position,
-            salary = employee.salary
+            salary = employee.salary,
+            companyName = employee.company?.nameCompany
 
         )
     }

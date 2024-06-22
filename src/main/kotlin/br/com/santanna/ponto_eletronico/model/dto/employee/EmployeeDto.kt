@@ -8,5 +8,6 @@ data class EmployeeDto (
       var salary:Double? = null,
       var position:String? = null,
       var password:String? = null,
+      var companyName:String? = null,
 )
 
