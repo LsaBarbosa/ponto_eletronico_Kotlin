@@ -2,7 +2,6 @@ package br.com.santanna.ponto_eletronico.service
 
 import br.com.santanna.ponto_eletronico.model.Employee
 import br.com.santanna.ponto_eletronico.model.TimeRecord
-import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.model.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.repository.EmployeeRepository
 import br.com.santanna.ponto_eletronico.repository.TimeRecordRepository

@@ -1,6 +1,5 @@
 package br.com.santanna.ponto_eletronico.controller
 
-import br.com.santanna.ponto_eletronico.model.Employee
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.service.EmployeeService
