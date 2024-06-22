@@ -3,6 +3,7 @@ package br.com.santanna.ponto_eletronico.service
 import br.com.santanna.ponto_eletronico.model.Employee
 import br.com.santanna.ponto_eletronico.model.TimeRecord
 import br.com.santanna.ponto_eletronico.model.dto.timeRecord.*
+import br.com.santanna.ponto_eletronico.repository.EmployeeRepository
 import br.com.santanna.ponto_eletronico.repository.TimeRecordRepository
 import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
@@ -17,11 +18,11 @@ import kotlin.reflect.KMutableProperty1
 @Service
 data class TimeRecordService(
     private val timeRepository: TimeRecordRepository, private val employeeService: EmployeeService,
-    private val mapper: ModelMapper
+    private val mapper: ModelMapper, private val employeeRepository: EmployeeRepository
 ) {
 
     fun registerCheckin(name: String, surname:String): RecordCheckinDto? {
-        val employee = employeeService.getEmployeeByNameAndSurname(name, surname) ?: throw Exception("Employee not found")
+        val employee = employeeRepository.findByNameAndSurnameIgnoreCase(name, surname) ?: throw Exception("Employee not found")
         val lastRecord = findLastTimeRecord(employee)
         if (lastRecord != null) {
             throw Exception("Cannot check in without checking out the last time record.")
@@ -42,8 +43,7 @@ data class TimeRecordService(
     }
 
     fun registerCheckout(name: String, surname:String): RecordCheckoutDto? {
-        val employee = employeeService.getEmployeeByNameAndSurname(name, surname) ?: throw Exception("Employee not found")
-
+        val employee = employeeRepository.findByNameAndSurnameIgnoreCase(name, surname) ?: throw Exception("Employee not found")
         val lastRecord = findLastTimeRecord(employee)
             ?: throw Exception("No check-in record found to check out.")
 
@@ -138,8 +138,10 @@ data class TimeRecordService(
         }
     }
     private fun findLastTimeRecord(employee: Employee): TimeRecord? {
+        val employee = employeeRepository.findById(employee.id!!).orElseThrow { Exception("Employee not found") } // Buscar o Employee pelo ID
         return timeRepository.findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee)
     }
+
     private fun findTimeRecordsByDateRange(name: String,surname: String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = endDate.atTime(23, 59, 59)

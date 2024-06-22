@@ -18,7 +18,7 @@ class CompanyController (private val companyService: CompanyService) {
 
 
     @GetMapping("/busca-cnpj")
-    fun getCompanybyCNPJ(@RequestParam companyCNPJ:String): ResponseEntity<Company>{
+    fun getCompanybyCNPJ(@RequestParam companyCNPJ:String): ResponseEntity<CompanyDTO>{
         return try{
             val company = companyService.getCompanyByCNPJ(companyCNPJ)
             ResponseEntity.ok().body(company)
@@ -27,7 +27,7 @@ class CompanyController (private val companyService: CompanyService) {
         }
     }
         @GetMapping("/busca-nome-empresa")
-    fun getCompanybyName(@RequestParam nameCompany:String): ResponseEntity<Company>{
+    fun getCompanybyName(@RequestParam nameCompany:String): ResponseEntity<CompanyDTO>{
         return try{
             val company = companyService.getCompaniesByName(nameCompany)
             ResponseEntity.ok().body(company)
