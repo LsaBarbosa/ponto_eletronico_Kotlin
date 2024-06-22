@@ -60,17 +60,7 @@ class EmployeeService(private val employeeRepository: EmployeeRepository,private
             employeeRepository.delete(employeeToDelete)
     }
 
-    private fun convertToEntity(employeeDto: EmployeeDto): Employee {
-        return Employee(
 
-            name = employeeDto.name,
-            surname = employeeDto.surname,
-            salary = employeeDto.salary,
-            position = employeeDto.position,
-
-
-        )
-    }
 
     private fun convertToDto(employee: Employee): EmployeeDto {
         return EmployeeDto(
