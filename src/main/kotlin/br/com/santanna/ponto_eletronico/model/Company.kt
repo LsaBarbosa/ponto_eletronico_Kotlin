@@ -1,6 +1,5 @@
 package br.com.santanna.ponto_eletronico.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 
 @Entity
