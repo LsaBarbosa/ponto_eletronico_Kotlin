@@ -2,6 +2,7 @@ package br.com.santanna.ponto_eletronico.controller
 
 import br.com.santanna.ponto_eletronico.model.Employee
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeDto
+import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.service.EmployeeService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -12,12 +13,12 @@ import java.net.URI
 class EmployeeController(val employeeService: EmployeeService) {
 
     @GetMapping
-    fun allEmployees(): List<Employee> {
+    fun allEmployees(): List<EmployeeGetDto> {
         return employeeService.getAllEmployees()
     }
 
     @GetMapping("/{id}")
-    fun getEmployeeById(@PathVariable("id") id: Long): ResponseEntity<Employee?> {
+    fun getEmployeeById(@PathVariable("id") id: Long): ResponseEntity<EmployeeGetDto?> {
         try {
         val employee =employeeService.getEmployeeById(id)
         return ResponseEntity.ok(employee)
@@ -30,7 +31,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     fun getEmployeeByNameAndSurname(
         @RequestParam("name") name: String,
         @RequestParam("surname") surname: String
-    ): ResponseEntity<Employee?> {
+    ): ResponseEntity<EmployeeGetDto?> {
         try {
             val employee = employeeService.getEmployeeByNameAndSurname(name, surname)
             return ResponseEntity.ok(employee)
