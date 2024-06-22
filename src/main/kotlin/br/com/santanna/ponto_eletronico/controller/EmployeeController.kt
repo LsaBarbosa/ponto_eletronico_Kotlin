@@ -53,7 +53,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     @PutMapping
     fun updateEmployee(@RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
         try {
-            // Verifica se o nome e sobrenome foram fornecidos
+
             if (employeeDto.name == null || employeeDto.surname == null) {
                 throw IllegalArgumentException("Name and surname are required for update.")
             }
@@ -69,7 +69,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     }
 
     @DeleteMapping
-    fun deleteEmployee(@RequestParam name: String ,surname: String): ResponseEntity<Void> {
+    fun deleteEmployee(@RequestParam name: String ,@RequestParam surname: String): ResponseEntity<Void> {
         try {
             employeeService.deleteEmployee(name,surname)
             return ResponseEntity.noContent().build()
