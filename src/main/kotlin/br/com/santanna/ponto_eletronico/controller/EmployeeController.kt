@@ -3,7 +3,6 @@ package br.com.santanna.ponto_eletronico.controller
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.service.EmployeeService
-import br.com.santanna.ponto_eletronico.service.impl.EmployeeServiceImpl
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
