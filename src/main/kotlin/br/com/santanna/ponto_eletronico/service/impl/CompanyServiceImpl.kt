@@ -4,12 +4,12 @@ import br.com.santanna.ponto_eletronico.model.dto.company.CompanyDTO
 import br.com.santanna.ponto_eletronico.model.dto.company.CompanyWithEmployeesDto
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.repository.CompanyRepository
-import br.com.santanna.ponto_eletronico.service.ComanyService
+import br.com.santanna.ponto_eletronico.service.CompanyService
 import br.com.santanna.ponto_eletronico.util.company.CompanyUtils
 import org.springframework.stereotype.Service
 
 @Service
-class CompanyServiceImpl(private val companyRepository: CompanyRepository): ComanyService {
+class CompanyServiceImpl(private val companyRepository: CompanyRepository): CompanyService {
 
     override fun getAllCompanies(): List<CompanyWithEmployeesDto> {
         return companyRepository.findAll().map { company ->
