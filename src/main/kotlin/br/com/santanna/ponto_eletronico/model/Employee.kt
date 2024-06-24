@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.model
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
 
 @Entity
@@ -12,7 +13,8 @@ data class Employee(
     var position: String? = null,
     var password: String? = null,
 
-    @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @JsonIgnoreProperties("employee")
     var timeWorked: List<TimeRecord?> = ArrayList(),
 
     @ManyToOne(fetch = FetchType.LAZY)

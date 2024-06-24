@@ -4,7 +4,6 @@ import br.com.santanna.ponto_eletronico.model.Company
 import br.com.santanna.ponto_eletronico.model.Employee
 import br.com.santanna.ponto_eletronico.model.dto.company.CompanyDTO
 import br.com.santanna.ponto_eletronico.model.dto.employee.SimpleEmployeeDto
-import br.com.santanna.ponto_eletronico.repository.CompanyRepository
 
 object CompanyUtils {
     fun convertToEntity(companyDto: CompanyDTO): Company {
@@ -45,8 +44,5 @@ object CompanyUtils {
             )
         }
     }
-    fun deleteCompany(companyRepository: CompanyRepository, nameCompany: String) {
-        val companyToDelete = companyRepository.findByNameCompanyContainsIgnoreCase(nameCompany)
-        companyToDelete.id?.let { companyRepository.deleteById(it) }
-    }
+
 }

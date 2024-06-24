@@ -1,7 +1,7 @@
 package br.com.santanna.ponto_eletronico.controller
 
-import br.com.santanna.ponto_eletronico.model.Company
 import br.com.santanna.ponto_eletronico.model.dto.company.CompanyDTO
+import br.com.santanna.ponto_eletronico.model.dto.company.CompanyWithEmployeesDto
 import br.com.santanna.ponto_eletronico.service.CompanyService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -12,7 +12,7 @@ import java.net.URI
 class CompanyController (private val companyService: CompanyService) {
 
     @GetMapping
-    fun allCompanies():List<Company>{
+    fun allCompanies(): List<CompanyWithEmployeesDto> {
         return companyService.getAllCompanies()
     }
 

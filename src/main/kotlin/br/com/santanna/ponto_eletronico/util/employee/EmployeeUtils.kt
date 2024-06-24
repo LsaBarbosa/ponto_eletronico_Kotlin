@@ -21,7 +21,7 @@ object EmployeeUtils {
         )
     }
 
-    fun convertToGetEmployeeDto(employee: Employee): EmployeeGetDto? {
+    fun convertToGetEmployeeDto(employee: Employee): EmployeeGetDto {
         val timeWorkedDtos = employee.timeWorked.map { convertToTimeRecordDto(it!!) }
 
         return EmployeeGetDto(
