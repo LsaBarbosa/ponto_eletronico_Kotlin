@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.model
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
 
 @Entity
@@ -10,7 +11,7 @@ data class Company (
     var companyCNPJ: String? = null,
 
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-
+    @JsonIgnoreProperties("timeWorked")
     var employees: List<Employee?> = ArrayList()
 
 )

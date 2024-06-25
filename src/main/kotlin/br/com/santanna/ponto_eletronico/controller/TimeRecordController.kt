@@ -3,7 +3,6 @@ package br.com.santanna.ponto_eletronico.controller
 import br.com.santanna.ponto_eletronico.model.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.service.TimeRecordService
 import org.modelmapper.ModelMapper
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
@@ -16,23 +15,19 @@ class TimeRecordController(
 ) {
 
     @PostMapping("/entrada")
-    fun registerCheckin(@RequestParam name: String, surname:String): ResponseEntity<RecordCheckinDto> {
-        return try {
-            val checkin = timeRecordService.registerCheckin(name, surname)
-            ResponseEntity.ok().body(modelMapper.map(checkin, RecordCheckinDto::class.java))
-        } catch (ex: Exception) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
-        }
+    fun registerCheckin(@RequestParam name: String, surname: String): ResponseEntity<RecordCheckinDto> {
+
+        val checkin = timeRecordService.registerCheckin(name, surname)
+        return ResponseEntity.ok().body(modelMapper.map(checkin, RecordCheckinDto::class.java))
+
     }
 
     @PostMapping("/saida")
-    fun registerCheckout(@RequestParam name: String, surname:String): ResponseEntity<RecordCheckoutDto> {
-        return try {
-            val checkout = timeRecordService.registerCheckout(name,surname)
-            ResponseEntity.ok().body(modelMapper.map(checkout, RecordCheckoutDto::class.java))
-        } catch (ex: Exception) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
-        }
+    fun registerCheckout(@RequestParam name: String, surname: String): ResponseEntity<RecordCheckoutDto> {
+
+        val checkout = timeRecordService.registerCheckout(name, surname)
+        return ResponseEntity.ok().body(modelMapper.map(checkout, RecordCheckoutDto::class.java))
+
     }
 
     @PutMapping("/{id}")
@@ -40,14 +35,12 @@ class TimeRecordController(
         @PathVariable id: Long,
         @RequestBody updateTimeRecordDto: UpdateTimeRecordDto
     ): ResponseEntity<UpdateTimeRecordDto> {
-        return try {
-            updateTimeRecordDto.id = id
-            val updatedRecord = timeRecordService.updateTimeRecord(updateTimeRecordDto)
-            val recordDto = modelMapper.map(updatedRecord, UpdateTimeRecordDto::class.java)
-            ResponseEntity.ok().body(recordDto)
-        } catch (ex: Exception) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
-        }
+
+        updateTimeRecordDto.id = id
+        val updatedRecord = timeRecordService.updateTimeRecord(updateTimeRecordDto)
+        val recordDto = modelMapper.map(updatedRecord, UpdateTimeRecordDto::class.java)
+        return ResponseEntity.ok().body(recordDto)
+
     }
 
     @GetMapping("/registros")
@@ -57,17 +50,15 @@ class TimeRecordController(
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
     ): ResponseEntity<List<DetailedTimeRecordDto>> {
-        return try {
-            val startDate = LocalDate.parse(startDateStr)
-            val endDate = LocalDate.parse(endDateStr)
-            val timeRecords = timeRecordService.getTimeRecordsByEmployeeNameAndDateRange(name,surname, startDate, endDate)
-            val detailedTimeRecordDtos = timeRecords.map {
-                modelMapper.map(it, DetailedTimeRecordDto::class.java)
-            }
-            return ResponseEntity.ok(detailedTimeRecordDtos)
-        } catch (ex: Exception) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
+
+        val startDate = LocalDate.parse(startDateStr)
+        val endDate = LocalDate.parse(endDateStr)
+        val timeRecords = timeRecordService.getTimeRecordsByEmployeeNameAndDateRange(name, surname, startDate, endDate)
+        val detailedTimeRecordDtos = timeRecords.map {
+            modelMapper.map(it, DetailedTimeRecordDto::class.java)
         }
+        return ResponseEntity.ok(detailedTimeRecordDtos)
+
     }
 
     @GetMapping("/hora-extra")
@@ -77,14 +68,12 @@ class TimeRecordController(
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
     ): ResponseEntity<OvertimeDto> {
-        return try {
-            val startDate = LocalDate.parse(startDateStr)
-            val endDate = LocalDate.parse(endDateStr)
-            val timeRecords = timeRecordService.overtimeByDate(name,surname, startDate, endDate)
-            val overtimeDto = modelMapper.map(timeRecords, OvertimeDto::class.java)
-            return ResponseEntity.ok().body(overtimeDto)
-        } catch (ex: Exception) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)
-        }
+
+        val startDate = LocalDate.parse(startDateStr)
+        val endDate = LocalDate.parse(endDateStr)
+        val timeRecords = timeRecordService.overtimeByDate(name, surname, startDate, endDate)
+        val overtimeDto = modelMapper.map(timeRecords, OvertimeDto::class.java)
+        return ResponseEntity.ok().body(overtimeDto)
+
     }
 }
