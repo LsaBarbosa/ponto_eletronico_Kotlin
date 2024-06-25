@@ -9,7 +9,7 @@ import java.net.URI
 
 @RestController
 @RequestMapping("/empresa")
-class CompanyController (private val companyService: CompanyService) {
+class CompanyController(private val companyService: CompanyService) {
 
     @GetMapping
     fun allCompanies(): List<CompanyWithEmployeesDto> {
@@ -18,55 +18,37 @@ class CompanyController (private val companyService: CompanyService) {
 
 
     @GetMapping("/busca-cnpj")
-    fun getCompanybyCNPJ(@RequestParam companyCNPJ:String): ResponseEntity<CompanyDTO>{
-        return try{
-            val company = companyService.getCompanyByCNPJ(companyCNPJ)
-            ResponseEntity.ok().body(company)
-        }catch (ex:Exception){
-            ResponseEntity.notFound().build()
-        }
+    fun getCompanybyCNPJ(@RequestParam companyCNPJ: String): ResponseEntity<CompanyDTO> {
+        val company = companyService.getCompanyByCNPJ(companyCNPJ)
+        return ResponseEntity.ok().body(company)
     }
-        @GetMapping("/busca-nome-empresa")
-    fun getCompanybyName(@RequestParam nameCompany:String): ResponseEntity<CompanyDTO>{
-        return try{
-            val company = companyService.getCompaniesByName(nameCompany)
-            ResponseEntity.ok().body(company)
-        }catch (ex:Exception){
-            ResponseEntity.notFound().build()
-        }
+
+    @GetMapping("/busca-nome-empresa")
+    fun getCompanybyName(@RequestParam nameCompany: String): ResponseEntity<CompanyDTO> {
+        val company = companyService.getCompaniesByName(nameCompany)
+        return ResponseEntity.ok().body(company)
+
     }
 
     @PostMapping
-    fun registerCompany(@RequestBody companyDTO: CompanyDTO): ResponseEntity<CompanyDTO>{
-        return try{
-            val companyCreated = companyService.registerCompany(companyDTO)
-            val uri:URI = URI.create("/company/${companyCreated.id}")
-            ResponseEntity.created(uri).body(companyCreated)
-        }catch (ex:Exception){
-            ResponseEntity.badRequest().build()
-        }
+    fun registerCompany(@RequestBody companyDTO: CompanyDTO): ResponseEntity<CompanyDTO> {
+        val companyCreated = companyService.registerCompany(companyDTO)
+        val uri: URI = URI.create("/company/${companyCreated.id}")
+        return ResponseEntity.created(uri).body(companyCreated)
     }
 
-
     @PutMapping
-    fun updateCompany(@RequestParam companyCNPJ: String,@RequestBody companyDTO: CompanyDTO): ResponseEntity<CompanyDTO> {
-        return try {
-            val companyUpdated = companyService.updateCompany(companyCNPJ,companyDTO)
-            ResponseEntity.ok().body(companyUpdated)
-        } catch (ex: Exception) {
-            return ResponseEntity.notFound().build()
-        } catch (ex: IllegalArgumentException) {
-            return ResponseEntity.badRequest().build()
-        }
+    fun updateCompany(
+        @RequestParam companyCNPJ: String,
+        @RequestBody companyDTO: CompanyDTO
+    ): ResponseEntity<CompanyDTO> {
+        val companyUpdated = companyService.updateCompany(companyCNPJ, companyDTO)
+        return ResponseEntity.ok().body(companyUpdated)
     }
 
     @DeleteMapping
-    fun deleteCompany(@RequestParam nameCompany: String): ResponseEntity<Void>{
-        return try {
-            companyService.deleteCompany(nameCompany)
-            ResponseEntity.noContent().build()
-        } catch (ex: Exception) {
-            return ResponseEntity.notFound().build()
-        }
+    fun deleteCompany(@RequestParam nameCompany: String): ResponseEntity<Void> {
+        companyService.deleteCompany(nameCompany)
+        return ResponseEntity.noContent().build()
     }
 }

@@ -18,12 +18,9 @@ class EmployeeController(val employeeService: EmployeeService) {
 
     @GetMapping("/{id}")
     fun getEmployeeById(@PathVariable("id") id: Long): ResponseEntity<EmployeeGetDto?> {
-        try {
-        val employee =employeeService.getEmployeeById(id)
+        val employee = employeeService.getEmployeeById(id)
         return ResponseEntity.ok(employee)
-        }catch (ex:Exception){
-            return ResponseEntity.notFound().build()
-        }
+
     }
 
     @GetMapping("/busca") // Removemos o /{name} do path
@@ -31,51 +28,36 @@ class EmployeeController(val employeeService: EmployeeService) {
         @RequestParam("name") name: String,
         @RequestParam("surname") surname: String
     ): ResponseEntity<EmployeeGetDto?> {
-        try {
-            val employee = employeeService.getEmployeeByNameAndSurname(name, surname)
-            return ResponseEntity.ok(employee)
-        } catch (ex: Exception) {
-            return ResponseEntity.notFound().build()
-        }
+
+        val employee = employeeService.getEmployeeByNameAndSurname(name, surname)
+        return ResponseEntity.ok(employee)
+
     }
 
     @PostMapping
     fun registerNewEmployee(@RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
-        try {
-            val employeeCreated = employeeService.registerEmployee(employeeDto)
-            val uri = URI.create("/employees/${employeeCreated.id}")
-            return ResponseEntity.created(uri).body(employeeCreated)
-        } catch (ex: Exception) {
-            return ResponseEntity.badRequest().build()
-        }
+        val employeeCreated = employeeService.registerEmployee(employeeDto)
+        val uri = URI.create("/employees/${employeeCreated.id}")
+        return ResponseEntity.created(uri).body(employeeCreated)
+
     }
 
     @PutMapping
     fun updateEmployee(@RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
-        try {
-
-            if (employeeDto.name == null || employeeDto.surname == null) {
-                throw IllegalArgumentException("Name and surname are required for update.")
-            }
-
-            val updatedEmployeeDto = employeeService.updateEmployee(employeeDto)
-            return ResponseEntity.ok(updatedEmployeeDto)
-        } catch (ex: Exception) {
-            return ResponseEntity.notFound().build()
-        } catch (ex: IllegalArgumentException) {
-            return ResponseEntity.badRequest().build()
+        if (employeeDto.name == null || employeeDto.surname == null) {
+            throw IllegalArgumentException("Name and surname are required for update.")
         }
+
+        val updatedEmployeeDto = employeeService.updateEmployee(employeeDto)
+        return ResponseEntity.ok(updatedEmployeeDto)
 
     }
 
     @DeleteMapping
-    fun deleteEmployee(@RequestParam name: String ,@RequestParam surname: String): ResponseEntity<Void> {
-        try {
-            employeeService.deleteEmployee(name,surname)
-            return ResponseEntity.noContent().build()
-        } catch (ex: Exception) {
-            return ResponseEntity.notFound().build()
-        }
+    fun deleteEmployee(@RequestParam name: String, @RequestParam surname: String): ResponseEntity<Void> {
+        employeeService.deleteEmployee(name, surname)
+        return ResponseEntity.noContent().build()
+
     }
 
 
