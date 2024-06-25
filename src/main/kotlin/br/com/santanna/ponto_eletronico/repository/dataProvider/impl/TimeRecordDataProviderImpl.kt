@@ -4,7 +4,6 @@ import br.com.santanna.ponto_eletronico.model.Employee
 import br.com.santanna.ponto_eletronico.model.TimeRecord
 import br.com.santanna.ponto_eletronico.repository.TimeRecordRepository
 import br.com.santanna.ponto_eletronico.repository.dataProvider.TimeRecordDataProvider
-import br.com.santanna.ponto_eletronico.service.exception.DataIntegrityViolationException
 import br.com.santanna.ponto_eletronico.service.exception.ObjectNotFoundException
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime

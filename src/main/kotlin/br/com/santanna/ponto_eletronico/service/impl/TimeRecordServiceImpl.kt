@@ -3,12 +3,9 @@ package br.com.santanna.ponto_eletronico.service.impl
 import br.com.santanna.ponto_eletronico.model.Employee
 import br.com.santanna.ponto_eletronico.model.TimeRecord
 import br.com.santanna.ponto_eletronico.model.dto.timeRecord.*
-import br.com.santanna.ponto_eletronico.repository.EmployeeRepository
-import br.com.santanna.ponto_eletronico.repository.TimeRecordRepository
 import br.com.santanna.ponto_eletronico.repository.dataProvider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.repository.dataProvider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.service.TimeRecordService
-import br.com.santanna.ponto_eletronico.service.exception.DataIntegrityViolationException
 import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
 import java.time.Duration

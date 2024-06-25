@@ -9,7 +9,6 @@ import br.com.santanna.ponto_eletronico.model.dto.employee.SimpleEmployeeDto
 import br.com.santanna.ponto_eletronico.repository.dataProvider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.service.CompanyService
 import br.com.santanna.ponto_eletronico.service.exception.DataIntegrityViolationException
-import br.com.santanna.ponto_eletronico.service.exception.ObjectNotFoundException
 import org.springframework.stereotype.Service
 
 @Service

@@ -8,10 +8,8 @@ import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.model.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.model.dto.timeRecord.TimeRecordDto
 import br.com.santanna.ponto_eletronico.repository.CompanyRepository
-import br.com.santanna.ponto_eletronico.repository.EmployeeRepository
 import br.com.santanna.ponto_eletronico.repository.dataProvider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.service.EmployeeService
-import br.com.santanna.ponto_eletronico.service.exception.ObjectNotFoundException
 import org.springframework.stereotype.Service
 
 
