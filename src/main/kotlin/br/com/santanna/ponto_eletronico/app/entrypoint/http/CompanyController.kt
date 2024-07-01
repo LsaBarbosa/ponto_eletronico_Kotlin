@@ -3,6 +3,9 @@ package br.com.santanna.ponto_eletronico.app.entrypoint.http
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeesDto
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
+import br.com.santanna.ponto_eletronico.infrastructure.security.token.Auth
+import br.com.santanna.ponto_eletronico.infrastructure.security.token.AuthenticationDTO
+import br.com.santanna.ponto_eletronico.infrastructure.security.token.LoginResponseDTO
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
@@ -51,4 +54,6 @@ class CompanyController(private val companyService: CompanyService) {
         companyService.deleteCompany(nameCompany)
         return ResponseEntity.noContent().build()
     }
+
+
 }
