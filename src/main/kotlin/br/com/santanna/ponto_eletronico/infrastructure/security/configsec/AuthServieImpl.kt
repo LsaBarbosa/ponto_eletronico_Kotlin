@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security.token
+package br.com.santanna.ponto_eletronico.infrastructure.security.configsec
 
 import br.com.santanna.ponto_eletronico.infrastructure.repository.EmployeeRepository
 import org.springframework.beans.factory.annotation.Autowired

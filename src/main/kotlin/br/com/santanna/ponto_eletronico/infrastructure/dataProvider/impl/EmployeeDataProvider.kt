@@ -4,6 +4,7 @@ import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.infrastructure.repository.EmployeeRepository
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 
 @Service
@@ -43,5 +44,11 @@ class EmployeeDataProvider(val employeeRepository: EmployeeRepository) : Employe
         return employee
     }
 
+    override fun findByCpf(cpf: String): UserDetails? {
+        return employeeRepository.findByCpf(cpf)
+    }
 
+    override fun findCpf(cpf: String?): Employee? {
+        return employeeRepository.findByCpfIgnoreCase(cpf)
+    }
 }

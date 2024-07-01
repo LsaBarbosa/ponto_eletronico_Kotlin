@@ -1,9 +1,8 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security.token
+package br.com.santanna.ponto_eletronico.infrastructure.security.login
 
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
-import br.com.santanna.ponto_eletronico.infrastructure.repository.EmployeeRepository
-import org.modelmapper.ModelMapper
+import br.com.santanna.ponto_eletronico.infrastructure.security.configsec.TokenService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -15,20 +14,15 @@ class Auth {
     companion object {
         const val EMPLOYEE_ALREADY_EXIST = "Já existe um colaborador com este nome."
         const val USER_PASSWORD_WRONG = "Usuário ou senha inválidos."
-        const val ACCESS_DENIED = "Usuário não autorizado para cadastro."
+
     }
 
     @Autowired
     private lateinit var authenticationManager: AuthenticationManager
-
-    @Autowired
-    private lateinit var repository: EmployeeRepository
-
     @Autowired
     private lateinit var tokenService: TokenService
 
-    @Autowired
-    private lateinit var modelMapper: ModelMapper
+
 
     fun login(authenticationDTO: AuthenticationDTO): LoginResponseDTO {
         return try {

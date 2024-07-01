@@ -10,36 +10,41 @@ import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.TimeRecordDto
 import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
+import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.EmployeeRepository
-import br.com.santanna.ponto_eletronico.infrastructure.security.token.Auth.Companion.EMPLOYEE_ALREADY_EXIST
+import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth.Companion.EMPLOYEE_ALREADY_EXIST
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
 
 @Service
-class EmployeeServiceImpl(private val employeeDataProvider: EmployeeDataProvider, private val companyRepository: CompanyRepository, val employeeRepository: EmployeeRepository):
-    EmployeeService {
+class EmployeeServiceImpl(
+    private val employeeDataProvider: EmployeeDataProvider,
+    private val companyRepository: CompanyRepository,
+
+) : EmployeeService {
     override fun getAllEmployees(): List<EmployeeGetDto> {
         val employees = employeeDataProvider.findAll()
-        return employees.map {  convertToGetEmployeeDto(it) }
+        return employees.map { convertToGetEmployeeDto(it) }
     }
 
     override fun getEmployeeById(id: Long): EmployeeGetDto? {
         val employee = employeeDataProvider.findById(id)
-        return  convertToGetEmployeeDto(employee)
+        return convertToGetEmployeeDto(employee)
     }
 
     override fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto? {
-        val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name,surname )
-        return  convertToGetEmployeeDto(employee)
+        val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name, surname)
+        return convertToGetEmployeeDto(employee)
     }
 
     override fun registerEmployee(employeeDto: EmployeeDto?): EmployeeDto {
-        if (employeeRepository.findByCpf(employeeDto?.cpf) != null) {
+
+        val employeeCpf = employeeDto?.cpf?.let { employeeDataProvider.findByCpf(it) }
+        if (employeeCpf != null) {
             throw DataIntegrityViolationException(EMPLOYEE_ALREADY_EXIST)
         }
-
         val encryptedPassword = BCryptPasswordEncoder().encode(employeeDto?.passwords)
 
         val company = companyRepository.findByNameCompanyContainsIgnoreCase(employeeDto?.companyName)
@@ -50,31 +55,37 @@ class EmployeeServiceImpl(private val employeeDataProvider: EmployeeDataProvider
             salary = employeeDto?.salary,
             position = employeeDto?.position,
             cpf = employeeDto?.cpf,
-            passwords = encryptedPassword,
             role = employeeDto?.role,
+            passwords = encryptedPassword,
             company = company
         )
         val savedEmployeeEntity = employeeDataProvider.save(employeeEntity)
-        return  convertToDto(savedEmployeeEntity)
+        return convertToDto(savedEmployeeEntity)
     }
 
-    override fun updateEmployee(employeeDto: EmployeeDto): EmployeeDto {
-        val existingEmployeeEntity =
-            employeeDataProvider.findByNameAndSurnameIgnoreCase(employeeDto.name, employeeDto.surname)
+    override fun updateEmployee(cpf: String, updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto {
+        val existingEmployeeEntity = employeeDataProvider.findCpf(cpf)
+            ?: throw IllegalArgumentException("Employee not found with CPF: $cpf")
 
-        existingEmployeeEntity?.salary = employeeDto.salary ?: existingEmployeeEntity?.salary
-        existingEmployeeEntity?.passwords = employeeDto.passwords ?: existingEmployeeEntity?.passwords
-        existingEmployeeEntity?.position = employeeDto.position ?: existingEmployeeEntity?.position
+        val encryptedPassword = updateEmployeeDto.passwords?.let { BCryptPasswordEncoder().encode(it) }
 
-        val updatedEmployeeEntity = employeeDataProvider.save(existingEmployeeEntity!!)
-        return convertToDto(updatedEmployeeEntity)
+        existingEmployeeEntity.apply {
+            salary = updateEmployeeDto.salary ?: salary
+            passwords = encryptedPassword ?: passwords
+            position = updateEmployeeDto.position ?: position
+            role = updateEmployeeDto.role ?: role
+        }
+
+        val updatedEmployeeEntity = employeeDataProvider.save(existingEmployeeEntity)
+        return convertToUpdateEmployeeDto(updatedEmployeeEntity)
     }
 
-    override fun deleteEmployee(  name: String, surname: String) {
-        employeeDataProvider.deleteByNameAndSurname(name,surname)
+
+    override fun deleteEmployee(name: String, surname: String) {
+        employeeDataProvider.deleteByNameAndSurname(name, surname)
     }
 
-    fun convertToDto(employee: Employee?): EmployeeDto {
+   private fun convertToDto(employee: Employee?): EmployeeDto {
         return EmployeeDto(
             id = employee?.id,
             cpf = employee?.cpf,
@@ -83,10 +94,19 @@ class EmployeeServiceImpl(private val employeeDataProvider: EmployeeDataProvider
             surname = employee?.surname,
             position = employee?.position,
             salary = employee?.salary,
-
             companyName = employee?.company?.nameCompany
         )
     }
+
+    private fun convertToUpdateEmployeeDto(employee: Employee?): UpdateEmployeeDto {
+        return UpdateEmployeeDto(
+            cpf = employee?.cpf,
+            role = employee?.role,
+            position = employee?.position,
+            salary = employee?.salary
+        )
+    }
+}
 
     fun convertToGetEmployeeDto(employee: Employee?): EmployeeGetDto {
         val timeWorkedDtos = employee?.timeWorked?.map { convertToTimeRecordDto(it!!) }
@@ -118,4 +138,4 @@ class EmployeeServiceImpl(private val employeeDataProvider: EmployeeDataProvider
         )
     }
 
-}
+

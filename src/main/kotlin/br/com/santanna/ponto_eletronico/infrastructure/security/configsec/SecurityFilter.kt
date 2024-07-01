@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security.token
+package br.com.santanna.ponto_eletronico.infrastructure.security.configsec
 
 
 

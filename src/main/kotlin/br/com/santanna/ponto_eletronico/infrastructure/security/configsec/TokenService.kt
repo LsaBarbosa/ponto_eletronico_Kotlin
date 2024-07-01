@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security.token
+package br.com.santanna.ponto_eletronico.infrastructure.security.configsec
 
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import com.auth0.jwt.JWT
