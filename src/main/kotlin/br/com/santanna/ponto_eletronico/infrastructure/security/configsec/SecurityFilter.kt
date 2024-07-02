@@ -27,7 +27,7 @@ class SecurityFilter : OncePerRequestFilter() {
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
         val token = recoverToken(request)
 
-        if (token != null) {
+        if (token != null && tokenService.validateToken(token).isNotEmpty()) {
             val cpf = tokenService.validateToken(token)
             val user = repository.findByCpf(cpf)
 

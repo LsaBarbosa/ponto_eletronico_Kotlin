@@ -16,6 +16,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
+private const val _EMPRESA = "/empresa"
+
+private const val _COLABORADOR = "/colaborador"
+
+private const val _PONTO = "/ponto"
+
+private const val ADMIN = "ADMIN"
+
+private const val USER = "USER"
+
 @Configuration
 @EnableWebSecurity
 class SecurityConfigurations {
@@ -28,11 +38,23 @@ class SecurityConfigurations {
         httpSecurity.csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { authorize ->
-                authorize.requestMatchers(HttpMethod.POST, "/empresa").hasRole("ADMIN")
-                authorize.requestMatchers(HttpMethod.POST, "/colaborador/criar-colaborador").hasRole("USER")
-                authorize.requestMatchers(HttpMethod.POST, "/colaborador/login").permitAll()
-                authorize.requestMatchers(HttpMethod.PUT, "/ponto").hasRole("USER")
-                authorize.anyRequest().authenticated()
+                authorize.requestMatchers(HttpMethod.GET, "$_EMPRESA/busca-cnpj").hasRole(ADMIN)
+                authorize.requestMatchers(HttpMethod.GET, "$_EMPRESA/busca-nome-empresa").hasRole(ADMIN)
+                authorize.requestMatchers(HttpMethod.GET, _EMPRESA).hasRole(ADMIN)
+                authorize.requestMatchers(HttpMethod.POST, _EMPRESA).hasRole(ADMIN)
+                authorize.requestMatchers(HttpMethod.PUT, _EMPRESA).hasRole(ADMIN)
+                authorize.requestMatchers(HttpMethod.DELETE,_EMPRESA).hasRole(ADMIN)
+
+                authorize.requestMatchers(HttpMethod.POST, "$_COLABORADOR/criar-colaborador").hasRole(USER)
+                authorize.requestMatchers(HttpMethod.GET, "$_COLABORADOR/busca").hasRole(USER)
+                authorize.requestMatchers(HttpMethod.GET, _COLABORADOR).hasRole(USER)
+                authorize.requestMatchers(HttpMethod.PUT, _COLABORADOR).hasRole(USER)
+                authorize.requestMatchers(HttpMethod.DELETE, _COLABORADOR).hasRole(USER)
+                authorize.requestMatchers(HttpMethod.POST, "$_COLABORADOR/criar-colaborador").hasRole(USER)
+
+                authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(USER)
+                authorize.requestMatchers(HttpMethod.POST, "$_COLABORADOR/login").permitAll()
+                authorize.anyRequest().permitAll()
             }
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter::class.java)
 
@@ -50,7 +72,7 @@ class SecurityConfigurations {
     fun corsConfigurer(): WebMvcConfigurer = object : WebMvcConfigurer {
         override fun addCorsMappings(registry: CorsRegistry) {
             registry.addMapping("/**")
-                .allowedOrigins("https://ponto-eletronico-nova-alianca.vercel.app")
+                .allowedOrigins("https://$_PONTO-eletronico-nova-alianca.vercel.app")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
