@@ -54,7 +54,7 @@ class SecurityConfigurations {
 
                 authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(USER)
                 authorize.requestMatchers(HttpMethod.POST, "$_COLABORADOR/login").permitAll()
-                authorize.anyRequest().permitAll()
+                authorize.anyRequest().authenticated()
             }
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter::class.java)
 
