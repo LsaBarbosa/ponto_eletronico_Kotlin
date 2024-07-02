@@ -28,8 +28,11 @@ class SecurityConfigurations {
         httpSecurity.csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { authorize ->
-                authorize.requestMatchers(HttpMethod.GET, "/ponto/registros").hasRole("ADMIN")
-                authorize.anyRequest().permitAll()
+                authorize.requestMatchers(HttpMethod.POST, "/empresa").hasRole("ADMIN")
+                authorize.requestMatchers(HttpMethod.POST, "/colaborador/criar-colaborador").hasRole("USER")
+                authorize.requestMatchers(HttpMethod.POST, "/colaborador/login").permitAll()
+                authorize.requestMatchers(HttpMethod.PUT, "/ponto").hasRole("USER")
+                authorize.anyRequest().authenticated()
             }
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter::class.java)
 

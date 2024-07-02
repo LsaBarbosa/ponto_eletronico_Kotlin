@@ -1,18 +1,17 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
-import br.com.santanna.ponto_eletronico.domain.entity.Company
-import br.com.santanna.ponto_eletronico.domain.entity.Employee
-import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
-import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.TimeRecordDto
-import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
-import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
+import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.TimeRecordDto
+import br.com.santanna.ponto_eletronico.domain.entity.Company
+import br.com.santanna.ponto_eletronico.domain.entity.Employee
+import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
-import br.com.santanna.ponto_eletronico.infrastructure.repository.EmployeeRepository
+import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth.Companion.EMPLOYEE_ALREADY_EXIST
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
