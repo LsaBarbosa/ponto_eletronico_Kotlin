@@ -60,8 +60,8 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider) :
         return  convertToDto(updatedCompanyEntity)
     }
 
-    override fun deleteCompany(nameCompany: String) {
-        companyDataProvider.deleteByNameCompany(nameCompany)
+    override fun deleteCompanyByCNPJ(companyCNPJ: String) {
+        companyDataProvider.deleteByCompanyCNPJ(companyCNPJ)
     }
 
     fun convertToEntity(companyDto: CompanyDTO): Company {

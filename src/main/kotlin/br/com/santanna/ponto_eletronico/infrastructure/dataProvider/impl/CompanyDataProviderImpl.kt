@@ -26,8 +26,9 @@ class CompanyDataProviderImpl(val companyRepository: CompanyRepository): Company
         return companyRepository.existsByNameCompanyIgnoreCase(nameCompany)
     }
 
-    override fun deleteByNameCompany(nameCompany: String?) {
-        val companyToDelete = findByNameCompanyContainsIgnoreCase(nameCompany)
+    override fun deleteByCompanyCNPJ(companyCNPJ: String) {
+        val companyToDelete = companyRepository.findByCompanyCNPJ(companyCNPJ)
+            ?: throw ObjectNotFoundException("Não foi encontrado o CNPJ: $companyCNPJ no sistema")
         companyRepository.delete(companyToDelete)
     }
 

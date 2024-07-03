@@ -47,8 +47,8 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @DeleteMapping
-    fun deleteCompany(@RequestParam nameCompany: String): ResponseEntity<Void> {
-        companyService.deleteCompany(nameCompany)
+    fun deleteCompany(@RequestParam ("companyCNPJ") companyCNPJ: String): ResponseEntity<Void> {
+        companyService.deleteCompanyByCNPJ(companyCNPJ)
         return ResponseEntity.noContent().build()
     }
 
