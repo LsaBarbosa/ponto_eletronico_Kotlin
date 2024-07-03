@@ -8,28 +8,11 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 
 @Service
-class EmployeeDataProvider(val employeeRepository: EmployeeRepository) : EmployeeDataProvider {
+class EmployeeDataProviderImpl(val employeeRepository: EmployeeRepository) : EmployeeDataProvider {
 
-    override fun existsByNameAndSurnameIgnoreCase(name: String?, surname: String?): Boolean {
-        val employee = employeeRepository.existsByNameAndSurnameIgnoreCase(name, surname)
-        if (employee) {
-            throw ObjectNotFoundException("Colaborador com nome: $name $surname já existe no sistema.")
-        }
-        return employee
-    }
 
-    override fun findByNameAndSurnameIgnoreCase(name: String?, surname: String?): Employee {
-        val employee = employeeRepository.findByNameAndSurnameIgnoreCase(name, surname)
-            ?: throw ObjectNotFoundException("Colaborador com nome: $name $surname não encontrado")
-        return employee
-    }
 
-    override fun deleteByNameAndSurname(name: String?, surname: String?) {
-        val employeToDelete = findByNameAndSurnameIgnoreCase(name, surname)
-        employeeRepository.delete(employeToDelete)
-    }
-
-    override fun findAll(): MutableList<Employee> {
+    override fun findAll(): List<Employee> {
         val employees = employeeRepository.findAll()
         return employees
     }
@@ -50,5 +33,10 @@ class EmployeeDataProvider(val employeeRepository: EmployeeRepository) : Employe
 
     override fun findCpf(cpf: String?): Employee? {
         return employeeRepository.findByCpfIgnoreCase(cpf)
+    }
+    override fun deleteByCpf(cpf: String) {
+        val employeeToDelete = findCpf(cpf)
+            ?: throw ObjectNotFoundException("Colaborador não encontrado")
+        employeeRepository.delete(employeeToDelete)
     }
 }

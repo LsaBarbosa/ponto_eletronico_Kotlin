@@ -9,5 +9,5 @@ interface CompanyService {
     fun getCompaniesByName(nameCompany: String): CompanyDTO
     fun registerCompany(companyDto: CompanyDTO): CompanyDTO
     fun updateCompany(companyCNPJ: String?, companyDto: CompanyDTO): CompanyDTO
-    fun deleteCompany(nameCompany: String)
+    fun deleteCompanyByCNPJ(companyCNPJ: String)
 }

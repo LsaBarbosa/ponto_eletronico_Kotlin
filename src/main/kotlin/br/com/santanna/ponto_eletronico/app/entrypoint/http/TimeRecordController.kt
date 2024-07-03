@@ -15,17 +15,17 @@ class TimeRecordController(
 ) {
 
     @PostMapping("/entrada")
-    fun registerCheckin(@RequestParam name: String, surname: String): ResponseEntity<RecordCheckinDto> {
+    fun registerCheckin(@RequestParam ("cpf") cpf:String): ResponseEntity<RecordCheckinDto> {
 
-        val checkin = timeRecordService.registerCheckin(name, surname)
+        val checkin = timeRecordService.registerCheckin(cpf)
         return ResponseEntity.ok().body(modelMapper.map(checkin, RecordCheckinDto::class.java))
 
     }
 
     @PostMapping("/saida")
-    fun registerCheckout(@RequestParam name: String, surname: String): ResponseEntity<RecordCheckoutDto> {
+    fun registerCheckout(@RequestParam ("cpf") cpf:String): ResponseEntity<RecordCheckoutDto> {
 
-        val checkout = timeRecordService.registerCheckout(name, surname)
+        val checkout = timeRecordService.registerCheckout(cpf)
         return ResponseEntity.ok().body(modelMapper.map(checkout, RecordCheckoutDto::class.java))
 
     }
@@ -33,11 +33,12 @@ class TimeRecordController(
     @PutMapping("/{id}")
     fun updateTimeRecord(
         @PathVariable id: Long,
+        @RequestParam ("cpf") cpf: String,
         @RequestBody updateTimeRecordDto: UpdateTimeRecordDto
     ): ResponseEntity<UpdateTimeRecordDto> {
 
         updateTimeRecordDto.id = id
-        val updatedRecord = timeRecordService.updateTimeRecord(updateTimeRecordDto)
+        val updatedRecord = timeRecordService.updateTimeRecord(cpf,updateTimeRecordDto)
         val recordDto = modelMapper.map(updatedRecord, UpdateTimeRecordDto::class.java)
         return ResponseEntity.ok().body(recordDto)
 
@@ -45,15 +46,14 @@ class TimeRecordController(
 
     @GetMapping("/registros")
     fun getTimeRecordsByEmployeeNameAndDateRange(
-        @RequestParam name: String,
-        @RequestParam surname: String,
+        @RequestParam ("cpf") cpf:String,
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
     ): ResponseEntity<List<DetailedTimeRecordDto>> {
 
         val startDate = LocalDate.parse(startDateStr)
         val endDate = LocalDate.parse(endDateStr)
-        val timeRecords = timeRecordService.getTimeRecordsByEmployeeNameAndDateRange(name, surname, startDate, endDate)
+        val timeRecords = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRange(cpf, startDate, endDate)
         val detailedTimeRecordDtos = timeRecords.map {
             modelMapper.map(it, DetailedTimeRecordDto::class.java)
         }
@@ -63,15 +63,14 @@ class TimeRecordController(
 
     @GetMapping("/hora-extra")
     fun getOvertimeByEmployeeNameAndDateRange(
-        @RequestParam name: String,
-        @RequestParam surname: String,
+        @RequestParam ("cpf") cpf:String,
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
     ): ResponseEntity<OvertimeDto> {
 
         val startDate = LocalDate.parse(startDateStr)
         val endDate = LocalDate.parse(endDateStr)
-        val timeRecords = timeRecordService.overtimeByDate(name, surname, startDate, endDate)
+        val timeRecords = timeRecordService.overtimeByDate(cpf, startDate, endDate)
         val overtimeDto = modelMapper.map(timeRecords, OvertimeDto::class.java)
         return ResponseEntity.ok().body(overtimeDto)
 
