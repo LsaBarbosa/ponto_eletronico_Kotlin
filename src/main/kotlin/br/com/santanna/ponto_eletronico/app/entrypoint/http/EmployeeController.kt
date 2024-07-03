@@ -7,6 +7,7 @@ import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.AuthenticationDTO
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.LoginResponseDTO
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
@@ -35,7 +36,7 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
     }
 
     @PostMapping("criar-colaborador")
-    fun registerNewEmployee(@RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
+    fun registerNewEmployee(@Valid @RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
         val employeeCreated = employeeService.registerEmployee(employeeDto)
         val uri = URI.create("/employees/${employeeCreated.id}")
         return ResponseEntity.created(uri).body(employeeCreated)
@@ -43,7 +44,7 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
     }
 
     @PutMapping
-    fun updateEmployee(@RequestParam("cpf") cpf:String, @RequestBody updateEmployeeDto: UpdateEmployeeDto): ResponseEntity<UpdateEmployeeDto> {
+    fun updateEmployee(@RequestParam("cpf") cpf:String,@Valid @RequestBody updateEmployeeDto: UpdateEmployeeDto): ResponseEntity<UpdateEmployeeDto> {
 
         val updatedEmployeeDto = employeeService.updateEmployee(cpf,updateEmployeeDto)
         return ResponseEntity.ok(updatedEmployeeDto)
