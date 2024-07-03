@@ -23,9 +23,7 @@ class CompanyDataProviderImpl(val companyRepository: CompanyRepository): Company
     }
 
     override fun existsByNameCompanyIgnoreCase(nameCompany: String?): Boolean {
-        val company = companyRepository.existsByNameCompanyIgnoreCase(nameCompany)
-        if (company) throw DataIntegrityViolationException("Empresa com o mesmo nome já está cadastrada.")
-        return company
+        return companyRepository.existsByNameCompanyIgnoreCase(nameCompany)
     }
 
     override fun deleteByNameCompany(nameCompany: String?) {

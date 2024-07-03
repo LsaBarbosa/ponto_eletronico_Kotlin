@@ -11,4 +11,5 @@ interface CompanyRepository: JpaRepository<Company, Long>{
      fun findByNameCompanyContainsIgnoreCase(nameCompany: String?): Company?
      fun existsByNameCompanyIgnoreCase(nameCompany: String?): Boolean
 
+
 }
