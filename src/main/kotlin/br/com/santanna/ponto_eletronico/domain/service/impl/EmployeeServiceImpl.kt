@@ -23,6 +23,7 @@ class EmployeeServiceImpl(
     private val companyRepository: CompanyRepository,
 
 ) : EmployeeService {
+
     override fun getAllEmployees(): List<EmployeeGetDto> {
         val employees = employeeDataProvider.findAll()
         return employees.map { convertToGetEmployeeDto(it) }
@@ -33,10 +34,11 @@ class EmployeeServiceImpl(
         return convertToGetEmployeeDto(employee)
     }
 
-    override fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto? {
-        val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name, surname)
+    override fun getEmployeeByCpf(cpf: String): EmployeeGetDto? {
+        val employee = employeeDataProvider.findCpf(cpf)
         return convertToGetEmployeeDto(employee)
     }
+
 
     override fun registerEmployee(employeeDto: EmployeeDto?): EmployeeDto {
 
@@ -80,8 +82,8 @@ class EmployeeServiceImpl(
     }
 
 
-    override fun deleteEmployee(name: String, surname: String) {
-        employeeDataProvider.deleteByNameAndSurname(name, surname)
+    override fun deleteEmployee(cpf: String) {
+        employeeDataProvider.deleteByCpf(cpf)
     }
 
    private fun convertToDto(employee: Employee?): EmployeeDto {

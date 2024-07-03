@@ -27,13 +27,9 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
 
     }
 
-    @GetMapping("/busca") // Removemos o /{name} do path
-    fun getEmployeeByNameAndSurname(
-        @RequestParam("name") name: String,
-        @RequestParam("surname") surname: String
-    ): ResponseEntity<EmployeeGetDto?> {
-
-        val employee = employeeService.getEmployeeByNameAndSurname(name, surname)
+    @GetMapping("/busca")
+    fun getEmployeeByNameAndSurname(@RequestParam("cpf") cpf: String ): ResponseEntity<EmployeeGetDto?> {
+        val employee = employeeService.getEmployeeByCpf(cpf)
         return ResponseEntity.ok(employee)
 
     }
@@ -47,7 +43,7 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
     }
 
     @PutMapping
-    fun updateEmployee(@RequestParam cpf:String, @RequestBody updateEmployeeDto: UpdateEmployeeDto): ResponseEntity<UpdateEmployeeDto> {
+    fun updateEmployee(@RequestParam("cpf") cpf:String, @RequestBody updateEmployeeDto: UpdateEmployeeDto): ResponseEntity<UpdateEmployeeDto> {
 
         val updatedEmployeeDto = employeeService.updateEmployee(cpf,updateEmployeeDto)
         return ResponseEntity.ok(updatedEmployeeDto)
@@ -60,8 +56,8 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
     }
 
     @DeleteMapping
-    fun deleteEmployee(@RequestParam name: String, @RequestParam surname: String): ResponseEntity<Void> {
-        employeeService.deleteEmployee(name, surname)
+    fun deleteEmployee(@RequestParam ("cpf") cpf:String): ResponseEntity<Void> {
+        employeeService.deleteEmployee(cpf)
         return ResponseEntity.noContent().build()
 
     }

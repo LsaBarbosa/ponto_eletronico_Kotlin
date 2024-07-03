@@ -7,9 +7,10 @@ import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
 interface EmployeeService {
     fun getAllEmployees(): List<EmployeeGetDto>
     fun getEmployeeById(id: Long): EmployeeGetDto?
-    fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto?
+    fun getEmployeeByCpf(cpf: String): EmployeeGetDto?
     fun registerEmployee(employeeDto: EmployeeDto?): EmployeeDto
     fun updateEmployee(cpf :String,updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto
-    fun deleteEmployee(name: String, surname: String)
+    fun deleteEmployee(cpf: String)
+
 
 }

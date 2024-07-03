@@ -1,5 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
+import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
+import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
@@ -30,8 +32,8 @@ data class TimeRecordServiceImpl(
     private val mapper: ModelMapper
 ): TimeRecordService {
 
-    override fun registerCheckin(name: String, surname: String): RecordCheckinDto? {
-        val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name, surname)
+    override fun registerCheckin(cpf: String ): RecordCheckinDto? {
+        val employee = employeeDataProvider.findCpf( cpf)
         val lastRecord =  findLastTimeRecord(employee)
         if (lastRecord != null) {
             throw Exception(checkinException)
@@ -47,8 +49,8 @@ data class TimeRecordServiceImpl(
         return createRecordCheckinDto(savedCheckin)
     }
 
-    override fun registerCheckout(name: String, surname: String): RecordCheckoutDto? {
-        val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name, surname)
+    override fun registerCheckout(cpf: String): RecordCheckoutDto? {
+        val employee = employeeDataProvider.findCpf(cpf)
             ?: throw Exception("Employee not found")
         val lastRecord = findLastTimeRecord(employee)
             ?: throw Exception(checkoutException)
@@ -69,26 +71,35 @@ data class TimeRecordServiceImpl(
         )
     }
 
-    override fun updateTimeRecord(updateTimeRecordDto: UpdateTimeRecordDto): UpdateTimeRecordDto {
-        val timeRecord = timeRecordDataProvider.updateTimeRecordById(updateTimeRecordDto.id)
+    override fun updateTimeRecord(cpf :String, updateTimeRecordDto: UpdateTimeRecordDto): UpdateTimeRecordDto {
+        val employee = employeeDataProvider.findCpf(cpf)?: throw ObjectNotFoundException("Colaborador não encontrado")
+        val timeRecord = updateTimeRecordDto.id?.let { timeRecordDataProvider.findById(it) }
+
+        if (timeRecord?.employee?.cpf != employee.cpf) {
+            throw DataIntegrityViolationException("Registro não pertence ao cpf: $cpf informado")
+        }
 
 
-        updateTimeRecordField(timeRecord, updateTimeRecordDto.startWorkDate, updateTimeRecordDto.startWorkTime, TimeRecord::startWorkTime, "start")
-        updateTimeRecordField(timeRecord, updateTimeRecordDto.endWorkDate, updateTimeRecordDto.endWorkTime, TimeRecord::endWorkTime, "end")
+        if (timeRecord != null) {
+            updateTimeRecordField(timeRecord, updateTimeRecordDto.startWorkDate, updateTimeRecordDto.startWorkTime, TimeRecord::startWorkTime, "start")
+        }
+        if (timeRecord != null) {
+            updateTimeRecordField(timeRecord, updateTimeRecordDto.endWorkDate, updateTimeRecordDto.endWorkTime, TimeRecord::endWorkTime, "end")
+        }
 
-        val saveUpdate = timeRecordDataProvider.save(timeRecord)
+        val saveUpdate = timeRecord?.let { timeRecordDataProvider.save(it) }
 
         return UpdateTimeRecordDto(
-            id = saveUpdate.id!!,
-            startWorkTime = saveUpdate.startWorkTime?.format(DateTimeFormatter.ofPattern(timePattern)),
-            startWorkDate = saveUpdate.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
-            endWorkTime = saveUpdate.endWorkTime?.format(DateTimeFormatter.ofPattern(timePattern)),
-            endWorkDate = saveUpdate.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE)
+            id = saveUpdate?.id,
+            startWorkTime = saveUpdate?.startWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            startWorkDate = saveUpdate?.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
+            endWorkTime = saveUpdate?.endWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            endWorkDate = saveUpdate?.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE)
         )
     }
 
-    override fun overtimeByDate(name: String, surname: String, startDate: LocalDate, endDate: LocalDate): OvertimeDto {
-        val timeRecords = findTimeRecordsByDateRange(name, surname, startDate, endDate)
+    override fun overtimeByDate(cpf: String, startDate: LocalDate, endDate: LocalDate): OvertimeDto {
+        val timeRecords = findTimeRecordsByDateRange(cpf, startDate, endDate)
 
         val totalMinutesWorked = timeRecords.sumOf { it.timeWorked ?: 0 }
         val totalExpectedMinutes = timeRecords.size * 8 * 60
@@ -99,20 +110,20 @@ data class TimeRecordServiceImpl(
         val overtimeRemainingMinutes = overtimeMinutes % 60
 
         return OvertimeDto(
-            employeeName = name,
+            employeeName = cpf,
             overtime = String.format("%02d:%02d", overtimeHours, overtimeRemainingMinutes)
         )
     }
 
-    override fun getTimeRecordsByEmployeeNameAndDateRange(name: String, surname: String, startDate: LocalDate, endDate: LocalDate): List<DetailedTimeRecordDto> {
-        val timeRecords = findTimeRecordsByDateRange(name, surname, startDate, endDate)
+    override fun getTimeRecordsByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate): List<DetailedTimeRecordDto> {
+        val timeRecords = findTimeRecordsByDateRange(cpf, startDate, endDate)
         return timeRecords.map { convertToDetailedTimeRecordDto(it) }
     }
 
-    private fun findTimeRecordsByDateRange(name: String, surname: String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
+    private fun findTimeRecordsByDateRange(cpf:String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = endDate.atTime(23, 59, 59)
-        return timeRecordDataProvider.findByEmployeeNameAndDateRange(name, surname, startDateTime, endDateTime)
+        return timeRecordDataProvider.findByEmployeeCpfAndDateRange(cpf, startDateTime, endDateTime)
     }
 
     private  fun findLastTimeRecord(employee: Employee?): TimeRecord? {
