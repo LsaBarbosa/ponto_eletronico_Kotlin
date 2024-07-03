@@ -110,7 +110,7 @@ data class TimeRecordServiceImpl(
         val overtimeRemainingMinutes = overtimeMinutes % 60
 
         return OvertimeDto(
-            employeeName = cpf,
+            employeeCpf = cpf,
             overtime = String.format("%02d:%02d", overtimeHours, overtimeRemainingMinutes)
         )
     }
