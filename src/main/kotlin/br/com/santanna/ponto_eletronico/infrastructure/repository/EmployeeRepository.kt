@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface EmployeeRepository: JpaRepository<Employee, Long> {
 
-    fun existsByCpfIgnoreCase(cpf: String?): Boolean
-    fun deleteByCpfIgnoreCase(cpf: String?)
+
     fun findByCpf(cpf: String?): UserDetails?
     fun findByCpfIgnoreCase(cpf: String?): Employee?
 

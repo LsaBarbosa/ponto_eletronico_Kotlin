@@ -1,10 +1,9 @@
 package br.com.santanna.ponto_eletronico.infrastructure.dataProvider.impl
 
+import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.domain.entity.Company
 import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
-import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
-import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
