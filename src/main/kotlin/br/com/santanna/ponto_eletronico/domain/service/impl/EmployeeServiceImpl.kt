@@ -13,6 +13,7 @@ import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth.Companion.EMPLOYEE_ALREADY_EXIST
+import jakarta.validation.Valid
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -40,7 +41,7 @@ class EmployeeServiceImpl(
     }
 
 
-    override fun registerEmployee(employeeDto: EmployeeDto?): EmployeeDto {
+    override fun registerEmployee(@Valid employeeDto: EmployeeDto?): EmployeeDto {
 
         val employeeCpf = employeeDto?.cpf?.let { employeeDataProvider.findByCpf(it) }
         if (employeeCpf != null) {
@@ -48,7 +49,8 @@ class EmployeeServiceImpl(
         }
         val encryptedPassword = BCryptPasswordEncoder().encode(employeeDto?.passwords)
 
-        val company = companyRepository.findByNameCompanyContainsIgnoreCase(employeeDto?.companyName)
+        val company = companyRepository.findByCompanyCNPJ(employeeDto?.companyCNPJ)
+            ?: throw IllegalArgumentException("Company not found with CNPJ: ${employeeDto?.companyCNPJ}")
 
         val employeeEntity = Employee(
             name = employeeDto?.name,
@@ -64,7 +66,7 @@ class EmployeeServiceImpl(
         return convertToDto(savedEmployeeEntity)
     }
 
-    override fun updateEmployee(cpf: String, updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto {
+    override fun updateEmployee(cpf: String, @Valid updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto {
         val existingEmployeeEntity = employeeDataProvider.findCpf(cpf)
             ?: throw IllegalArgumentException("Employee not found with CPF: $cpf")
 
@@ -95,7 +97,7 @@ class EmployeeServiceImpl(
             surname = employee?.surname,
             position = employee?.position,
             salary = employee?.salary,
-            companyName = employee?.company?.nameCompany
+            companyCNPJ = employee?.company?.companyCNPJ
         )
     }
 

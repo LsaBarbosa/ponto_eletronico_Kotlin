@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 class Auth {
 
     companion object {
-        const val EMPLOYEE_ALREADY_EXIST = "Já existe um colaborador com este nome."
+        const val EMPLOYEE_ALREADY_EXIST = "Já existe um colaborador com este CPF."
         const val USER_PASSWORD_WRONG = "Usuário ou senha inválidos."
 
     }
