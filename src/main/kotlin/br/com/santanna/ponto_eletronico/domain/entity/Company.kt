@@ -12,6 +12,7 @@ import org.hibernate.validator.constraints.br.CNPJ
     UniqueConstraint(columnNames = ["companyCNPJ"])
 ])
 data class Company (
+
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
@@ -24,7 +25,7 @@ data class Company (
     @Column(nullable = false, unique = true)
     var companyCNPJ: String? = null,
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     @JsonIgnoreProperties("timeWorked")
     var employees: List<Employee?> = ArrayList()
 

@@ -7,6 +7,6 @@ interface CompanyDataprovider {
     fun findByNameCompanyContainsIgnoreCase(nameCompany: String?): Company?
     fun existsByNameCompanyIgnoreCase(nameCompany: String?): Boolean
     fun deleteByCompanyCNPJ(companyCNPJ: String)
-    fun findAll(): MutableList<Company>
+    fun findAllCompanies():List<Company>
     fun save(company: Company): Company?
 }

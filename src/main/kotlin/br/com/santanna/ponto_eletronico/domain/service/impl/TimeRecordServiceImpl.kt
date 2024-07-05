@@ -33,7 +33,8 @@ data class TimeRecordServiceImpl(
 ): TimeRecordService {
 
     override fun registerCheckin(cpf: String ): RecordCheckinDto? {
-        val employee = employeeDataProvider.findCpf( cpf)
+        val employee = findEmployeeByCpfOrThrow(cpf)
+
         val lastRecord =  findLastTimeRecord(employee)
         if (lastRecord != null) {
             throw Exception(checkinException)
@@ -50,8 +51,8 @@ data class TimeRecordServiceImpl(
     }
 
     override fun registerCheckout(cpf: String): RecordCheckoutDto? {
-        val employee = employeeDataProvider.findCpf(cpf)
-            ?: throw Exception("Employee not found")
+        val employee = findEmployeeByCpfOrThrow(cpf)
+
         val lastRecord = findLastTimeRecord(employee)
             ?: throw Exception(checkoutException)
 
@@ -72,7 +73,7 @@ data class TimeRecordServiceImpl(
     }
 
     override fun updateTimeRecord(cpf :String, updateTimeRecordDto: UpdateTimeRecordDto): UpdateTimeRecordDto {
-        val employee = employeeDataProvider.findCpf(cpf)?: throw ObjectNotFoundException("Colaborador não encontrado")
+        val employee = findEmployeeByCpfOrThrow(cpf)
         val timeRecord = updateTimeRecordDto.id?.let { timeRecordDataProvider.findById(it) }
 
         if (timeRecord?.employee?.cpf != employee.cpf) {
@@ -192,5 +193,8 @@ data class TimeRecordServiceImpl(
                 timeRecord.timeWorked = duration.toMinutes()
             }
         }
+    }
+    private fun findEmployeeByCpfOrThrow(cpf: String): Employee {
+        return employeeDataProvider.findCpf(cpf) ?: throw ObjectNotFoundException("Employee not found with CPF: $cpf")
     }
 }

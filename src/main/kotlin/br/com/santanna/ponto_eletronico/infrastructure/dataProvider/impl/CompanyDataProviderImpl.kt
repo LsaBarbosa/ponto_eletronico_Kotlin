@@ -31,9 +31,8 @@ class CompanyDataProviderImpl(val companyRepository: CompanyRepository): Company
         companyRepository.delete(companyToDelete)
     }
 
-    override fun findAll(): MutableList<Company> {
-      val  allCompany = companyRepository.findAll()
-         return allCompany
+    override fun findAllCompanies(): List<Company> {
+        return companyRepository.findAll()
     }
 
     override fun save(company: Company): Company {

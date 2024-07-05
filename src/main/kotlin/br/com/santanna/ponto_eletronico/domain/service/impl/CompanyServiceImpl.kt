@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider) : CompanyService {
 
     override fun getAllCompanies(): List<CompanyWithEmployeesDto> {
-        return companyDataProvider.findAll().map { company ->
+        return companyDataProvider.findAllCompanies().map { company ->
             CompanyWithEmployeesDto(
                 id = company.id,
                 nameCompany = company.nameCompany,
