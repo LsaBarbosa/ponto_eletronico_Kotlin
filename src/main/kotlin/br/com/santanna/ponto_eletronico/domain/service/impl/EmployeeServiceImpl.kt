@@ -49,7 +49,8 @@ class EmployeeServiceImpl(
         }
         val encryptedPassword = BCryptPasswordEncoder().encode(employeeDto?.passwords)
 
-        val company = companyRepository.findByNameCompanyContainsIgnoreCase(employeeDto?.companyName)
+        val company = companyRepository.findByCompanyCNPJ(employeeDto?.companyCNPJ)
+            ?: throw IllegalArgumentException("Company not found with CNPJ: ${employeeDto?.companyCNPJ}")
 
         val employeeEntity = Employee(
             name = employeeDto?.name,
@@ -96,7 +97,7 @@ class EmployeeServiceImpl(
             surname = employee?.surname,
             position = employee?.position,
             salary = employee?.salary,
-            companyName = employee?.company?.nameCompany
+            companyCNPJ = employee?.company?.companyCNPJ
         )
     }
 

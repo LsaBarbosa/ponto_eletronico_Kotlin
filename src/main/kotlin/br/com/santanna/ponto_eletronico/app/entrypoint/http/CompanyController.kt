@@ -3,6 +3,7 @@ package br.com.santanna.ponto_eletronico.app.entrypoint.http
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeesDto
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
@@ -31,7 +32,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @PostMapping
-    fun registerCompany(@RequestBody companyDTO: CompanyDTO): ResponseEntity<CompanyDTO> {
+    fun registerCompany(@Valid @RequestBody companyDTO: CompanyDTO): ResponseEntity<CompanyDTO> {
         val companyCreated = companyService.registerCompany(companyDTO)
         val uri: URI = URI.create("/company/${companyCreated.id}")
         return ResponseEntity.created(uri).body(companyCreated)
@@ -40,7 +41,7 @@ class CompanyController(private val companyService: CompanyService) {
     @PutMapping
     fun updateCompany(
         @RequestParam companyCNPJ: String,
-        @RequestBody companyDTO: CompanyDTO
+        @Valid @RequestBody companyDTO: CompanyDTO
     ): ResponseEntity<CompanyDTO> {
         val companyUpdated = companyService.updateCompany(companyCNPJ, companyDTO)
         return ResponseEntity.ok().body(companyUpdated)
