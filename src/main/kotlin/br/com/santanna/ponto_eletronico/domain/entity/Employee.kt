@@ -45,7 +45,8 @@ data class Employee(
     @NotNull
     var company: Company? = null,
 
-    var imagePath: String? = null
+    @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    var images: List<Image>? = null
 
 
 ): UserDetails {

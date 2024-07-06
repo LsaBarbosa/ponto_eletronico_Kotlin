@@ -13,7 +13,6 @@ interface EmployeeService {
     fun registerEmployee(employeeDto: EmployeeDto?): EmployeeDto
     fun updateEmployee(cpf :String,updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto
     fun deleteEmployee(cpf: String)
-    fun updateEmployeeImage(cpf: String, file: MultipartFile): EmployeeGetDto
-    fun getEmployeeImage(cpf: String): ByteArray
+
 
 }

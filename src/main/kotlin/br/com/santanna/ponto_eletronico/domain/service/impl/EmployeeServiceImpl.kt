@@ -1,7 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
@@ -18,13 +17,12 @@ import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth.Compa
 import jakarta.validation.Valid
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
 
 
 @Service
 class EmployeeServiceImpl(
     private val employeeDataProvider: EmployeeDataProvider,
-    private val companyRepository: CompanyRepository,  private val fileStorageService: FileStorageService
+    private val companyRepository: CompanyRepository,  private val imageServiceImpl: ImageServiceImpl
 
 ) : EmployeeService {
 
@@ -95,24 +93,6 @@ class EmployeeServiceImpl(
     override fun deleteEmployee(cpf: String) {
         employeeDataProvider.deleteByCpf(cpf)
     }
-
-    override fun updateEmployeeImage(cpf: String, file: MultipartFile): EmployeeGetDto {
-        val employee = findEmployeeByCpfOrThrow(cpf)
-        val imagePath = fileStorageService.storeFile(file)
-        employee.imagePath = imagePath
-        val updatedEmployee = employeeDataProvider.save(employee)
-        return convertToGetEmployeeDto(updatedEmployee)
-    }
-
-    override fun getEmployeeImage(cpf: String): ByteArray {
-        val employee = findEmployeeByCpfOrThrow(cpf)
-        val imagePath = employee.imagePath ?: throw ObjectNotFoundException("No image found for employee with CPF: $cpf")
-        return fileStorageService.loadFileAsResource(imagePath)
-    }
-    private fun findEmployeeByCpfOrThrow(cpf: String): Employee {
-        return employeeDataProvider.findCpf(cpf) ?: throw ObjectNotFoundException("Employee not found with CPF: $cpf")
-    }
-
 
    private fun convertToDto(employee: Employee?): EmployeeDto {
         return EmployeeDto(
