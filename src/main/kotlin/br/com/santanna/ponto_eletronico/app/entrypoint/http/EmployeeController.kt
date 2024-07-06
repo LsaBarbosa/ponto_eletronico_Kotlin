@@ -28,8 +28,18 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
 
     }
 
-    @GetMapping("/busca")
-    fun getEmployeeByNameAndSurname(@RequestParam("cpf") cpf: String ): ResponseEntity<EmployeeGetDto?> {
+    @GetMapping("/busca-nome")
+    fun getEmployeeByNameAndSurname(
+        @RequestParam("name") name: String,
+        @RequestParam("surname") surname: String
+    ): ResponseEntity<EmployeeGetDto?> {
+
+        val employee = employeeService.getEmployeeByNameAndSurname(name, surname)
+        return ResponseEntity.ok(employee)
+
+    }
+    @GetMapping("/busca-cpf")
+    fun getEmployeeByCpf(@RequestParam("cpf") cpf: String ): ResponseEntity<EmployeeGetDto?> {
         val employee = employeeService.getEmployeeByCpf(cpf)
         return ResponseEntity.ok(employee)
 

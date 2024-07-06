@@ -9,7 +9,7 @@ data class EmployeeGetDto(
     var surname: String? = null,
     var salary: Double? = null,
     var position: String? = null,
-    var password: String? = null,
+    var cpf: String? = null,
     val timeWorked: List<TimeRecordDto>? = ArrayList(),
     val company: CompanyGetDto? = null
 )
