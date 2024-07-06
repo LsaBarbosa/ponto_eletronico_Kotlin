@@ -26,4 +26,8 @@ class TimeRecordDataProviderImpl(private val timeRecordRepository: TimeRecordRep
     override fun findById(id: Long): TimeRecord? {
         return timeRecordRepository.findById(id).orElse(null)
     }
+
+    override fun delete(timeRecord: TimeRecord) {
+        timeRecordRepository.delete(timeRecord)
+    }
 }

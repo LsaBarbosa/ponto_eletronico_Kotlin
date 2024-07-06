@@ -9,5 +9,5 @@ interface TimeRecordDataProvider {
     fun findByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDateTime, endDate: LocalDateTime): List<TimeRecord>
     fun findById(id: Long): TimeRecord?
     fun save(timeRecord: TimeRecord): TimeRecord
-
+    fun delete(timeRecord: TimeRecord)
 }
