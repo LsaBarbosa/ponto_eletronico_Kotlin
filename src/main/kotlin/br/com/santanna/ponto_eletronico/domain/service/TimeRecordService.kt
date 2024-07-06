@@ -9,4 +9,5 @@ interface TimeRecordService {
     fun updateTimeRecord(cpf:String,updateTimeRecordDto: UpdateTimeRecordDto): UpdateTimeRecordDto
     fun overtimeByDate(cpf: String, startDate: LocalDate, endDate: LocalDate): OvertimeDto
     fun getTimeRecordsByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate): List<DetailedTimeRecordDto>
+    fun deleteTimeRecord(cpf: String, timeRecordId: Long)
 }

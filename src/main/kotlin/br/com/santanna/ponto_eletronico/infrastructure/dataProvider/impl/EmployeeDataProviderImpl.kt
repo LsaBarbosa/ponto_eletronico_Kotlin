@@ -26,7 +26,11 @@ class EmployeeDataProviderImpl(val employeeRepository: EmployeeRepository) : Emp
             .orElseThrow { ObjectNotFoundException("Colaborador não encontrado") }
         return employee
     }
-
+    override fun findByNameAndSurnameIgnoreCase(name: String?, surname: String?): Employee {
+        val employee = employeeRepository.findByNameAndSurnameIgnoreCase(name, surname)
+            ?: throw ObjectNotFoundException("Colaborador com nome: $name $surname não encontrado")
+        return employee
+    }
     override fun findByCpf(cpf: String): UserDetails? {
         return employeeRepository.findByCpf(cpf)
     }

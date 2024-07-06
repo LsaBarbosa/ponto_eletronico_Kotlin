@@ -35,6 +35,11 @@ class EmployeeServiceImpl(
         return convertToGetEmployeeDto(employee)
     }
 
+    override fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto? {
+        val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name, surname)
+        return convertToGetEmployeeDto(employee)
+    }
+
     override fun getEmployeeByCpf(cpf: String): EmployeeGetDto? {
         val employee = employeeDataProvider.findCpf(cpf)
         return convertToGetEmployeeDto(employee)
@@ -120,7 +125,7 @@ class EmployeeServiceImpl(
             surname = employee?.surname,
             salary = employee?.salary,
             position = employee?.position,
-            password = employee?.passwords,
+            cpf = employee?.cpf,
             timeWorked = timeWorkedDtos,
             company = employee?.company?.convertToDto()
         )

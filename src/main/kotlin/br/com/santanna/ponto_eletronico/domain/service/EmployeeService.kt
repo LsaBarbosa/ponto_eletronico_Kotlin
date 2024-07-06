@@ -8,6 +8,7 @@ interface EmployeeService {
     fun getAllEmployees(): List<EmployeeGetDto>
     fun getEmployeeById(id: Long): EmployeeGetDto?
     fun getEmployeeByCpf(cpf: String): EmployeeGetDto?
+    fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto?
     fun registerEmployee(employeeDto: EmployeeDto?): EmployeeDto
     fun updateEmployee(cpf :String,updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto
     fun deleteEmployee(cpf: String)

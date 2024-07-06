@@ -121,6 +121,17 @@ data class TimeRecordServiceImpl(
         return timeRecords.map { convertToDetailedTimeRecordDto(it) }
     }
 
+    override fun deleteTimeRecord(cpf: String, timeRecordId: Long) {
+        val employee = findEmployeeByCpfOrThrow(cpf)
+        val timeRecord = timeRecordDataProvider.findById(timeRecordId) ?: throw ObjectNotFoundException("Time record not found with ID: $timeRecordId")
+
+        if (timeRecord.employee?.cpf != employee.cpf) {
+            throw DataIntegrityViolationException("Registro não pertence ao cpf: $cpf informado")
+        }
+
+        timeRecordDataProvider.delete(timeRecord)
+    }
+
     private fun findTimeRecordsByDateRange(cpf:String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = endDate.atTime(23, 59, 59)
@@ -160,19 +171,19 @@ data class TimeRecordServiceImpl(
 
     private  fun validateDateChange(currentDateTime: LocalDateTime?, newDateTime: LocalDateTime, dateType: String) {
         if (currentDateTime == null) {
-            throw Exception("$dateType date cannot be null")
+            throw DataIntegrityViolationException("$dateType Data nao pode ser vazia ")
         }
 
         if (currentDateTime.year != newDateTime.year) {
-            throw Exception("Year cannot be changed for $dateType date")
+            throw DataIntegrityViolationException("Ano nao pode ser alterado, deve permanecer o ano vigente")
         }
 
         if (currentDateTime.month != newDateTime.month) {
-            throw Exception("Month cannot be changed for $dateType date")
+            throw DataIntegrityViolationException("O mês deve ser o mesmo do registro que será alterado")
         }
 
         if (newDateTime.dayOfMonth > currentDateTime.dayOfMonth) {
-            throw Exception("Day cannot be changed to a future date for $dateType date")
+            throw DataIntegrityViolationException("O dia deve ser igual ou anterior ao do registro atual")
         }
     }
 
