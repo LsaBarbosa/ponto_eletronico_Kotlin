@@ -43,7 +43,9 @@ data class Employee(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     @NotNull
-    var company: Company? = null
+    var company: Company? = null,
+
+    var imagePath: String? = null
 
 
 ): UserDetails {

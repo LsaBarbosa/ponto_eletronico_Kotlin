@@ -8,8 +8,10 @@ import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.AuthenticationDTO
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.LoginResponseDTO
 import jakarta.validation.Valid
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import java.net.URI
 
 @RestController
@@ -73,4 +75,20 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
 
     }
 
+    @PostMapping("/upload-image")
+    fun uploadEmployeeImage(
+        @RequestParam("cpf") cpf: String,
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<EmployeeGetDto> {
+        val updatedEmployee = employeeService.updateEmployeeImage(cpf, file)
+        return ResponseEntity.ok(updatedEmployee)
+    }
+
+    @GetMapping("/download-image")
+    fun downloadEmployeeImage(@RequestParam("cpf") cpf: String): ResponseEntity<ByteArray> {
+        val imageData = employeeService.getEmployeeImage(cpf)
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$cpf-image.jpg\"")
+            .body(imageData)
+    }
 }
