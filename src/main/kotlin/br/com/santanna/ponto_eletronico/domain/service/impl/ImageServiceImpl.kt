@@ -2,6 +2,7 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
+import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
 import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.domain.service.ImageService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.ImageRepository
@@ -33,6 +34,27 @@ class ImageServiceImpl(
     override fun getImageByEmployeeCpf(cpf: String): ByteArray {
         val image = imageRepository.findByEmployeeCpf(cpf)
             ?: throw ObjectNotFoundException("No image found for employee with CPF: $cpf")
+        return loadFileAsResource(image.filePath!!)
+    }
+
+    override fun getImagesByEmployeeCpf(cpf: String): List<ImageListDto> {
+        val employee = employeeDataProvider.findCpf(cpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: $cpf")
+        val images = imageRepository.findAllByEmployeeCpf(cpf)
+        return images.map { image ->
+            ImageListDto(
+                id = image.id,
+                name = employee.name,
+                surname = employee.surname,
+                cpf = employee.cpf,
+                filePath = image.filePath
+            )
+        }
+    }
+
+    override fun getImageById(id: Long): ByteArray {
+        val image = imageRepository.findById(id)
+            .orElseThrow { ObjectNotFoundException("No image found with ID: $id") }
         return loadFileAsResource(image.filePath!!)
     }
 

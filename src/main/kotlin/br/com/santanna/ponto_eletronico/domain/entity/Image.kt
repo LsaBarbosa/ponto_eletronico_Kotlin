@@ -12,5 +12,6 @@ data class Image(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
+
     var employee: Employee? = null
 )
