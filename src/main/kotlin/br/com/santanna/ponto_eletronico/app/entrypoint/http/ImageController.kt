@@ -1,7 +1,6 @@
 package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
-import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.domain.service.ImageService
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders

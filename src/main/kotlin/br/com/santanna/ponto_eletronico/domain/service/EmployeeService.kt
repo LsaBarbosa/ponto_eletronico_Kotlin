@@ -3,7 +3,6 @@ package br.com.santanna.ponto_eletronico.domain.service
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
-import org.springframework.web.multipart.MultipartFile
 
 interface EmployeeService {
     fun getAllEmployees(): List<EmployeeGetDto>

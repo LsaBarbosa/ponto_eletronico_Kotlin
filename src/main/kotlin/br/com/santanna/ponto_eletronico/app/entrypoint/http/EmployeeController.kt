@@ -8,10 +8,8 @@ import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.AuthenticationDTO
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.LoginResponseDTO
 import jakarta.validation.Valid
-import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 import java.net.URI
 
 @RestController

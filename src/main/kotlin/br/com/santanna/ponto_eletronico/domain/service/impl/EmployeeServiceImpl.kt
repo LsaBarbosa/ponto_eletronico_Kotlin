@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service
 @Service
 class EmployeeServiceImpl(
     private val employeeDataProvider: EmployeeDataProvider,
-    private val companyRepository: CompanyRepository,  private val imageServiceImpl: ImageServiceImpl
+    private val companyRepository: CompanyRepository
 
 ) : EmployeeService {
 
