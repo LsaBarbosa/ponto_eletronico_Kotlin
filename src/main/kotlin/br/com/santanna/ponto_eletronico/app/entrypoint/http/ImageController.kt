@@ -14,8 +14,8 @@ import org.springframework.web.multipart.MultipartFile
 class ImageController(private val imageService: ImageService) {
 
     @PostMapping("/upload")
-    fun uploadImage(@RequestParam("cpf") cpf: String, @RequestParam("file") file: MultipartFile): ResponseEntity<Void> {
-        imageService.storeImage(cpf, file)
+    fun uploadImage(@RequestParam("cpf") cpf: String, @RequestParam("file") file: MultipartFile, @RequestParam("message", required = false) message: String?): ResponseEntity<Void> {
+        imageService.storeImage(cpf, file,message)
         return ResponseEntity.ok().build()
     }
 
@@ -45,5 +45,11 @@ class ImageController(private val imageService: ImageService) {
             .contentType(MediaType.IMAGE_JPEG)
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"image-$id.jpg\"")
             .body(resource)
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteImageById(@PathVariable id: Long): ResponseEntity<Void> {
+        imageService.deleteImageById(id)
+        return ResponseEntity.noContent().build()
     }
 }

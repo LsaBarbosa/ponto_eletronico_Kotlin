@@ -53,6 +53,9 @@ class SecurityConfigurations {
                 authorize.requestMatchers(HttpMethod.PUT, _COLABORADOR).hasRole(MANAGER)
                 authorize.requestMatchers(HttpMethod.DELETE, _COLABORADOR).hasRole(MANAGER)
 
+
+
+                authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(MANAGER)
                 authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(MANAGER)
                 authorize.requestMatchers(HttpMethod.DELETE, _PONTO).hasRole(MANAGER)
                 authorize.anyRequest().permitAll()

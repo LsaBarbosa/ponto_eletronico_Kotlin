@@ -22,12 +22,12 @@ class ImageServiceImpl(
 ) : ImageService {
 
     @Transactional
-    override fun storeImage(cpf: String, file: MultipartFile): Image {
+    override fun storeImage(cpf: String, file: MultipartFile, message: String?): Image {
         val employee = employeeDataProvider.findCpf(cpf)
             ?: throw ObjectNotFoundException("Employee not found with CPF: $cpf")
 
         val filePath = storeFile(file)
-        val image = Image(filePath = filePath, employee = employee)
+        val image = Image(filePath = filePath, message = message, employee = employee)
         return imageRepository.save(image)
     }
 
@@ -47,7 +47,8 @@ class ImageServiceImpl(
                 name = employee.name,
                 surname = employee.surname,
                 cpf = employee.cpf,
-                filePath = image.filePath
+                filePath = image.filePath,
+                message = image.message
             )
         }
     }
@@ -58,13 +59,22 @@ class ImageServiceImpl(
         return loadFileAsResource(image.filePath!!)
     }
 
+
+    @Transactional
+    override fun deleteImageById(id: Long) {
+        val image = imageRepository.findById(id)
+            .orElseThrow { ObjectNotFoundException("No image found with ID: $id") }
+        imageRepository.delete(image)
+    }
+
+
     private val uploadDirectory: Path = Paths.get("uploads")
 
     init {
         Files.createDirectories(uploadDirectory)
     }
 
-  private  fun storeFile(file: MultipartFile): String {
+    private fun storeFile(file: MultipartFile): String {
         val fileName = UUID.randomUUID().toString() + "-" + file.originalFilename
         val targetLocation = uploadDirectory.resolve(fileName)
         Files.copy(file.inputStream, targetLocation)
@@ -72,8 +82,10 @@ class ImageServiceImpl(
     }
 
     @Throws(IOException::class)
-   private fun loadFileAsResource(filePath: String): ByteArray {
+    private fun loadFileAsResource(filePath: String): ByteArray {
         val path = Paths.get(filePath)
         return Files.readAllBytes(path)
     }
+
+
 }

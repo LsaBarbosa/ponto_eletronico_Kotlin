@@ -5,5 +5,6 @@ data class ImageListDto(
     val name: String?,
     val surname: String?,
     val cpf: String?,
-    val filePath: String?
+    val filePath: String?,
+    val message: String?
 )
