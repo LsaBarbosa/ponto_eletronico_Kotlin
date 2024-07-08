@@ -4,7 +4,6 @@ import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.UpdateImageMessageDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.UploadImageRequestDto
 import br.com.santanna.ponto_eletronico.domain.entity.Image
-import org.springframework.web.multipart.MultipartFile
 
 interface ImageService {
     fun storeImage(uploadImageRequestDto: UploadImageRequestDto): Image
