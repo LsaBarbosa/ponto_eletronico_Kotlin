@@ -11,5 +11,5 @@ interface ImageService {
     fun getImagesByEmployeeCpf(cpf: String): List<ImageListDto>
     fun getImageById(id: Long): ByteArray
     fun deleteImageById(id: Long, cpf: String)
-    fun updateImageMessage(id: Long, cpf: String, updateImageMessageDto: UpdateImageMessageDto): Image
+    fun updateImageMessage(id: Long, cpf: String, updateImageMessageDto: UpdateImageMessageDto): ImageListDto
 }

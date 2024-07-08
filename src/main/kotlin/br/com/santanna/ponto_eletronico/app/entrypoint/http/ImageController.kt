@@ -53,16 +53,7 @@ class ImageController(private val imageService: ImageService) {
         @RequestParam("cpf") cpf: String,
         @RequestBody updateImageMessageDto: UpdateImageMessageDto
     ): ResponseEntity<ImageListDto> {
-        val updatedImage = imageService.updateImageMessage(id, cpf, updateImageMessageDto)
-        val employee = updatedImage.employee!!
-        val imageDto = ImageListDto(
-            id = updatedImage.id,
-            name = employee.name,
-            surname = employee.surname,
-            cpf = employee.cpf,
-            filePath = updatedImage.filePath,
-            message = updatedImage.message
-        )
+        val imageDto = imageService.updateImageMessage(id, cpf, updateImageMessageDto)
         return ResponseEntity.ok(imageDto)
     }
 

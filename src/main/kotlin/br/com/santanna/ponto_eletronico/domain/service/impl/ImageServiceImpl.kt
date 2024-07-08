@@ -16,6 +16,11 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 
+private const val NO_IMAGE_FOUND_WITH_ID_ = "Nenhuma imagem para o ID: "
+
+
+private const val FOR_EMPLOYEE_WITH_CPF_ = "registrada no CPF: "
+
 @Service
 class ImageServiceImpl(
     private val imageRepository: ImageRepository,
@@ -34,7 +39,7 @@ class ImageServiceImpl(
 
     override fun getImageByEmployeeCpf(cpf: String): ByteArray {
         val image = imageRepository.findByEmployeeCpf(cpf)
-            ?: throw ObjectNotFoundException("No image found for employee with CPF: $cpf")
+            ?: throw ObjectNotFoundException("No image found $FOR_EMPLOYEE_WITH_CPF_ $cpf")
         return loadFileAsResource(image.filePath!!)
     }
 
@@ -56,7 +61,7 @@ class ImageServiceImpl(
 
     override fun getImageById(id: Long): ByteArray {
         val image = imageRepository.findById(id)
-            .orElseThrow { ObjectNotFoundException("No image found with ID: $id") }
+            .orElseThrow { ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ $id") }
         return loadFileAsResource(image.filePath!!)
     }
 
@@ -64,17 +69,26 @@ class ImageServiceImpl(
     @Transactional
     override fun deleteImageById(id: Long, cpf: String) {
         val image = imageRepository.findByIdAndEmployeeCpf(id, cpf)
-            ?: throw ObjectNotFoundException("No image found with ID: $id for employee with CPF: $cpf")
+            ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ $id $FOR_EMPLOYEE_WITH_CPF_ $cpf")
         imageRepository.delete(image)
         deleteFile(image.filePath!!)
     }
 
     @Transactional
-    override fun updateImageMessage(id: Long, cpf: String, updateImageMessageDto: UpdateImageMessageDto): Image {
+    override fun updateImageMessage(id: Long, cpf: String, updateImageMessageDto: UpdateImageMessageDto): ImageListDto {
         val image = imageRepository.findByIdAndEmployeeCpf(id, cpf)
-            ?: throw ObjectNotFoundException("No image found with ID: $id for employee with CPF: $cpf")
+            ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ $id $FOR_EMPLOYEE_WITH_CPF_ $cpf")
         image.message = updateImageMessageDto.message
-        return imageRepository.save(image)
+        val updatedImage = imageRepository.save(image)
+        val employee = updatedImage.employee!!
+        return ImageListDto(
+            id = updatedImage.id,
+            name = employee.name,
+            surname = employee.surname,
+            cpf = employee.cpf,
+            filePath = updatedImage.filePath,
+            message = updatedImage.message
+        )
     }
 
     private fun deleteFile(filePath: String) {
