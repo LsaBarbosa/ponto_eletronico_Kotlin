@@ -9,6 +9,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.employee.SimpleEmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
 @Service
@@ -43,6 +44,7 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider) :
         return  convertToDtoCompany(company)
     }
 
+    @Transactional
     override fun registerCompany(companyDto: CompanyDTO): CompanyDTO {
         val isExistCompany =companyDataProvider.existsByNameCompanyIgnoreCase(companyDto.nameCompany)
         if (isExistCompany) {
@@ -53,6 +55,7 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider) :
         return  convertToDto(savedCompanyEntity)
     }
 
+    @Transactional
     override fun updateCompany(companyCNPJ: String?, companyDto: CompanyDTO): CompanyDTO {
         val existingCompany = companyDataProvider.findByCompanyCNPJ(companyCNPJ)
         existingCompany?.nameCompany = companyDto.nameCompany ?: existingCompany?.nameCompany
@@ -60,6 +63,7 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider) :
         return  convertToDto(updatedCompanyEntity)
     }
 
+    @Transactional
     override fun deleteCompanyByCNPJ(companyCNPJ: String) {
         companyDataProvider.deleteByCompanyCNPJ(companyCNPJ)
     }

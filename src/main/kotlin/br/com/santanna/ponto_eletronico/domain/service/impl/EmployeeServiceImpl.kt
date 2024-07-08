@@ -14,6 +14,7 @@ import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth.Companion.EMPLOYEE_ALREADY_EXIST
+import jakarta.transaction.Transactional
 import jakarta.validation.Valid
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
@@ -47,6 +48,7 @@ class EmployeeServiceImpl(
     }
 
 
+    @Transactional
     override fun registerEmployee(@Valid employeeDto: EmployeeDto?): EmployeeDto {
 
         val employeeCpf = employeeDto?.cpf?.let { employeeDataProvider.findByCpf(it) }
@@ -72,6 +74,7 @@ class EmployeeServiceImpl(
         return convertToDto(savedEmployeeEntity)
     }
 
+    @Transactional
     override fun updateEmployee(cpf: String, @Valid updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto {
         val existingEmployeeEntity = employeeDataProvider.findCpf(cpf)
             ?: throw IllegalArgumentException("Employee not found with CPF: $cpf")
@@ -89,7 +92,7 @@ class EmployeeServiceImpl(
         return convertToUpdateEmployeeDto(updatedEmployeeEntity)
     }
 
-
+    @Transactional
     override fun deleteEmployee(cpf: String) {
         employeeDataProvider.deleteByCpf(cpf)
     }

@@ -8,6 +8,7 @@ import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
+import jakarta.transaction.*
 import org.modelmapper.ModelMapper
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -32,6 +33,7 @@ data class TimeRecordServiceImpl(
     private val mapper: ModelMapper
 ): TimeRecordService {
 
+    @Transactional
     override fun registerCheckin(cpf: String ): RecordCheckinDto? {
         val employee = findEmployeeByCpfOrThrow(cpf)
 
@@ -50,6 +52,7 @@ data class TimeRecordServiceImpl(
         return createRecordCheckinDto(savedCheckin)
     }
 
+    @Transactional
     override fun registerCheckout(cpf: String): RecordCheckoutDto? {
         val employee = findEmployeeByCpfOrThrow(cpf)
 
@@ -72,6 +75,7 @@ data class TimeRecordServiceImpl(
         )
     }
 
+    @Transactional
     override fun updateTimeRecord(cpf :String, updateTimeRecordDto: UpdateTimeRecordDto): UpdateTimeRecordDto {
         val employee = findEmployeeByCpfOrThrow(cpf)
         val timeRecord = updateTimeRecordDto.id?.let { timeRecordDataProvider.findById(it) }
@@ -99,6 +103,7 @@ data class TimeRecordServiceImpl(
         )
     }
 
+
     override fun overtimeByDate(cpf: String, startDate: LocalDate, endDate: LocalDate): OvertimeDto {
         val timeRecords = findTimeRecordsByDateRange(cpf, startDate, endDate)
 
@@ -121,6 +126,7 @@ data class TimeRecordServiceImpl(
         return timeRecords.map { convertToDetailedTimeRecordDto(it) }
     }
 
+    @Transactional
     override fun deleteTimeRecord(cpf: String, timeRecordId: Long) {
         val employee = findEmployeeByCpfOrThrow(cpf)
         val timeRecord = timeRecordDataProvider.findById(timeRecordId) ?: throw ObjectNotFoundException("Time record not found with ID: $timeRecordId")
