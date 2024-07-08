@@ -43,7 +43,10 @@ data class Employee(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     @NotNull
-    var company: Company? = null
+    var company: Company? = null,
+
+    @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    var images: List<Image>? = null
 
 
 ): UserDetails {

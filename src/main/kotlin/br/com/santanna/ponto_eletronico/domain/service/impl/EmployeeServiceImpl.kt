@@ -9,6 +9,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.TimeRecordDto
 import br.com.santanna.ponto_eletronico.domain.entity.Company
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
+import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Service
 @Service
 class EmployeeServiceImpl(
     private val employeeDataProvider: EmployeeDataProvider,
-    private val companyRepository: CompanyRepository,
+    private val companyRepository: CompanyRepository
 
 ) : EmployeeService {
 
@@ -63,7 +64,7 @@ class EmployeeServiceImpl(
             salary = employeeDto?.salary,
             position = employeeDto?.position,
             cpf = employeeDto?.cpf,
-            role = employeeDto?.role,
+            role = employeeDto?.role ?: EmployeeRole.USER,
             passwords = encryptedPassword,
             company = company
         )
