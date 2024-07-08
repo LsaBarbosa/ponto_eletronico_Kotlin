@@ -4,10 +4,12 @@ import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundExceptio
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.UpdateImageMessageDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.UploadImageRequestDto
 import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.domain.service.ImageService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.ImageRepository
 import jakarta.transaction.Transactional
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
@@ -25,15 +27,21 @@ private const val FOR_EMPLOYEE_WITH_CPF_ = "registrada no CPF: "
 class ImageServiceImpl(
     private val imageRepository: ImageRepository,
     private val employeeDataProvider: EmployeeDataProvider,
+
 ) : ImageService {
 
     @Transactional
-    override fun storeImage(cpf: String, file: MultipartFile, message: String?): Image {
-        val employee = employeeDataProvider.findCpf(cpf)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: $cpf")
+    override fun storeImage(uploadImageRequestDto: UploadImageRequestDto): Image {
+        val employee = employeeDataProvider.findCpf(uploadImageRequestDto.cpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: $uploadImageRequestDto.cpf")
 
-        val filePath = storeFile(file)
-        val image = Image(filePath = filePath, message = message, employee = employee)
+        val encryptedPassword = BCryptPasswordEncoder().matches(uploadImageRequestDto.passwords,employee.password)
+
+        if (!encryptedPassword) {
+            throw IllegalArgumentException("Invalid password")
+        }
+        val filePath = storeFile(uploadImageRequestDto.file)
+        val image = Image(filePath = filePath, message = uploadImageRequestDto.message, employee = employee)
         return imageRepository.save(image)
     }
 
@@ -78,6 +86,13 @@ class ImageServiceImpl(
     override fun updateImageMessage(id: Long, cpf: String, updateImageMessageDto: UpdateImageMessageDto): ImageListDto {
         val image = imageRepository.findByIdAndEmployeeCpf(id, cpf)
             ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ $id $FOR_EMPLOYEE_WITH_CPF_ $cpf")
+
+        val employeePassword = image.employee
+        val encryptedPassword = BCryptPasswordEncoder().matches(updateImageMessageDto.passwords,employeePassword?.password)
+
+        if (!encryptedPassword) {
+            throw IllegalArgumentException("Invalid password")
+        }
         image.message = updateImageMessageDto.message
         val updatedImage = imageRepository.save(image)
         val employee = updatedImage.employee!!

@@ -2,6 +2,7 @@ package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.UpdateImageMessageDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.UploadImageRequestDto
 import br.com.santanna.ponto_eletronico.domain.service.ImageService
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
@@ -15,8 +16,9 @@ import org.springframework.web.multipart.MultipartFile
 class ImageController(private val imageService: ImageService) {
 
     @PostMapping("/upload")
-    fun uploadImage(@RequestParam("cpf") cpf: String, @RequestParam("file") file: MultipartFile, @RequestParam("message", required = false) message: String?): ResponseEntity<Void> {
-        imageService.storeImage(cpf, file,message)
+    fun uploadImage(@RequestParam("cpf") cpf: String, @RequestParam("file") file: MultipartFile, @RequestParam("message", required = false) message: String?, @RequestParam("passwords") passwords: String): ResponseEntity<Void> {
+        val uploadImageRequestDto = UploadImageRequestDto(cpf, file, message, passwords)
+        imageService.storeImage(uploadImageRequestDto)
         return ResponseEntity.ok().build()
     }
 
