@@ -3,6 +3,7 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.UpdateImageMessageDto
 import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.domain.service.ImageService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.ImageRepository
@@ -61,12 +62,29 @@ class ImageServiceImpl(
 
 
     @Transactional
-    override fun deleteImageById(id: Long) {
-        val image = imageRepository.findById(id)
-            .orElseThrow { ObjectNotFoundException("No image found with ID: $id") }
+    override fun deleteImageById(id: Long, cpf: String) {
+        val image = imageRepository.findByIdAndEmployeeCpf(id, cpf)
+            ?: throw ObjectNotFoundException("No image found with ID: $id for employee with CPF: $cpf")
         imageRepository.delete(image)
+        deleteFile(image.filePath!!)
     }
 
+    @Transactional
+    override fun updateImageMessage(id: Long, cpf: String, updateImageMessageDto: UpdateImageMessageDto): Image {
+        val image = imageRepository.findByIdAndEmployeeCpf(id, cpf)
+            ?: throw ObjectNotFoundException("No image found with ID: $id for employee with CPF: $cpf")
+        image.message = updateImageMessageDto.message
+        return imageRepository.save(image)
+    }
+
+    private fun deleteFile(filePath: String) {
+        try {
+            val file = Paths.get(filePath).toAbsolutePath().normalize()
+            Files.deleteIfExists(file)
+        } catch (ex: IOException) {
+            throw RuntimeException("Could not delete file: $filePath", ex)
+        }
+    }
 
     private val uploadDirectory: Path = Paths.get("uploads")
 

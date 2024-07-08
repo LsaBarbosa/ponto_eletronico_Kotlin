@@ -1,6 +1,7 @@
 package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.UpdateImageMessageDto
 import br.com.santanna.ponto_eletronico.domain.service.ImageService
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
@@ -46,10 +47,28 @@ class ImageController(private val imageService: ImageService) {
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"image-$id.jpg\"")
             .body(resource)
     }
+    @PatchMapping("/{id}")
+    fun updateImageMessage(
+        @PathVariable id: Long,
+        @RequestParam("cpf") cpf: String,
+        @RequestBody updateImageMessageDto: UpdateImageMessageDto
+    ): ResponseEntity<ImageListDto> {
+        val updatedImage = imageService.updateImageMessage(id, cpf, updateImageMessageDto)
+        val employee = updatedImage.employee!!
+        val imageDto = ImageListDto(
+            id = updatedImage.id,
+            name = employee.name,
+            surname = employee.surname,
+            cpf = employee.cpf,
+            filePath = updatedImage.filePath,
+            message = updatedImage.message
+        )
+        return ResponseEntity.ok(imageDto)
+    }
 
     @DeleteMapping("/{id}")
-    fun deleteImageById(@PathVariable id: Long): ResponseEntity<Void> {
-        imageService.deleteImageById(id)
+    fun deleteImageById(@PathVariable id: Long, @RequestParam("cpf") cpf: String): ResponseEntity<Void> {
+        imageService.deleteImageById(id, cpf)
         return ResponseEntity.noContent().build()
     }
 }

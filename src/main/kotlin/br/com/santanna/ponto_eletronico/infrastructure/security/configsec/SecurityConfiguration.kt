@@ -17,14 +17,11 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 private const val _EMPRESA = "/empresa"
-
 private const val _COLABORADOR = "/colaborador"
 
 private const val _PONTO = "/ponto"
-
 private const val ADMIN = "ADMIN"
 private const val MANAGER = "MANAGER"
-
 private const val USER = "USER"
 
 @Configuration
@@ -52,8 +49,6 @@ class SecurityConfigurations {
                 authorize.requestMatchers(HttpMethod.GET, _COLABORADOR).hasRole(MANAGER)
                 authorize.requestMatchers(HttpMethod.PUT, _COLABORADOR).hasRole(MANAGER)
                 authorize.requestMatchers(HttpMethod.DELETE, _COLABORADOR).hasRole(MANAGER)
-
-
 
                 authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(MANAGER)
                 authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(MANAGER)

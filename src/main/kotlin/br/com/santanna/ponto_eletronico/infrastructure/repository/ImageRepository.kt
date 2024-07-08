@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository
 interface ImageRepository: JpaRepository<Image, Long> {
     fun findByEmployeeCpf(cpf: String): Image?
     fun findAllByEmployeeCpf(cpf: String): List<Image>
+    fun findByIdAndEmployeeCpf(id: Long, cpf: String): Image?
 }
