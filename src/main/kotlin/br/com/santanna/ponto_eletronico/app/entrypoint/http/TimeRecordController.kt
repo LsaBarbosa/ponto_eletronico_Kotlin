@@ -5,7 +5,10 @@ import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.domain.service.PdfGeneratorService
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
 import org.modelmapper.ModelMapper
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -53,18 +56,14 @@ class TimeRecordController(
     fun getTimeRecordsByEmployeeNameAndDateRange(
         @RequestParam("cpf") cpf: String,
         @RequestParam("startDate") startDateStr: String,
-        @RequestParam("endDate") endDateStr: String
-    ): ResponseEntity<List<DetailedTimeRecordDto>> {
-
+        @RequestParam("endDate") endDateStr: String,
+        @PageableDefault(size = 5) pageable: Pageable
+    ): Page<DetailedTimeRecordDto> {
         val startDate = LocalDate.parse(startDateStr)
         val endDate = LocalDate.parse(endDateStr)
-        val timeRecords = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRange(cpf, startDate, endDate)
-        val detailedTimeRecordDtos = timeRecords.map {
-            modelMapper.map(it, DetailedTimeRecordDto::class.java)
-        }
-        return ResponseEntity.ok(detailedTimeRecordDtos)
-
+        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageable(cpf, startDate, endDate, pageable)
     }
+
 
     @GetMapping("/hora-extra")
     fun getBalanceHoursByDateByEmployeeNameAndDateRange(
@@ -97,7 +96,7 @@ class TimeRecordController(
         @RequestParam("endDate") endDate: String
     ): ResponseEntity<ByteArray> {
         val employee = employeeService.getEmployeeEntityByCpf(cpf) ?: throw IllegalArgumentException("Employee not found")
-        val records = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRange(cpf, LocalDate.parse(startDate), LocalDate.parse(endDate), PageRequest.of(0, Int.MAX_VALUE)).content
+        val records = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageable(cpf, LocalDate.parse(startDate), LocalDate.parse(endDate), PageRequest.of(0, Int.MAX_VALUE)).content
         val pdfData = pdfGeneratorService.generateTimeRecordsPdf(records, employee, startDate, endDate)
 
         val headers = HttpHeaders().apply {

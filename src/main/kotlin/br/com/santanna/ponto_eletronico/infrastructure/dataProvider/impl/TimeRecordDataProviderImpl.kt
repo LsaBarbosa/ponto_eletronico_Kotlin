@@ -4,6 +4,8 @@ import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvid
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.infrastructure.repository.TimeRecordRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -16,6 +18,10 @@ class TimeRecordDataProviderImpl(private val timeRecordRepository: TimeRecordRep
 
     override fun findByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDateTime, endDate: LocalDateTime): List<TimeRecord> {
         return timeRecordRepository.findByEmployeeCpfAndDateRange(cpf, startDate, endDate)
+    }
+
+    override fun findByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDateTime, endDate: LocalDateTime, pageable: Pageable): Page<TimeRecord> {
+        return timeRecordRepository.findByEmployeeCpfAndDateRange(cpf, startDate, endDate, pageable)
     }
 
     override fun save(timeRecord: TimeRecord): TimeRecord {

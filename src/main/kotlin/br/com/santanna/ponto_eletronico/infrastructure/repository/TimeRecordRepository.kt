@@ -2,6 +2,8 @@ package br.com.santanna.ponto_eletronico.infrastructure.repository
 
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -15,7 +17,16 @@ interface TimeRecordRepository : JpaRepository<TimeRecord, Long> {
     fun findByEmployeeCpfAndDateRange(
         @Param("cpf") cpf: String,
         @Param("startDate") startDate: LocalDateTime,
-        @Param("endDate") endDate: LocalDateTime
+        @Param("endDate") endDate: LocalDateTime,
     ): List<TimeRecord>
+
+
+    @Query("SELECT t FROM TimeRecord t WHERE t.employee.cpf = :cpf AND t.startWorkTime BETWEEN :startDate AND :endDate ORDER BY t.id ASC")
+    fun findByEmployeeCpfAndDateRange(
+        @Param("cpf") cpf: String,
+        @Param("startDate") startDate: LocalDateTime,
+        @Param("endDate") endDate: LocalDateTime,
+        pageable: Pageable
+    ): Page<TimeRecord>
 
 }
