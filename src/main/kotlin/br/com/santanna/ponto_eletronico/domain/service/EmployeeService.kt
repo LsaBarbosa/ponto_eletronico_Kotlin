@@ -3,11 +3,13 @@ package br.com.santanna.ponto_eletronico.domain.service
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
+import br.com.santanna.ponto_eletronico.domain.entity.Employee
 
 interface EmployeeService {
     fun getAllEmployees(): List<EmployeeGetDto>
     fun getEmployeeById(id: Long): EmployeeGetDto?
     fun getEmployeeByCpf(cpf: String): EmployeeGetDto?
+    fun getEmployeeEntityByCpf(cpf: String): Employee?
     fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto?
     fun registerEmployee(employeeDto: EmployeeDto?): EmployeeDto
     fun updateEmployee(cpf :String,updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto
