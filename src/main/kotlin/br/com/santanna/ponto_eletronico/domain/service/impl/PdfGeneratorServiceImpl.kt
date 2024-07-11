@@ -3,7 +3,6 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.DetailedTimeRecordDto
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.service.PdfGeneratorService
-import br.com.santanna.ponto_eletronico.infrastructure.util.FontCache
 import com.itextpdf.io.font.constants.StandardFonts
 import com.itextpdf.kernel.colors.ColorConstants
 import com.itextpdf.kernel.font.PdfFont
