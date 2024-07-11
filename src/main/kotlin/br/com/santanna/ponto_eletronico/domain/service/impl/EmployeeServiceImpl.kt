@@ -37,9 +37,13 @@ class EmployeeServiceImpl(
         return convertToGetEmployeeDto(employee)
     }
 
+
     override fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto? {
         val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name, surname)
         return convertToGetEmployeeDto(employee)
+    }
+    override fun getEmployeeEntityByCpf(cpf: String): Employee? {
+        return employeeDataProvider.findCpf(cpf)
     }
 
     override fun getEmployeeByCpf(cpf: String): EmployeeGetDto? {

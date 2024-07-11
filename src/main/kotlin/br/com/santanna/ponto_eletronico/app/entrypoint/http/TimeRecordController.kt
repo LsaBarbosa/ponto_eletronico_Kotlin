@@ -1,8 +1,13 @@
 package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
+import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
+import br.com.santanna.ponto_eletronico.domain.service.PdfGeneratorService
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
 import org.modelmapper.ModelMapper
+import org.springframework.data.domain.PageRequest
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
@@ -10,12 +15,12 @@ import java.time.LocalDate
 @RestController
 @RequestMapping("/ponto")
 class TimeRecordController(
-    private val timeRecordService: TimeRecordService,
-    private val modelMapper: ModelMapper
+    private val timeRecordService: TimeRecordService, private val employeeService: EmployeeService,
+    private val modelMapper: ModelMapper, private val pdfGeneratorService: PdfGeneratorService
 ) {
 
     @PostMapping("/entrada")
-    fun registerCheckin(@RequestParam ("cpf") cpf:String): ResponseEntity<RecordCheckinDto> {
+    fun registerCheckin(@RequestParam("cpf") cpf: String): ResponseEntity<RecordCheckinDto> {
 
         val checkin = timeRecordService.registerCheckin(cpf)
         return ResponseEntity.ok().body(modelMapper.map(checkin, RecordCheckinDto::class.java))
@@ -23,7 +28,7 @@ class TimeRecordController(
     }
 
     @PostMapping("/saida")
-    fun registerCheckout(@RequestParam ("cpf") cpf:String): ResponseEntity<RecordCheckoutDto> {
+    fun registerCheckout(@RequestParam("cpf") cpf: String): ResponseEntity<RecordCheckoutDto> {
 
         val checkout = timeRecordService.registerCheckout(cpf)
         return ResponseEntity.ok().body(modelMapper.map(checkout, RecordCheckoutDto::class.java))
@@ -33,12 +38,12 @@ class TimeRecordController(
     @PutMapping("/{id}")
     fun updateTimeRecord(
         @PathVariable id: Long,
-        @RequestParam ("cpf") cpf: String,
+        @RequestParam("cpf") cpf: String,
         @RequestBody updateTimeRecordDto: UpdateTimeRecordDto
     ): ResponseEntity<UpdateTimeRecordDto> {
 
         updateTimeRecordDto.id = id
-        val updatedRecord = timeRecordService.updateTimeRecord(cpf,updateTimeRecordDto)
+        val updatedRecord = timeRecordService.updateTimeRecord(cpf, updateTimeRecordDto)
         val recordDto = modelMapper.map(updatedRecord, UpdateTimeRecordDto::class.java)
         return ResponseEntity.ok().body(recordDto)
 
@@ -46,7 +51,7 @@ class TimeRecordController(
 
     @GetMapping("/registros")
     fun getTimeRecordsByEmployeeNameAndDateRange(
-        @RequestParam ("cpf") cpf:String,
+        @RequestParam("cpf") cpf: String,
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
     ): ResponseEntity<List<DetailedTimeRecordDto>> {
@@ -63,7 +68,7 @@ class TimeRecordController(
 
     @GetMapping("/hora-extra")
     fun getOvertimeByEmployeeNameAndDateRange(
-        @RequestParam ("cpf") cpf:String,
+        @RequestParam("cpf") cpf: String,
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
     ): ResponseEntity<OvertimeDto> {
@@ -75,6 +80,7 @@ class TimeRecordController(
         return ResponseEntity.ok().body(overtimeDto)
 
     }
+
     @DeleteMapping("/{id}")
     fun deleteTimeRecord(
         @RequestParam("cpf") cpf: String,
@@ -82,5 +88,25 @@ class TimeRecordController(
     ): ResponseEntity<Void> {
         timeRecordService.deleteTimeRecord(cpf, id)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/export")
+    fun exportTimeRecords(
+        @RequestParam("cpf") cpf: String,
+        @RequestParam("startDate") startDate: String,
+        @RequestParam("endDate") endDate: String
+    ): ResponseEntity<ByteArray> {
+        val employee = employeeService.getEmployeeEntityByCpf(cpf) ?: throw IllegalArgumentException("Employee not found")
+        val records = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRange(cpf, LocalDate.parse(startDate), LocalDate.parse(endDate), PageRequest.of(0, Int.MAX_VALUE)).content
+        val pdfData = pdfGeneratorService.generateTimeRecordsPdf(records, employee, startDate, endDate)
+
+        val headers = HttpHeaders().apply {
+            contentType = MediaType.APPLICATION_PDF
+            set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"Detalhamento_de_horas_${cpf}_${startDate}_to_${endDate}.pdf\"")
+        }
+
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(pdfData)
     }
 }

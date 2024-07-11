@@ -10,6 +10,9 @@ import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvid
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
 import jakarta.transaction.*
 import org.modelmapper.ModelMapper
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.LocalDate
@@ -124,6 +127,20 @@ data class TimeRecordServiceImpl(
     override fun getTimeRecordsByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate): List<DetailedTimeRecordDto> {
         val timeRecords = findTimeRecordsByDateRange(cpf, startDate, endDate)
         return timeRecords.map { convertToDetailedTimeRecordDto(it) }
+    }
+
+    override fun getTimeRecordsByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto> {
+        val startDateTime = startDate.atStartOfDay()
+        val endDateTime = endDate.atTime(23, 59, 59)
+        val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(cpf, startDateTime, endDateTime)
+
+        val detailedTimeRecords = timeRecords.map { convertToDetailedTimeRecordDto(it) }
+        val pagedResult = detailedTimeRecords.subList(
+            pageable.pageNumber * pageable.pageSize,
+            Math.min((pageable.pageNumber + 1) * pageable.pageSize, detailedTimeRecords.size)
+        )
+
+        return PageImpl(pagedResult, pageable, detailedTimeRecords.size.toLong())
     }
 
     @Transactional
