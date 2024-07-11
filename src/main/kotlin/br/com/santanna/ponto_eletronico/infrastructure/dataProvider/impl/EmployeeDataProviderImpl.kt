@@ -4,6 +4,8 @@ import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.infrastructure.repository.EmployeeRepository
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 
@@ -12,9 +14,8 @@ class EmployeeDataProviderImpl(val employeeRepository: EmployeeRepository) : Emp
 
 
 
-    override fun findAll(): List<Employee> {
-        val employees = employeeRepository.findAll()
-        return employees
+    override fun findAll(pageable: Pageable): Page<Employee> {
+        return employeeRepository.findAll(pageable)
     }
 
     override fun save(employee: Employee): Employee {

@@ -36,23 +36,23 @@ class SecurityConfigurations {
         httpSecurity.csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { authorize ->
-                authorize.requestMatchers(HttpMethod.GET, "$_EMPRESA/busca-cnpj").hasRole(ADMIN)
-                authorize.requestMatchers(HttpMethod.GET, "$_EMPRESA/busca-nome-empresa").hasRole(ADMIN)
-                authorize.requestMatchers(HttpMethod.GET, _EMPRESA).hasRole(ADMIN)
-                authorize.requestMatchers(HttpMethod.POST, _EMPRESA).permitAll()
-                authorize.requestMatchers(HttpMethod.PUT, _EMPRESA).hasRole(ADMIN)
-                authorize.requestMatchers(HttpMethod.DELETE,_EMPRESA).hasRole(ADMIN)
-
-                authorize.requestMatchers(HttpMethod.POST, "$_COLABORADOR/criar-colaborador").permitAll()
-                authorize.requestMatchers(HttpMethod.POST, "$_COLABORADOR/login").permitAll()
-                authorize.requestMatchers(HttpMethod.GET, "$_COLABORADOR/busca").hasRole(USER)
-                authorize.requestMatchers(HttpMethod.GET, _COLABORADOR).hasRole(MANAGER)
-                authorize.requestMatchers(HttpMethod.PUT, _COLABORADOR).hasRole(MANAGER)
-                authorize.requestMatchers(HttpMethod.DELETE, _COLABORADOR).hasRole(MANAGER)
-
-                authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(MANAGER)
-                authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(MANAGER)
-                authorize.requestMatchers(HttpMethod.DELETE, _PONTO).hasRole(MANAGER)
+//                authorize.requestMatchers(HttpMethod.GET, "$_EMPRESA/busca-cnpj").hasRole(ADMIN)
+//                authorize.requestMatchers(HttpMethod.GET, "$_EMPRESA/busca-nome-empresa").hasRole(ADMIN)
+//                authorize.requestMatchers(HttpMethod.GET, _EMPRESA).hasRole(ADMIN)
+//                authorize.requestMatchers(HttpMethod.POST, _EMPRESA).permitAll()
+//                authorize.requestMatchers(HttpMethod.PUT, _EMPRESA).hasRole(ADMIN)
+//                authorize.requestMatchers(HttpMethod.DELETE,_EMPRESA).hasRole(ADMIN)
+//
+//                authorize.requestMatchers(HttpMethod.POST, "$_COLABORADOR/criar-colaborador").permitAll()
+//                authorize.requestMatchers(HttpMethod.POST, "$_COLABORADOR/login").permitAll()
+//                authorize.requestMatchers(HttpMethod.GET, "$_COLABORADOR/busca").hasRole(USER)
+//                authorize.requestMatchers(HttpMethod.GET, _COLABORADOR).hasRole(MANAGER)
+//                authorize.requestMatchers(HttpMethod.PUT, _COLABORADOR).hasRole(MANAGER)
+//                authorize.requestMatchers(HttpMethod.DELETE, _COLABORADOR).hasRole(MANAGER)
+//
+//                authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(MANAGER)
+//                authorize.requestMatchers(HttpMethod.PUT, _PONTO).hasRole(MANAGER)
+//                authorize.requestMatchers(HttpMethod.DELETE, _PONTO).hasRole(MANAGER)
                 authorize.anyRequest().permitAll()
             }
             .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter::class.java)

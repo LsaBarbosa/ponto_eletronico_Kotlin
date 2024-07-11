@@ -8,6 +8,8 @@ import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.AuthenticationDTO
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.LoginResponseDTO
 import jakarta.validation.Valid
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
@@ -17,8 +19,9 @@ import java.net.URI
 class EmployeeController(val employeeService: EmployeeService, val authService: Auth) {
 
     @GetMapping
-    fun allEmployees(): List<EmployeeGetDto> {
-        return employeeService.getAllEmployees()
+    fun allEmployees(pageable: Pageable): ResponseEntity<Page<EmployeeGetDto>> {
+        val employees = employeeService.getAllEmployees(pageable)
+        return ResponseEntity.ok(employees)
     }
 
     @GetMapping("/{id}")

@@ -19,6 +19,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.math.abs
 import kotlin.reflect.KMutableProperty1
 
 
@@ -107,41 +108,46 @@ data class TimeRecordServiceImpl(
     }
 
 
-    override fun overtimeByDate(cpf: String, startDate: LocalDate, endDate: LocalDate): OvertimeDto {
+    override fun balanceHoursByDate(cpf: String, startDate: LocalDate, endDate: LocalDate): BalanceHoursDto {
         val timeRecords = findTimeRecordsByDateRange(cpf, startDate, endDate)
+        val recordsByDate = timeRecords.groupBy { it.startWorkTime?.toLocalDate() }
 
-        val totalMinutesWorked = timeRecords.sumOf { it.timeWorked ?: 0 }
-        val totalExpectedMinutes = timeRecords.size * 8 * 60
+        var totalWorkedMinutes = 0L
+        var totalExpectedMinutes = 0L
 
-        val overtimeMinutes = maxOf(0, totalMinutesWorked - totalExpectedMinutes)
+        for ((_, records) in recordsByDate) {
+            val workedMinutesPerDay = records.sumOf { it.timeWorked ?: 0 }
+            totalWorkedMinutes += workedMinutesPerDay
+            totalExpectedMinutes += 8 * 60
+        }
 
-        val overtimeHours = overtimeMinutes / 60
-        val overtimeRemainingMinutes = overtimeMinutes % 60
+        val balance = totalWorkedMinutes - totalExpectedMinutes
 
-        return OvertimeDto(
+        val balanceHours = abs(balance / 60)
+        val balanceRemainingMinutes = abs(balance % 60)
+
+        val sign = if (balance < 0) "-" else ""
+
+        val formattedBalance = String.format("%s%02d:%02d", sign, balanceHours, balanceRemainingMinutes)
+
+        return BalanceHoursDto(
             employeeCpf = cpf,
-            overtime = String.format("%02d:%02d", overtimeHours, overtimeRemainingMinutes)
+            balance = formattedBalance
         )
     }
 
-    override fun getTimeRecordsByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate): List<DetailedTimeRecordDto> {
-        val timeRecords = findTimeRecordsByDateRange(cpf, startDate, endDate)
+    override fun getTimeRecordsByEmployeeCpfAndDateRangePageable(
+        cpf: String,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        pageable: Pageable
+    ): Page<DetailedTimeRecordDto> {
+        val startDateTime = startDate.atStartOfDay()
+        val endDateTime = endDate.atTime(23, 59, 59)
+        val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(cpf, startDateTime, endDateTime, pageable)
         return timeRecords.map { convertToDetailedTimeRecordDto(it) }
     }
 
-    override fun getTimeRecordsByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto> {
-        val startDateTime = startDate.atStartOfDay()
-        val endDateTime = endDate.atTime(23, 59, 59)
-        val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(cpf, startDateTime, endDateTime)
-
-        val detailedTimeRecords = timeRecords.map { convertToDetailedTimeRecordDto(it) }
-        val pagedResult = detailedTimeRecords.subList(
-            pageable.pageNumber * pageable.pageSize,
-            Math.min((pageable.pageNumber + 1) * pageable.pageSize, detailedTimeRecords.size)
-        )
-
-        return PageImpl(pagedResult, pageable, detailedTimeRecords.size.toLong())
-    }
 
     @Transactional
     override fun deleteTimeRecord(cpf: String, timeRecordId: Long) {

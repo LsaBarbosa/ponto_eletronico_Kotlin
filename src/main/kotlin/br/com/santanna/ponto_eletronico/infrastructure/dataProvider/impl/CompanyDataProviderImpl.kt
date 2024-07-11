@@ -4,6 +4,8 @@ import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundExceptio
 import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.domain.entity.Company
 import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 
 @Service
@@ -31,8 +33,8 @@ class CompanyDataProviderImpl(val companyRepository: CompanyRepository): Company
         companyRepository.delete(companyToDelete)
     }
 
-    override fun findAllCompanies(): List<Company> {
-        return companyRepository.findAll()
+    override fun findAll(pageable: Pageable): Page<Company> {
+        return companyRepository.findAll(pageable)
     }
 
     override fun save(company: Company): Company {
