@@ -36,31 +36,41 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
 
         val font = PdfFontFactory.createFont(StandardFonts.HELVETICA)
         val boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)
-        val dateFormatter = DateTimeFormatter.ofPattern("dd / MM / yyyy")
+        val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
         addEmployeeDetails(document, employee, font, boldFont)
         addTitleAndDateRange(document, startDate, endDate, font, boldFont, dateFormatter)
 
-        val table = createTable(font, boldFont)
+        val table = createTable(boldFont)
         var totalWorkedMinutes = 0L
-        var totalOvertimeMinutes = 0L
+        var totalBalanceMinutes = 0L
 
-        records.forEach { record ->
-            table.addCell(createCell(record.id.toString(), font))
-            table.addCell(createCell(record.startWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "", font))
-            table.addCell(createCell(record.startWorkTime ?: "", font))
-            table.addCell(createCell(record.endWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "", font))
-            table.addCell(createCell(record.endWorkTime ?: "", font))
-            table.addCell(createCell(record.timeWorked ?: "", font))
-            val overtime = calculateOvertime(record.timeWorked ?: "00:00")
-            table.addCell(createOvertimeCell(overtime, font))
+        records.groupBy { it.startWorkDate }.forEach { (date, dailyRecords) ->
+            var dailyWorkedMinutes = 0L
+            dailyRecords.forEachIndexed { index, record ->
+                table.addCell(createCell(record.id.toString(), font))
+                table.addCell(createCell(record.startWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "", font))
+                table.addCell(createCell(record.startWorkTime ?: "", font))
+                table.addCell(createCell(record.endWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "", font))
+                table.addCell(createCell(record.endWorkTime ?: "", font))
+                table.addCell(createCell(record.timeWorked ?: "", font))
 
-            totalWorkedMinutes += calculateMinutes(record.timeWorked ?: "00:00")
-            totalOvertimeMinutes += calculateOvertimeMinutes(record.timeWorked ?: "00:00")
+                dailyWorkedMinutes += calculateMinutes(record.timeWorked ?: "00:00")
+
+                val balanceTime = if (index == dailyRecords.size - 1) {
+                    calculateBalanceTime(dailyWorkedMinutes)
+                } else {
+                    "00:00"
+                }
+                table.addCell(createBalanceCell(balanceTime, font))
+            }
+
+            totalWorkedMinutes += dailyWorkedMinutes
+            totalBalanceMinutes += calculateBalanceMinutes(dailyWorkedMinutes)
         }
 
         document.add(table)
-        addTotalHoursAndOvertimeBalance(document, totalWorkedMinutes, totalOvertimeMinutes, font, boldFont)
+        addTotalHoursAndOvertimeBalance(document, totalWorkedMinutes, totalBalanceMinutes, font, boldFont)
         document.close()
 
         return byteArrayOutputStream.toByteArray()
@@ -101,11 +111,10 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
         ).setFont(font).setFontSize(12f).setTextAlignment(TextAlignment.CENTER).setMarginBottom(20f)
 
         document.add(title)
-
         document.add(dateRange)
     }
 
-    private fun createTable(font: PdfFont, boldFont: PdfFont): Table {
+    private fun createTable(boldFont: PdfFont): Table {
         val table = Table(floatArrayOf(1f, 2f, 2f, 2f, 2f, 2f, 2f)).useAllAvailableWidth()
         table.addHeaderCell(createHeaderCell("ID", boldFont))
         table.addHeaderCell(createHeaderCell("Data de Entrada", boldFont))
@@ -118,7 +127,7 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
     }
 
     private fun addTotalHoursAndOvertimeBalance(
-        document: Document, totalWorkedMinutes: Long, totalOvertimeMinutes: Long, font: PdfFont, boldFont: PdfFont
+        document: Document, totalWorkedMinutes: Long, totalBalanceMinutes: Long, font: PdfFont, boldFont: PdfFont
     ) {
         document.add(Paragraph("\n"))
 
@@ -127,7 +136,7 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
         totalTable.addCell(createSummaryCell(formatMinutes(totalWorkedMinutes), font))
 
         totalTable.addCell(createSummaryCell("Balanço de Horas", boldFont))
-        totalTable.addCell(formatOvertimeMinutes(totalOvertimeMinutes, font))
+        totalTable.addCell(formatBalanceMinutes(totalBalanceMinutes, font))
 
         document.add(totalTable)
     }
@@ -146,25 +155,20 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
             .setBorderTop(null).setBorderBottom(null).setBorderLeft(null).setBorderRight(null)
     }
 
-    private fun createOvertimeCell(overtime: String, font: PdfFont): Cell {
-        val paragraph = Paragraph(overtime).setFont(font).setFontSize(10f).setTextAlignment(TextAlignment.CENTER)
-        if (overtime.startsWith("-")) {
-            paragraph.setFontColor(ColorConstants.RED)
-        } else {
-            paragraph.setFontColor(ColorConstants.GREEN)
+    private fun createBalanceCell(balanceTime: String, font: PdfFont): Cell {
+        val paragraph = Paragraph(balanceTime).setFont(font).setFontSize(10f).setTextAlignment(TextAlignment.CENTER)
+        when {
+            balanceTime.startsWith("-") -> paragraph.setFontColor(ColorConstants.RED)
+            balanceTime != "00:00" -> paragraph.setFontColor(ColorConstants.GREEN)
+            else -> paragraph.setFontColor(ColorConstants.BLACK)
         }
         return Cell().add(paragraph).setTextAlignment(TextAlignment.CENTER)
     }
 
-    private fun calculateOvertime(timeWorked: String): String {
-        val timeWorkedDuration = time(timeWorked)
-        val regularHours = LocalTime.of(8, 0)
-
-        val durationWorked = Duration.between(LocalTime.MIN, timeWorkedDuration)
-        val durationRegular = Duration.between(LocalTime.MIN, regularHours)
-
-        val difference = durationWorked.minus(durationRegular)
-
+    private fun calculateBalanceTime(minutesWorked: Long): String {
+        val regularHours = Duration.ofHours(8)
+        val durationWorked = Duration.ofMinutes(minutesWorked)
+        val difference = durationWorked.minus(regularHours)
         val hours = abs(difference.toHours())
         val minutes = abs(difference.toMinutesPart())
 
@@ -182,14 +186,10 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
         return Duration.between(LocalTime.MIN, localTime).toMinutes()
     }
 
-    private fun calculateOvertimeMinutes(timeWorked: String): Long {
-        val timeWorkedDuration = time(timeWorked)
-        val regularHours = LocalTime.of(8, 0)
-
-        val durationWorked = Duration.between(LocalTime.MIN, timeWorkedDuration)
-        val durationRegular = Duration.between(LocalTime.MIN, regularHours)
-
-        return durationWorked.minus(durationRegular).toMinutes()
+    private fun calculateBalanceMinutes(minutesWorked: Long): Long {
+        val regularHours = Duration.ofHours(8)
+        val durationWorked = Duration.ofMinutes(minutesWorked)
+        return durationWorked.minus(regularHours).toMinutes()
     }
 
     private fun time(timeWorked: String): LocalTime {
@@ -198,14 +198,13 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
     }
 
     private fun formatMinutes(minutes: Long): String {
-        val sign = if (minutes < 0) "-" else ""
         val absMinutes = abs(minutes)
         val hours = absMinutes / 60
         val remainingMinutes = absMinutes % 60
-        return String.format("%s%02d:%02d", sign, hours, remainingMinutes)
+        return String.format("%02d:%02d", hours, remainingMinutes)
     }
 
-    private fun formatOvertimeMinutes(minutes: Long, font: PdfFont): Cell {
+    private fun formatBalanceMinutes(minutes: Long, font: PdfFont): Cell {
         val sign = if (minutes < 0) "-" else ""
         val absMinutes = abs(minutes)
         val hours = absMinutes / 60
@@ -213,10 +212,10 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
         val formattedTime = String.format("%s%02d:%02d", sign, hours, remainingMinutes)
         val paragraph = Paragraph(formattedTime).setFont(font).setFontSize(12f).setTextAlignment(TextAlignment.CENTER)
 
-        if (minutes < 0) {
-            paragraph.setFontColor(ColorConstants.RED)
-        } else {
-            paragraph.setFontColor(ColorConstants.GREEN)
+        when {
+            minutes < 0 -> paragraph.setFontColor(ColorConstants.RED)
+            minutes > 0 -> paragraph.setFontColor(ColorConstants.GREEN)
+            else -> paragraph.setFontColor(ColorConstants.BLACK)
         }
 
         return Cell().add(paragraph).setTextAlignment(TextAlignment.CENTER).setBorderTop(null).setBorderBottom(null).setBorderLeft(null).setBorderRight(null)
