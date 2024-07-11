@@ -67,17 +67,17 @@ class TimeRecordController(
     }
 
     @GetMapping("/hora-extra")
-    fun getOvertimeByEmployeeNameAndDateRange(
+    fun getBalanceHoursByDateByEmployeeNameAndDateRange(
         @RequestParam("cpf") cpf: String,
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
-    ): ResponseEntity<OvertimeDto> {
+    ): ResponseEntity<BalanceHoursDto> {
 
         val startDate = LocalDate.parse(startDateStr)
         val endDate = LocalDate.parse(endDateStr)
-        val timeRecords = timeRecordService.overtimeByDate(cpf, startDate, endDate)
-        val overtimeDto = modelMapper.map(timeRecords, OvertimeDto::class.java)
-        return ResponseEntity.ok().body(overtimeDto)
+        val timeRecords = timeRecordService.balanceHoursByDate(cpf, startDate, endDate)
+        val balanceHoursDto = modelMapper.map(timeRecords, BalanceHoursDto::class.java)
+        return ResponseEntity.ok().body(balanceHoursDto)
 
     }
 

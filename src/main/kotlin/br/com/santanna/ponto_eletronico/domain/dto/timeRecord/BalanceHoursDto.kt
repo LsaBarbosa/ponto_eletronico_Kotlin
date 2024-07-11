@@ -1,6 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.dto.timeRecord
 
-data class OvertimeDto (
+data class BalanceHoursDto (
     val employeeCpf:String? = null,
-    val overtime:String? = null
+    val balance:String? = null
 )
