@@ -36,7 +36,7 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
 
         val font = PdfFontFactory.createFont(StandardFonts.HELVETICA)
         val boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)
-        val dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val dateFormatter = DateTimeFormatter.ofPattern("dd / MM / yyyy")
 
         addEmployeeDetails(document, employee, font, boldFont)
         addTitleAndDateRange(document, startDate, endDate, font, boldFont, dateFormatter)
@@ -47,11 +47,10 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
 
         records.forEach { record ->
             table.addCell(createCell(record.id.toString(), font))
+            table.addCell(createCell(record.startWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "", font))
             table.addCell(createCell(record.startWorkTime ?: "", font))
-            table.addCell(createCell(record.endWorkTime ?: "", font))
-            table.addCell(createCell(record.startWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "",
-                font))
             table.addCell(createCell(record.endWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "", font))
+            table.addCell(createCell(record.endWorkTime ?: "", font))
             table.addCell(createCell(record.timeWorked ?: "", font))
             val overtime = calculateOvertime(record.timeWorked ?: "00:00")
             table.addCell(createOvertimeCell(overtime, font))
