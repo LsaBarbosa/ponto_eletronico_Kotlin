@@ -1,11 +1,13 @@
 package br.com.santanna.ponto_eletronico.domain.dataprovider
 
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.security.core.userdetails.UserDetails
 
 interface EmployeeDataProvider {
 
-    fun findAll():  List<Employee>
+    fun findAll(pageable: Pageable): Page<Employee>
     fun save(employee: Employee): Employee
     fun findById(id: Long): Employee
     fun findByNameAndSurnameIgnoreCase(name: String?, surname: String?): Employee?

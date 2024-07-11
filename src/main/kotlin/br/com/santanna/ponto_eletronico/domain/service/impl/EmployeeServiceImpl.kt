@@ -16,6 +16,8 @@ import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyReposit
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth.Companion.EMPLOYEE_ALREADY_EXIST
 import jakarta.transaction.Transactional
 import jakarta.validation.Valid
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -27,8 +29,8 @@ class EmployeeServiceImpl(
 
 ) : EmployeeService {
 
-    override fun getAllEmployees(): List<EmployeeGetDto> {
-        val employees = employeeDataProvider.findAll()
+    override fun getAllEmployees(pageable: Pageable): Page<EmployeeGetDto> {
+        val employees = employeeDataProvider.findAll(pageable)
         return employees.map { convertToGetEmployeeDto(it) }
     }
 
@@ -124,20 +126,19 @@ class EmployeeServiceImpl(
     }
 }
 
-    fun convertToGetEmployeeDto(employee: Employee?): EmployeeGetDto {
-        val timeWorkedDtos = employee?.timeWorked?.map { convertToTimeRecordDto(it!!) }
+private fun convertToGetEmployeeDto(employee: Employee?): EmployeeGetDto {
+    employee?.timeWorked?.map { convertToTimeRecordDto(it!!) }
 
-        return EmployeeGetDto(
-            id = employee?.id,
-            name = employee?.name,
-            surname = employee?.surname,
-            salary = employee?.salary,
-            position = employee?.position,
-            cpf = employee?.cpf,
-            timeWorked = timeWorkedDtos,
-            company = employee?.company?.convertToDto()
-        )
-    }
+    return EmployeeGetDto(
+        id = employee?.id,
+        name = employee?.name,
+        surname = employee?.surname,
+        cpf = employee?.cpf,
+        salary = employee?.salary,
+        position = employee?.position,
+        company = employee?.company?.convertToDto()
+    )
+}
 
     fun convertToTimeRecordDto(timeRecord: TimeRecord): TimeRecordDto {
         return TimeRecordDto(

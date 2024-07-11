@@ -4,9 +4,11 @@ import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface EmployeeService {
-    fun getAllEmployees(): List<EmployeeGetDto>
+    fun getAllEmployees(pageable: Pageable): Page<EmployeeGetDto>
     fun getEmployeeById(id: Long): EmployeeGetDto?
     fun getEmployeeByCpf(cpf: String): EmployeeGetDto?
     fun getEmployeeEntityByCpf(cpf: String): Employee?

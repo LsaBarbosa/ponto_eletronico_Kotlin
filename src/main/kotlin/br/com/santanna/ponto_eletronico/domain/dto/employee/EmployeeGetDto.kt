@@ -1,7 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.dto.employee
 
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyGetDto
-import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.TimeRecordDto
 
 data class EmployeeGetDto(
     var id: Long? = null,
@@ -10,7 +9,7 @@ data class EmployeeGetDto(
     var salary: Double? = null,
     var position: String? = null,
     var cpf: String? = null,
-    val timeWorked: List<TimeRecordDto>? = ArrayList(),
+
     val company: CompanyGetDto? = null
 )
 
