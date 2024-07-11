@@ -1,9 +1,11 @@
 package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
-import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeesDto
+import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeeCountDto
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
 import jakarta.validation.Valid
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
@@ -13,10 +15,10 @@ import java.net.URI
 class CompanyController(private val companyService: CompanyService) {
 
     @GetMapping
-    fun allCompanies(): List<CompanyWithEmployeesDto> {
-        return companyService.getAllCompanies()
+    fun allCompanies(pageable: Pageable): ResponseEntity<Page<CompanyWithEmployeeCountDto>> {
+        val companies = companyService.getAllCompanies(pageable)
+        return ResponseEntity.ok(companies)
     }
-
 
     @GetMapping("/busca-cnpj")
     fun getCompanybyCNPJ(@RequestParam companyCNPJ: String): ResponseEntity<CompanyDTO> {

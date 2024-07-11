@@ -3,35 +3,22 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 import br.com.santanna.ponto_eletronico.domain.entity.Company
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
-import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeesDto
-import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
+import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeeCountDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.SimpleEmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
 import jakarta.transaction.Transactional
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 
 @Service
 class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider) : CompanyService {
 
-    override fun getAllCompanies(): List<CompanyWithEmployeesDto> {
-        return companyDataProvider.findAllCompanies().map { company ->
-            CompanyWithEmployeesDto(
-                id = company.id,
-                nameCompany = company.nameCompany,
-                companyCNPJ = company.companyCNPJ,
-                employees = company.employees.map { employee ->
-                    EmployeeDto(
-                        id = employee?.id,
-                        name = employee?.name,
-                        surname = employee?.surname,
-                        salary = employee?.salary,
-                        position = employee?.position
-                    )
-                }
-            )
-        }
+    override fun getAllCompanies(pageable: Pageable): Page<CompanyWithEmployeeCountDto> {
+        val companies = companyDataProvider.findAll(pageable)
+        return companies.map { convertToCompanyWithEmployeeCountDto(it) }
     }
 
     override fun getCompanyByCNPJ(companyCNPJ: String?): CompanyDTO {
@@ -106,5 +93,12 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider) :
             )
         }
     }
-
+    private fun convertToCompanyWithEmployeeCountDto(company: Company): CompanyWithEmployeeCountDto {
+        val employeeCount = company.employees.size.toLong()
+        return CompanyWithEmployeeCountDto(
+            nameCompany = company.nameCompany ?: "",
+            companyCNPJ = company.companyCNPJ ?: "",
+            employeeCount = employeeCount
+        )
+    }
 }

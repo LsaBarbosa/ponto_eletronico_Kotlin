@@ -1,10 +1,12 @@
 package br.com.santanna.ponto_eletronico.domain.service
 
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
-import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeesDto
+import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeeCountDto
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface CompanyService {
-    fun getAllCompanies(): List<CompanyWithEmployeesDto>
+    fun getAllCompanies(pageable: Pageable): Page<CompanyWithEmployeeCountDto>
     fun getCompanyByCNPJ(companyCNPJ: String?): CompanyDTO
     fun getCompaniesByName(nameCompany: String): CompanyDTO
     fun registerCompany(companyDto: CompanyDTO): CompanyDTO
