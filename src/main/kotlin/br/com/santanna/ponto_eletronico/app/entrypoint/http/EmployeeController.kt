@@ -16,11 +16,6 @@ import java.net.URI
 @RequestMapping("/colaborador")
 class EmployeeController(val employeeService: EmployeeService, val authService: Auth) {
 
-    @GetMapping
-    fun allEmployees(pageable: Pageable): ResponseEntity<Page<EmployeeGetDto>> {
-        val employees = employeeService.getAllEmployees(pageable)
-        return ResponseEntity.ok(employees)
-    }
 
     @GetMapping("/{id}")
     fun getEmployeeById(@PathVariable("id") id: Long): ResponseEntity<EmployeeGetDto?> {
@@ -28,6 +23,16 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
         return ResponseEntity.ok(employee)
 
     }
+
+    @GetMapping("/meus-colaboradores")
+    fun getEmployeesByManager(
+        @Valid @RequestBody managerEmployeeRequestDto: ManagerEmployeeRequestDto,
+        pageable: Pageable
+    ): ResponseEntity<Page<EmployeeGetDto>> {
+        val employees = employeeService.getEmployeesByManager(managerEmployeeRequestDto, pageable)
+        return ResponseEntity.ok(employees)
+    }
+
 
     @GetMapping("/busca-nome")
     fun getEmployeeByNameAndSurname(
@@ -40,10 +45,9 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
 
     }
     @GetMapping("/busca-cpf")
-    fun getEmployeeByCpf(@RequestParam("cpf") cpf: String ): ResponseEntity<EmployeeGetDto?> {
-        val employee = employeeService.getEmployeeByCpf(cpf)
+    fun getEmployeeByCpf(@Valid @RequestBody request: ManagerEmployeeRequestByCPFDto): ResponseEntity<EmployeeGetDto?> {
+        val employee = employeeService.getEmployeeByCpf(request)
         return ResponseEntity.ok(employee)
-
     }
 
     @PostMapping("criar-colaborador")
