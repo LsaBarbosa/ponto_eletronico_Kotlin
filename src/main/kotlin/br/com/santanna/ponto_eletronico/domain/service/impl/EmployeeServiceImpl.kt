@@ -1,7 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.*
