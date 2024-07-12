@@ -2,9 +2,7 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
-import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
-import br.com.santanna.ponto_eletronico.domain.dto.image.UpdateImageMessageDto
-import br.com.santanna.ponto_eletronico.domain.dto.image.UploadImageRequestDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.*
 import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.domain.service.ImageService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.ImageRepository
@@ -75,34 +73,44 @@ class ImageServiceImpl(
 
 
     @Transactional
-    override fun deleteImageById(id: Long, cpf: String, passwords: String) {
-        val image = imageRepository.findByIdAndEmployeeCpf(id, cpf)
-            ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ $id $FOR_EMPLOYEE_WITH_CPF_ $cpf")
+    override fun deleteImageById(deleteImageRequestDto: DeleteImageRequestDto){
+        val employee = employeeDataProvider.findCpf(deleteImageRequestDto.employeeCpfTarget)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${deleteImageRequestDto.employeeCpfTarget}")
 
-        val encryptedPassword = BCryptPasswordEncoder().matches(passwords, image.employee?.password)
+        val deletingEmployee = employeeDataProvider.findCpf(deleteImageRequestDto.employeeManagerCpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${deleteImageRequestDto.employeeManagerCpf}")
 
-        if (!encryptedPassword) {
+        val isPasswordValid = BCryptPasswordEncoder().matches(deleteImageRequestDto.passwords, deletingEmployee.password)
+        if (!isPasswordValid) {
             throw IllegalArgumentException("Invalid password")
         }
+
+        val image = imageRepository.findByIdAndEmployeeCpf(deleteImageRequestDto.imageId, deleteImageRequestDto.employeeCpfTarget)
+            ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ ${deleteImageRequestDto.imageId} $FOR_EMPLOYEE_WITH_CPF_ ${deleteImageRequestDto.employeeCpfTarget}")
 
         imageRepository.delete(image)
         deleteFile(image.filePath!!)
     }
-
     @Transactional
-    override fun updateImageMessage(id: Long, cpf: String, updateImageMessageDto: UpdateImageMessageDto): ImageListDto {
-        val image = imageRepository.findByIdAndEmployeeCpf(id, cpf)
-            ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ $id $FOR_EMPLOYEE_WITH_CPF_ $cpf")
+    override fun updateImageMessage(updateImageRequestDto: UpdateImageRequestDto): ImageListDto {
+        val employeeTarget = employeeDataProvider.findCpf(updateImageRequestDto.employeeCpfTarget)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${updateImageRequestDto.employeeCpfTarget}")
 
-        val employeePassword = image.employee
-        val encryptedPassword = BCryptPasswordEncoder().matches(updateImageMessageDto.passwords,employeePassword?.password)
+        val updatingEmployee = employeeDataProvider.findCpf(updateImageRequestDto.employeeManagerCpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${updateImageRequestDto.employeeManagerCpf}")
 
-        if (!encryptedPassword) {
+        val isPasswordValid = BCryptPasswordEncoder().matches(updateImageRequestDto.passwords, updatingEmployee.password)
+        if (!isPasswordValid) {
             throw IllegalArgumentException("Invalid password")
         }
-        image.message = updateImageMessageDto.message
+
+        val image = imageRepository.findByIdAndEmployeeCpf(updateImageRequestDto.imageId, updateImageRequestDto.employeeCpfTarget)
+            ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ ${updateImageRequestDto.imageId} $FOR_EMPLOYEE_WITH_CPF_ ${updateImageRequestDto.employeeCpfTarget}")
+
+        image.message = updateImageRequestDto.updateImageMessageDto.message
         val updatedImage = imageRepository.save(image)
         val employee = updatedImage.employee!!
+
         return ImageListDto(
             id = updatedImage.id,
             name = employee.name,
@@ -112,7 +120,6 @@ class ImageServiceImpl(
             message = updatedImage.message
         )
     }
-
     private fun deleteFile(filePath: String) {
         try {
             val file = Paths.get(filePath).toAbsolutePath().normalize()

@@ -80,32 +80,39 @@ data class TimeRecordServiceImpl(
     }
 
     @Transactional
-    override fun updateTimeRecord(cpf :String, updateTimeRecordDto: UpdateTimeRecordDto): UpdateTimeRecordDto {
-        val employee = findEmployeeByCpfOrThrow(cpf)
-        val timeRecord = updateTimeRecordDto.id?.let { timeRecordDataProvider.findById(it) }
+    override fun updateTimeRecord(updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): UpdateTimeRecordDto {
+        val employeeTarget = employeeDataProvider.findCpf(updateTimeRecordRequestDto.employeeCpfTarget)
+            ?: throw IllegalArgumentException("Employee not found with CPF: ${updateTimeRecordRequestDto.employeeCpfTarget}")
 
-        if (timeRecord?.employee?.cpf != employee.cpf) {
-            throw DataIntegrityViolationException("Registro não pertence ao cpf: $cpf informado")
+        val updatingEmployee = employeeDataProvider.findCpf(updateTimeRecordRequestDto.employeeManagerCpf)
+            ?: throw IllegalArgumentException("Employee not found with CPF: ${updateTimeRecordRequestDto.employeeManagerCpf}")
+
+        val isPasswordValid = BCryptPasswordEncoder().matches(updateTimeRecordRequestDto.passwords, updatingEmployee.password)
+        if (!isPasswordValid) {
+            throw IllegalArgumentException("Invalid password")
         }
 
+        val timeRecord = timeRecordDataProvider.findById(updateTimeRecordRequestDto.timeRecordId)
+            ?: throw ObjectNotFoundException("Time record not found with ID: ${updateTimeRecordRequestDto.timeRecordId}")
 
-        if (timeRecord != null) {
-            updateTimeRecordField(timeRecord, updateTimeRecordDto.startWorkDate, updateTimeRecordDto.startWorkTime, TimeRecord::startWorkTime, "start")
-        }
-        if (timeRecord != null) {
-            updateTimeRecordField(timeRecord, updateTimeRecordDto.endWorkDate, updateTimeRecordDto.endWorkTime, TimeRecord::endWorkTime, "end")
+        if (timeRecord.employee?.cpf != employeeTarget.cpf) {
+            throw DataIntegrityViolationException("Registro não pertence ao cpf: ${updateTimeRecordRequestDto.employeeCpfTarget} informado")
         }
 
-        val saveUpdate = timeRecord?.let { timeRecordDataProvider.save(it) }
+        updateTimeRecordField(timeRecord, updateTimeRecordRequestDto.updateTimeRecordDto.startWorkDate, updateTimeRecordRequestDto.updateTimeRecordDto.startWorkTime, TimeRecord::startWorkTime, "start")
+        updateTimeRecordField(timeRecord, updateTimeRecordRequestDto.updateTimeRecordDto.endWorkDate, updateTimeRecordRequestDto.updateTimeRecordDto.endWorkTime, TimeRecord::endWorkTime, "end")
+
+        val saveUpdate = timeRecordDataProvider.save(timeRecord)
 
         return UpdateTimeRecordDto(
-            id = saveUpdate?.id,
-            startWorkTime = saveUpdate?.startWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
-            startWorkDate = saveUpdate?.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
-            endWorkTime = saveUpdate?.endWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
-            endWorkDate = saveUpdate?.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE)
+            id = saveUpdate.id,
+            startWorkTime = saveUpdate.startWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            startWorkDate = saveUpdate.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
+            endWorkTime = saveUpdate.endWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            endWorkDate = saveUpdate.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE)
         )
     }
+
 
 
     override fun balanceHoursByDate(cpf: String, startDate: LocalDate, endDate: LocalDate): BalanceHoursDto {
@@ -150,18 +157,28 @@ data class TimeRecordServiceImpl(
 
 
     @Transactional
-    override fun deleteTimeRecord(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto, timeRecordId: Long) {
-        val employee = findEmployeeByCpfOrThrow(deleteTimeRecordRequestDto.cpf)
-        val timeRecord = timeRecordDataProvider.findById(timeRecordId) ?: throw ObjectNotFoundException("Time record not found with ID: $timeRecordId")
-        if (timeRecord.employee?.cpf != employee.cpf) {
-            throw DataIntegrityViolationException("Registro não pertence ao cpf: ${deleteTimeRecordRequestDto.cpf} informado")
-        }
-        val encryptedPassword = BCryptPasswordEncoder().matches(deleteTimeRecordRequestDto.passwords, employee.password)
-        if (!encryptedPassword) {
+    override fun deleteTimeRecord(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto) {
+        val employeeTarget = employeeDataProvider.findCpf(deleteTimeRecordRequestDto.employeeCpfTarget)
+            ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteTimeRecordRequestDto.employeeCpfTarget}")
+
+        val deletingEmployee = employeeDataProvider.findCpf(deleteTimeRecordRequestDto.employeeManagerCpf)
+            ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteTimeRecordRequestDto.employeeManagerCpf}")
+
+        val isPasswordValid = BCryptPasswordEncoder().matches(deleteTimeRecordRequestDto.passwords, deletingEmployee.password)
+        if (!isPasswordValid) {
             throw IllegalArgumentException("Invalid password")
         }
+
+        val timeRecord = timeRecordDataProvider.findById(deleteTimeRecordRequestDto.timeRecordId)
+            ?: throw ObjectNotFoundException("Time record not found with ID: ${deleteTimeRecordRequestDto.timeRecordId}")
+
+        if (timeRecord.employee?.cpf != employeeTarget.cpf) {
+            throw DataIntegrityViolationException("Registro não pertence ao cpf: ${deleteTimeRecordRequestDto.employeeCpfTarget} informado")
+        }
+
         timeRecordDataProvider.delete(timeRecord)
     }
+
     private fun findTimeRecordsByDateRange(cpf:String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = endDate.atTime(23, 59, 59)

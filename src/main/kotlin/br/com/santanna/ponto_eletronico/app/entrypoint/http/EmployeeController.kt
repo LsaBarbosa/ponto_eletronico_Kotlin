@@ -1,9 +1,6 @@
 package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
-import br.com.santanna.ponto_eletronico.domain.dto.employee.DeleteEmployeeRequestDto
-import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
-import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
-import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
+import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.AuthenticationDTO
@@ -58,12 +55,11 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
     }
 
     @PutMapping
-    fun updateEmployee(@RequestParam("cpf") cpf:String,@Valid @RequestBody updateEmployeeDto: UpdateEmployeeDto): ResponseEntity<UpdateEmployeeDto> {
-
-        val updatedEmployeeDto = employeeService.updateEmployee(cpf,updateEmployeeDto)
+    fun updateEmployee(@Valid @RequestBody updateEmployeeRequestDto: UpdateEmployeeRequestDto): ResponseEntity<UpdateEmployeeDto> {
+        val updatedEmployeeDto = employeeService.updateEmployee(updateEmployeeRequestDto)
         return ResponseEntity.ok(updatedEmployeeDto)
-
     }
+
     @PostMapping("/login")
     fun login(@RequestBody data: AuthenticationDTO): ResponseEntity<LoginResponseDTO> {
         val token = authService.login(data)
@@ -71,7 +67,7 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
     }
 
     @DeleteMapping
-    fun deleteEmployee( @RequestBody deleteEmployeeRequestDto: DeleteEmployeeRequestDto): ResponseEntity<Void> {
+    fun deleteEmployee(@RequestBody deleteEmployeeRequestDto: DeleteEmployeeRequestDto): ResponseEntity<Void> {
         employeeService.deleteEmployee(deleteEmployeeRequestDto)
         return ResponseEntity.noContent().build()
     }

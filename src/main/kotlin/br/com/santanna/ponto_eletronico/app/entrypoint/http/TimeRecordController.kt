@@ -4,6 +4,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.domain.service.PdfGeneratorService
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
+import jakarta.validation.Valid
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -37,19 +38,10 @@ class TimeRecordController(
         return ResponseEntity.ok().body(modelMapper.map(checkout, RecordCheckoutDto::class.java))
 
     }
-
-    @PutMapping("/{id}")
-    fun updateTimeRecord(
-        @PathVariable id: Long,
-        @RequestParam("cpf") cpf: String,
-        @RequestBody updateTimeRecordDto: UpdateTimeRecordDto
-    ): ResponseEntity<UpdateTimeRecordDto> {
-
-        updateTimeRecordDto.id = id
-        val updatedRecord = timeRecordService.updateTimeRecord(cpf, updateTimeRecordDto)
-        val recordDto = modelMapper.map(updatedRecord, UpdateTimeRecordDto::class.java)
-        return ResponseEntity.ok().body(recordDto)
-
+    @PutMapping
+    fun updateTimeRecord(@Valid @RequestBody updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): ResponseEntity<UpdateTimeRecordDto> {
+        val updatedTimeRecordDto = timeRecordService.updateTimeRecord(updateTimeRecordRequestDto)
+        return ResponseEntity.ok(updatedTimeRecordDto)
     }
 
     @GetMapping("/registros")
@@ -81,11 +73,8 @@ class TimeRecordController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteTimeRecord(
-        @PathVariable("id") id: Long,
-        @RequestBody deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto
-    ): ResponseEntity<Void> {
-        timeRecordService.deleteTimeRecord(deleteTimeRecordRequestDto, id)
+    fun deleteTimeRecord(@RequestBody deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto): ResponseEntity<Void> {
+        timeRecordService.deleteTimeRecord(deleteTimeRecordRequestDto)
         return ResponseEntity.noContent().build()
     }
 
