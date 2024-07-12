@@ -75,9 +75,16 @@ class ImageServiceImpl(
 
 
     @Transactional
-    override fun deleteImageById(id: Long, cpf: String) {
+    override fun deleteImageById(id: Long, cpf: String, passwords: String) {
         val image = imageRepository.findByIdAndEmployeeCpf(id, cpf)
             ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ $id $FOR_EMPLOYEE_WITH_CPF_ $cpf")
+
+        val encryptedPassword = BCryptPasswordEncoder().matches(passwords, image.employee?.password)
+
+        if (!encryptedPassword) {
+            throw IllegalArgumentException("Invalid password")
+        }
+
         imageRepository.delete(image)
         deleteFile(image.filePath!!)
     }

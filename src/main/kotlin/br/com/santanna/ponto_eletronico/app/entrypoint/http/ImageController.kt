@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
+import br.com.santanna.ponto_eletronico.domain.dto.image.DeleteImageRequestDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.UpdateImageMessageDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.UploadImageRequestDto
@@ -60,8 +61,11 @@ class ImageController(private val imageService: ImageService) {
     }
 
     @DeleteMapping("/{id}")
-    fun deleteImageById(@PathVariable id: Long, @RequestParam("cpf") cpf: String): ResponseEntity<Void> {
-        imageService.deleteImageById(id, cpf)
+    fun deleteImageById(
+        @PathVariable id: Long,
+        @RequestBody deleteImageRequestDto: DeleteImageRequestDto
+    ): ResponseEntity<Void> {
+        imageService.deleteImageById(id, deleteImageRequestDto.cpf, deleteImageRequestDto.passwords)
         return ResponseEntity.noContent().build()
     }
 }
