@@ -14,6 +14,8 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 private const val NO_IMAGE_FOUND_WITH_ID_ = "Nenhuma imagem para o ID: "
@@ -29,17 +31,24 @@ class ImageServiceImpl(
 ) : ImageService {
 
     @Transactional
-    override fun storeImage(uploadImageRequestDto: UploadImageRequestDto): Image {
-        val employee = employeeDataProvider.findCpf(uploadImageRequestDto.cpf)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: $uploadImageRequestDto.cpf")
+    override fun storeImage(uploadImageDto: UploadImageRequestDto): Image {
+        val employee = employeeDataProvider.findCpf(uploadImageDto.cpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${uploadImageDto.cpf}")
 
-        val encryptedPassword = BCryptPasswordEncoder().matches(uploadImageRequestDto.passwords,employee.password)
+        val encryptedPassword = BCryptPasswordEncoder().matches(uploadImageDto.passwords, employee.password)
 
         if (!encryptedPassword) {
             throw IllegalArgumentException("Invalid password")
         }
-        val filePath = storeFile(uploadImageRequestDto.file)
-        val image = Image(filePath = filePath, message = uploadImageRequestDto.message, employee = employee)
+
+        val filePath = storeFile(uploadImageDto.file)
+        val image = Image(
+            filePath = filePath,
+            message = uploadImageDto.message,
+            employee = employee,
+            uploadDate = LocalDate.now()
+        )
+
         return imageRepository.save(image)
     }
 
@@ -60,7 +69,8 @@ class ImageServiceImpl(
                 surname = employee.surname,
                 cpf = employee.cpf,
                 filePath = image.filePath,
-                message = image.message
+                message = image.message,
+                uploadDate = image.uploadDate
             )
         }
     }
@@ -117,9 +127,38 @@ class ImageServiceImpl(
             surname = employee.surname,
             cpf = employee.cpf,
             filePath = updatedImage.filePath,
-            message = updatedImage.message
+            message = updatedImage.message,
+            uploadDate = updatedImage.uploadDate
         )
     }
+
+    override fun getImagesByEmployeeCpfAndDateRange(imageSearchDto: ImageSearchDto): List<ImageListDto> {
+        val employee = employeeDataProvider.findCpf(imageSearchDto.cpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${imageSearchDto.cpf}")
+
+        val isPasswordValid = BCryptPasswordEncoder().matches(imageSearchDto.passwords, employee.password)
+        if (!isPasswordValid) {
+            throw IllegalArgumentException("Invalid password")
+        }
+
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val startDate = LocalDate.parse(imageSearchDto.startDate, formatter)
+        val endDate = LocalDate.parse(imageSearchDto.endDate, formatter)
+
+        val images = imageRepository.findAllByEmployeeCpfAndDateRange(imageSearchDto.cpf, startDate, endDate)
+        return images.map { image ->
+            ImageListDto(
+                id = image.id,
+                name = employee.name,
+                surname = employee.surname,
+                cpf = employee.cpf,
+                filePath = image.filePath,
+                message = image.message,
+                uploadDate = image.uploadDate
+            )
+        }
+    }
+
     private fun deleteFile(filePath: String) {
         try {
             val file = Paths.get(filePath).toAbsolutePath().normalize()

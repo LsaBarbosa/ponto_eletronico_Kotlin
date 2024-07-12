@@ -15,11 +15,20 @@ import org.springframework.web.multipart.MultipartFile
 class ImageController(private val imageService: ImageService) {
 
     @PostMapping("/upload")
-    fun uploadImage(@RequestParam("cpf") cpf: String, @RequestParam("file") file: MultipartFile, @RequestParam("message", required = false) message: String?, @RequestParam("passwords") passwords: String): ResponseEntity<Void> {
-        val uploadImageRequestDto = UploadImageRequestDto(cpf, file, message, passwords)
+    fun uploadImage(  @RequestPart("cpf") cpf: String,
+                      @RequestPart("passwords") passwords: String,
+                      @RequestPart("file") file: MultipartFile,
+                      @RequestPart("message", required = false) message: String?): ResponseEntity<Void> {
+        val uploadImageRequestDto = UploadImageRequestDto(
+            cpf = cpf,
+            passwords = passwords,
+            file = file,
+            message = message
+        )
         imageService.storeImage(uploadImageRequestDto)
         return ResponseEntity.ok().build()
     }
+
 
     @GetMapping("/download")
     fun downloadImage(@RequestParam("cpf") cpf: String): ResponseEntity<ByteArrayResource> {
@@ -33,8 +42,8 @@ class ImageController(private val imageService: ImageService) {
     }
 
     @GetMapping
-    fun getImagesByEmployeeCpf(@RequestParam("cpf") cpf: String): ResponseEntity<List<ImageListDto>> {
-        val images = imageService.getImagesByEmployeeCpf(cpf)
+    fun searchImages(@Valid @RequestBody imageSearchDto: ImageSearchDto): ResponseEntity<List<ImageListDto>> {
+        val images = imageService.getImagesByEmployeeCpfAndDateRange(imageSearchDto)
         return ResponseEntity.ok(images)
     }
 
