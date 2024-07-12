@@ -2,6 +2,7 @@ package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeeCountDto
+import br.com.santanna.ponto_eletronico.domain.dto.company.DeleteCompanyRequestDto
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -50,8 +51,8 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @DeleteMapping
-    fun deleteCompany(@RequestParam ("companyCNPJ") companyCNPJ: String): ResponseEntity<Void> {
-        companyService.deleteCompanyByCNPJ(companyCNPJ)
+    fun deleteCompany(@RequestBody deleteCompanyRequestDto: DeleteCompanyRequestDto): ResponseEntity<Void> {
+        companyService.deleteCompanyByCNPJ(deleteCompanyRequestDto)
         return ResponseEntity.noContent().build()
     }
 

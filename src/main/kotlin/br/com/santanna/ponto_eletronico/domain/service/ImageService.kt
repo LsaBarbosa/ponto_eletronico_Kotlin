@@ -1,7 +1,8 @@
 package br.com.santanna.ponto_eletronico.domain.service
 
+import br.com.santanna.ponto_eletronico.domain.dto.image.DeleteImageRequestDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.ImageListDto
-import br.com.santanna.ponto_eletronico.domain.dto.image.UpdateImageMessageDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.UpdateImageRequestDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.UploadImageRequestDto
 import br.com.santanna.ponto_eletronico.domain.entity.Image
 
@@ -10,6 +11,6 @@ interface ImageService {
     fun getImageByEmployeeCpf(cpf: String): ByteArray
     fun getImagesByEmployeeCpf(cpf: String): List<ImageListDto>
     fun getImageById(id: Long): ByteArray
-    fun deleteImageById(id: Long, cpf: String)
-    fun updateImageMessage(id: Long, cpf: String, updateImageMessageDto: UpdateImageMessageDto): ImageListDto
+    fun deleteImageById(deleteImageRequestDto: DeleteImageRequestDto)
+    fun updateImageMessage(updateImageRequestDto: UpdateImageRequestDto): ImageListDto
 }

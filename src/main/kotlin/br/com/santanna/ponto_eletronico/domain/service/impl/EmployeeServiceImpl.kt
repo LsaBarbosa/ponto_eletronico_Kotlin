@@ -3,9 +3,7 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyGetDto
-import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
-import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
-import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
+import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.TimeRecordDto
 import br.com.santanna.ponto_eletronico.domain.entity.Company
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
@@ -82,28 +80,46 @@ class EmployeeServiceImpl(
     }
 
     @Transactional
-    override fun updateEmployee(cpf: String, @Valid updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto {
-        val existingEmployeeEntity = employeeDataProvider.findCpf(cpf)
-            ?: throw IllegalArgumentException("Employee not found with CPF: $cpf")
+    override fun updateEmployee(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto {
+        val employeeToUpdate = employeeDataProvider.findCpf(updateEmployeeRequestDto.employeeCpfTarget)
+            ?: throw IllegalArgumentException("Employee not found with CPF: ${updateEmployeeRequestDto.employeeCpfTarget}")
 
-        val encryptedPassword = updateEmployeeDto.passwords?.let { BCryptPasswordEncoder().encode(it) }
+        val updatingEmployee = employeeDataProvider.findCpf(updateEmployeeRequestDto.employeeManagerCpf)
+            ?: throw IllegalArgumentException("Employee not found with CPF: ${updateEmployeeRequestDto.employeeManagerCpf}")
 
-        existingEmployeeEntity.apply {
-            salary = updateEmployeeDto.salary ?: salary
-            passwords = encryptedPassword ?: passwords
-            position = updateEmployeeDto.position ?: position
-            role = updateEmployeeDto.role ?: role
+        val isPasswordValid = BCryptPasswordEncoder().matches(updateEmployeeRequestDto.passwords, updatingEmployee.password)
+        if (!isPasswordValid) {
+            throw IllegalArgumentException("Invalid password")
         }
 
-        val updatedEmployeeEntity = employeeDataProvider.save(existingEmployeeEntity)
+        val encryptedPassword = updateEmployeeRequestDto.updateEmployeeDto.passwords?.let { BCryptPasswordEncoder().encode(it) }
+
+        employeeToUpdate.apply {
+            salary = updateEmployeeRequestDto.updateEmployeeDto.salary ?: salary
+            passwords = encryptedPassword ?: passwords
+            position = updateEmployeeRequestDto.updateEmployeeDto.position ?: position
+            role = updateEmployeeRequestDto.updateEmployeeDto.role ?: role
+        }
+
+        val updatedEmployeeEntity = employeeDataProvider.save(employeeToUpdate)
         return convertToUpdateEmployeeDto(updatedEmployeeEntity)
     }
 
     @Transactional
-    override fun deleteEmployee(cpf: String) {
-        employeeDataProvider.deleteByCpf(cpf)
-    }
+    override  fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
+        val employeeTarget = employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeCpfTarget)
+            ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteEmployeeRequestDto.employeeCpfTarget}")
 
+        val deletingEmployee = employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeManagerCpf)
+            ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteEmployeeRequestDto.employeeManagerCpf}")
+
+        val isPasswordValid = BCryptPasswordEncoder().matches(deleteEmployeeRequestDto.passwords, deletingEmployee.password)
+        if (!isPasswordValid) {
+            throw IllegalArgumentException("Invalid password")
+        }
+
+        employeeDataProvider.deleteByCpf(deleteEmployeeRequestDto.employeeCpfTarget)
+    }
     private fun convertToDto(employee: Employee?): EmployeeDto {
         return EmployeeDto(
             id = employee?.id,
