@@ -33,7 +33,6 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
         val pdfDocument = PdfDocument(pdfWriter)
         val document = Document(pdfDocument)
 
-
         val font = PdfFontFactory.createFont(StandardFonts.HELVETICA)
         val boldFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)
         val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -60,7 +59,7 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
                 val balanceTime = if (index == dailyRecords.size - 1) {
                     calculateBalanceTime(dailyWorkedMinutes)
                 } else {
-                    "00:00"
+                    "INTERVALO"
                 }
                 table.addCell(createBalanceCell(balanceTime, font))
             }
@@ -159,6 +158,7 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
         val paragraph = Paragraph(balanceTime).setFont(font).setFontSize(10f).setTextAlignment(TextAlignment.CENTER)
         when {
             balanceTime.startsWith("-") -> paragraph.setFontColor(ColorConstants.RED)
+            balanceTime == "INTERVALO" -> paragraph.setFontColor(ColorConstants.BLACK)
             balanceTime != "00:00" -> paragraph.setFontColor(ColorConstants.GREEN)
             else -> paragraph.setFontColor(ColorConstants.BLACK)
         }
