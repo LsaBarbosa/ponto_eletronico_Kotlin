@@ -2,6 +2,7 @@ package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeeCountDto
+import br.com.santanna.ponto_eletronico.domain.dto.company.CreateCompanyDto
 import br.com.santanna.ponto_eletronico.domain.dto.company.DeleteCompanyRequestDto
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
 import jakarta.validation.Valid
@@ -35,8 +36,8 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @PostMapping
-    fun registerCompany(@Valid @RequestBody companyDTO: CompanyDTO): ResponseEntity<CompanyDTO> {
-        val companyCreated = companyService.registerCompany(companyDTO)
+    fun registerCompany(@Valid @RequestBody createCompanyDto: CreateCompanyDto): ResponseEntity<CompanyDTO> {
+        val companyCreated = companyService.registerCompany(createCompanyDto)
         val uri: URI = URI.create("/company/${companyCreated.id}")
         return ResponseEntity.created(uri).body(companyCreated)
     }

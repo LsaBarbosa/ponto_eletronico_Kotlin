@@ -10,7 +10,9 @@ import br.com.santanna.ponto_eletronico.domain.service.CompanyService
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
+import br.com.santanna.ponto_eletronico.domain.dto.company.CreateCompanyDto
 import br.com.santanna.ponto_eletronico.domain.dto.company.DeleteCompanyRequestDto
+import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -36,14 +38,34 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider,  
     }
 
     @Transactional
-    override fun registerCompany(companyDto: CompanyDTO): CompanyDTO {
-        val isExistCompany =companyDataProvider.existsByNameCompanyIgnoreCase(companyDto.nameCompany)
+    override fun registerCompany(createCompanyDto: CreateCompanyDto): CompanyDTO {
+        val isExistCompany = companyDataProvider.existsByNameCompanyIgnoreCase(createCompanyDto.nameCompany)
         if (isExistCompany) {
             throw DataIntegrityViolationException("Empresa já existe")
         }
-        val companyEntity =  convertToEntity(companyDto)
+
+        val companyEntity = Company(
+            nameCompany = createCompanyDto.nameCompany,
+            companyCNPJ = createCompanyDto.companyCNPJ
+        )
+
         val savedCompanyEntity = companyDataProvider.save(companyEntity)
-        return  convertToDto(savedCompanyEntity)
+
+        val encryptedPassword = BCryptPasswordEncoder().encode(createCompanyDto.managerPasswords)
+
+        val managerEntity = Employee(
+            name = createCompanyDto.managerName,
+            surname = createCompanyDto.managerSurname,
+            position = createCompanyDto.managerPosition,
+            cpf = createCompanyDto.managerCpf,
+            role = EmployeeRole.MANAGER,
+            passwords = encryptedPassword,
+            company = savedCompanyEntity
+        )
+
+        employeeDataProvider.save(managerEntity)
+
+        return convertToDto(savedCompanyEntity)
     }
 
     @Transactional
