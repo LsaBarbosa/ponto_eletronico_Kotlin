@@ -11,5 +11,5 @@ interface TimeRecordService {
     fun updateTimeRecord(cpf:String,updateTimeRecordDto: UpdateTimeRecordDto): UpdateTimeRecordDto
     fun balanceHoursByDate(cpf: String, startDate: LocalDate, endDate: LocalDate): BalanceHoursDto
     fun getTimeRecordsByEmployeeCpfAndDateRangePageable(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto>
-    fun deleteTimeRecord(cpf: String, timeRecordId: Long)
+    fun deleteTimeRecord(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto, timeRecordId: Long)
 }

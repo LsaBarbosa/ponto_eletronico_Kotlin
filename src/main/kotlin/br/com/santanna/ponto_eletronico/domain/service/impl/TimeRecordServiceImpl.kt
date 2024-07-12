@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.LocalDate
@@ -149,17 +150,18 @@ data class TimeRecordServiceImpl(
 
 
     @Transactional
-    override fun deleteTimeRecord(cpf: String, timeRecordId: Long) {
-        val employee = findEmployeeByCpfOrThrow(cpf)
+    override fun deleteTimeRecord(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto, timeRecordId: Long) {
+        val employee = findEmployeeByCpfOrThrow(deleteTimeRecordRequestDto.cpf)
         val timeRecord = timeRecordDataProvider.findById(timeRecordId) ?: throw ObjectNotFoundException("Time record not found with ID: $timeRecordId")
-
         if (timeRecord.employee?.cpf != employee.cpf) {
-            throw DataIntegrityViolationException("Registro não pertence ao cpf: $cpf informado")
+            throw DataIntegrityViolationException("Registro não pertence ao cpf: ${deleteTimeRecordRequestDto.cpf} informado")
         }
-
+        val encryptedPassword = BCryptPasswordEncoder().matches(deleteTimeRecordRequestDto.passwords, employee.password)
+        if (!encryptedPassword) {
+            throw IllegalArgumentException("Invalid password")
+        }
         timeRecordDataProvider.delete(timeRecord)
     }
-
     private fun findTimeRecordsByDateRange(cpf:String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = endDate.atTime(23, 59, 59)

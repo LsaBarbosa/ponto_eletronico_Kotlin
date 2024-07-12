@@ -82,10 +82,10 @@ class TimeRecordController(
 
     @DeleteMapping("/{id}")
     fun deleteTimeRecord(
-        @RequestParam("cpf") cpf: String,
-        @PathVariable("id") id: Long
+        @PathVariable("id") id: Long,
+        @RequestBody deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto
     ): ResponseEntity<Void> {
-        timeRecordService.deleteTimeRecord(cpf, id)
+        timeRecordService.deleteTimeRecord(deleteTimeRecordRequestDto, id)
         return ResponseEntity.noContent().build()
     }
 
