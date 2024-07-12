@@ -2,16 +2,15 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
+import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
-import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
-import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
-import jakarta.transaction.*
+import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.Duration
