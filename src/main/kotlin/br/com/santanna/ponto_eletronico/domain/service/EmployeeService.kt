@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.service
 
+import br.com.santanna.ponto_eletronico.domain.dto.employee.DeleteEmployeeRequestDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
@@ -15,7 +16,7 @@ interface EmployeeService {
     fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto?
     fun registerEmployee(employeeDto: EmployeeDto?): EmployeeDto
     fun updateEmployee(cpf :String,updateEmployeeDto: UpdateEmployeeDto): UpdateEmployeeDto
-    fun deleteEmployee(cpf: String)
+    fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto)
 
 
 }

@@ -1,8 +1,10 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
+import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyGetDto
+import br.com.santanna.ponto_eletronico.domain.dto.employee.DeleteEmployeeRequestDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
@@ -100,8 +102,15 @@ class EmployeeServiceImpl(
     }
 
     @Transactional
-    override fun deleteEmployee(cpf: String) {
-        employeeDataProvider.deleteByCpf(cpf)
+    override fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
+        val employee = employeeDataProvider.findCpf(deleteEmployeeRequestDto.cpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${deleteEmployeeRequestDto.cpf}")
+
+        val encryptedPassword = BCryptPasswordEncoder().matches(deleteEmployeeRequestDto.passwords, employee.password)
+        if (!encryptedPassword) {
+            throw IllegalArgumentException("Invalid password")
+        }
+        employeeDataProvider.deleteByCpf(deleteEmployeeRequestDto.cpf)
     }
 
     private fun convertToDto(employee: Employee?): EmployeeDto {

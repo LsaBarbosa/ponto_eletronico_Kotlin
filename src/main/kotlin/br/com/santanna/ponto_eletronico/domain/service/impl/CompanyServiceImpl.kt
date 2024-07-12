@@ -8,13 +8,17 @@ import br.com.santanna.ponto_eletronico.domain.dto.employee.SimpleEmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
+import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
+import br.com.santanna.ponto_eletronico.domain.dto.company.DeleteCompanyRequestDto
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
-class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider) : CompanyService {
+class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider,  private val employeeDataProvider: EmployeeDataProvider) : CompanyService {
 
     override fun getAllCompanies(pageable: Pageable): Page<CompanyWithEmployeeCountDto> {
         val companies = companyDataProvider.findAll(pageable)
@@ -51,10 +55,20 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider) :
     }
 
     @Transactional
-    override fun deleteCompanyByCNPJ(companyCNPJ: String) {
-        companyDataProvider.deleteByCompanyCNPJ(companyCNPJ)
-    }
+    override fun deleteCompanyByCNPJ(deleteCompanyRequestDto: DeleteCompanyRequestDto) {
+        val company = companyDataProvider.findByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
+            ?: throw ObjectNotFoundException("Company not found with CNPJ: ${deleteCompanyRequestDto.companyCNPJ}")
 
+        val employee = employeeDataProvider.findCpf(deleteCompanyRequestDto.employeeCpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${deleteCompanyRequestDto.employeeCpf}")
+
+        val encryptedPassword = BCryptPasswordEncoder().matches(deleteCompanyRequestDto.passwords, employee.password)
+        if (!encryptedPassword) {
+            throw IllegalArgumentException("Invalid password")
+        }
+
+        companyDataProvider.deleteByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
+    }
     fun convertToEntity(companyDto: CompanyDTO): Company {
         return Company(
             id = companyDto.id,

@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
+import br.com.santanna.ponto_eletronico.domain.dto.employee.DeleteEmployeeRequestDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
@@ -70,10 +71,9 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
     }
 
     @DeleteMapping
-    fun deleteEmployee(@RequestParam ("cpf") cpf:String): ResponseEntity<Void> {
-        employeeService.deleteEmployee(cpf)
+    fun deleteEmployee( @RequestBody deleteEmployeeRequestDto: DeleteEmployeeRequestDto): ResponseEntity<Void> {
+        employeeService.deleteEmployee(deleteEmployeeRequestDto)
         return ResponseEntity.noContent().build()
-
     }
 
 
