@@ -11,7 +11,7 @@ interface EmployeeService {
     fun getEmployeeByCpf(cpf: String): EmployeeGetDto?
     fun getEmployeeEntityByCpf(cpf: String): Employee?
     fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto?
-    fun registerEmployee(employeeDto: EmployeeDto?): EmployeeDto
+    fun registerEmployee(managerCpf: String, createEmployeeDto: CreateEmployeeDto): EmployeeDto
     fun updateEmployee(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto
     fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto)
 
