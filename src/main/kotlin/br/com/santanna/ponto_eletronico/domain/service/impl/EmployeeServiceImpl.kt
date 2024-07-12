@@ -13,7 +13,6 @@ import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
 import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth.Companion.EMPLOYEE_ALREADY_EXIST
 import jakarta.transaction.Transactional
-import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -54,27 +53,39 @@ class EmployeeServiceImpl(
 
 
     @Transactional
-    override fun registerEmployee(@Valid employeeDto: EmployeeDto?): EmployeeDto {
+    override fun registerEmployee(managerCpf: String, createEmployeeDto: CreateEmployeeDto): EmployeeDto {
+        val manager = employeeDataProvider.findCpf(createEmployeeDto.managerCpf)
+            ?: throw IllegalArgumentException("Manager not found with CPF: ${createEmployeeDto.managerCpf}")
 
-        val employeeCpf = employeeDto?.cpf?.let { employeeDataProvider.findByCpf(it) }
+        if (manager.role != EmployeeRole.MANAGER) {
+            throw IllegalArgumentException("The specified manager is not authorized to create employees.")
+        }
+
+        val isPasswordValid = BCryptPasswordEncoder().matches(createEmployeeDto.passwordsManager, manager.password)
+        if (!isPasswordValid) {
+            throw IllegalArgumentException("Invalid password")
+        }
+
+        val employeeCpf = createEmployeeDto.cpf.let { employeeDataProvider.findCpf(it) }
         if (employeeCpf != null) {
             throw DataIntegrityViolationException(EMPLOYEE_ALREADY_EXIST)
         }
-        val encryptedPassword = BCryptPasswordEncoder().encode(employeeDto?.passwords)
 
-        val company = companyRepository.findByCompanyCNPJ(employeeDto?.companyCNPJ)
-            ?: throw IllegalArgumentException("Company not found with CNPJ: ${employeeDto?.companyCNPJ}")
+        val encryptedPassword = BCryptPasswordEncoder().encode(createEmployeeDto.passwords)
+        val company = manager.company
+            ?: throw IllegalArgumentException("Manager does not belong to any company.")
 
         val employeeEntity = Employee(
-            name = employeeDto?.name,
-            surname = employeeDto?.surname,
-            salary = employeeDto?.salary,
-            position = employeeDto?.position,
-            cpf = employeeDto?.cpf,
-            role = employeeDto?.role ?: EmployeeRole.USER,
+            name = createEmployeeDto.name,
+            surname = createEmployeeDto.surname,
+            salary = createEmployeeDto.salary,
+            position = createEmployeeDto.position,
+            cpf = createEmployeeDto.cpf,
+            role = createEmployeeDto.role ?: EmployeeRole.USER,
             passwords = encryptedPassword,
             company = company
         )
+
         val savedEmployeeEntity = employeeDataProvider.save(employeeEntity)
         return convertToDto(savedEmployeeEntity)
     }

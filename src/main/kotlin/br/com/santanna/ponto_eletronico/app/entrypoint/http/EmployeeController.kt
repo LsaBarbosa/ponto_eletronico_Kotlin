@@ -47,11 +47,13 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
     }
 
     @PostMapping("criar-colaborador")
-    fun registerNewEmployee(@Valid @RequestBody employeeDto: EmployeeDto): ResponseEntity<EmployeeDto> {
-        val employeeCreated = employeeService.registerEmployee(employeeDto)
+    fun registerNewEmployee(
+        @RequestParam("managerCpf") managerCpf: String,
+        @Valid @RequestBody createEmployeeDto: CreateEmployeeDto
+    ): ResponseEntity<EmployeeDto> {
+        val employeeCreated = employeeService.registerEmployee(managerCpf, createEmployeeDto)
         val uri = URI.create("/employees/${employeeCreated.id}")
         return ResponseEntity.created(uri).body(employeeCreated)
-
     }
 
     @PutMapping
