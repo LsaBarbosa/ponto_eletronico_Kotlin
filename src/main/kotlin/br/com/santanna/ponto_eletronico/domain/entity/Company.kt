@@ -16,12 +16,11 @@ data class Company (
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    @field:NotBlank(message = "O nome da empresa não pode estar em branco")
-    @Column(nullable = false, unique = true)
+
+
     var nameCompany:String? = null,
 
-    @field:Size(min = 14, max = 14, message = "O CNPJ deve ter exatamente 14 caracteres")
-    @field:CNPJ(message = "A CNPJ deve estar no formato correto com 14 digitos")
+
     @Column(nullable = false, unique = true)
     var companyCNPJ: String? = null,
 

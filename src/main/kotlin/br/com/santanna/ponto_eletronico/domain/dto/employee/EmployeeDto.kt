@@ -23,7 +23,7 @@ data class EmployeeDto (
       @field:Size(min = 1, max = 100, message = "A posição deve ter entre 1 e 100 caracteres")
       var position: String? = null,
 
-      @field:CPF(message = "O CPF deve ser válido")
+
       @field:Size(min = 11, max = 11, message = "O CPF deve ter exatamente 11 caracteres")
       var cpf: String? = null,
 

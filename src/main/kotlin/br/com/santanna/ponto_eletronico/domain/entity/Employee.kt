@@ -15,22 +15,18 @@ data class Employee(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    @NotBlank
+
     var name: String? = null,
-    @NotBlank
+
     var surname: String? = null,
-    @NotNull
+
     var salary: Double? = null,
-    @NotBlank
-    @Size(min = 1, max = 100)
+
     var position: String? = null,
-    @NotBlank
-   @Size(min = 8, max = 8)
+
     var passwords: String? = null,
 
-    @CPF
-    @Size(min = 11, max = 11)
-    @Column(unique = true)
+
     var cpf: String? = null,
 
     @Enumerated(EnumType.STRING)
@@ -42,7 +38,7 @@ data class Employee(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
-    @NotNull
+
     var company: Company? = null,
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
