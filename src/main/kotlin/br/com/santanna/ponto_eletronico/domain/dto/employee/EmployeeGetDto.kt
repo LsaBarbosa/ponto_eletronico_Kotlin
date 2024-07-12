@@ -1,6 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.dto.employee
 
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyGetDto
+import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
 
 data class EmployeeGetDto(
     var id: Long? = null,
@@ -9,7 +10,7 @@ data class EmployeeGetDto(
     var salary: Double? = null,
     var position: String? = null,
     var cpf: String? = null,
-
+var role: EmployeeRole?=null,
     val company: CompanyGetDto? = null
 )
 

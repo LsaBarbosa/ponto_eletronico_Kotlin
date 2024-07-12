@@ -44,6 +44,7 @@ class EmployeeServiceImpl(
         val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name, surname)
         return convertToGetEmployeeDto(employee)
     }
+
     override fun getEmployeeEntityByCpf(cpf: String): Employee? {
         return employeeDataProvider.findCpf(cpf)
     }
@@ -103,7 +104,7 @@ class EmployeeServiceImpl(
         employeeDataProvider.deleteByCpf(cpf)
     }
 
-   private fun convertToDto(employee: Employee?): EmployeeDto {
+    private fun convertToDto(employee: Employee?): EmployeeDto {
         return EmployeeDto(
             id = employee?.id,
             cpf = employee?.cpf,
@@ -133,26 +134,27 @@ private fun convertToGetEmployeeDto(employee: Employee?): EmployeeGetDto {
         id = employee?.id,
         name = employee?.name,
         surname = employee?.surname,
-        cpf = employee?.cpf,
         salary = employee?.salary,
         position = employee?.position,
+        cpf = employee?.cpf,
+        role = employee?.role,
         company = employee?.company?.convertToDto()
     )
 }
 
-    fun convertToTimeRecordDto(timeRecord: TimeRecord): TimeRecordDto {
-        return TimeRecordDto(
-            id = timeRecord.id,
-            startWorkTime = timeRecord.startWorkTime,
-            endWorkTime = timeRecord.endWorkTime,
-            timeWorked = timeRecord.timeWorked
-        )
-    }
+private fun convertToTimeRecordDto(timeRecord: TimeRecord): TimeRecordDto {
+    return TimeRecordDto(
+        id = timeRecord.id,
+        startWorkTime = timeRecord.startWorkTime,
+        endWorkTime = timeRecord.endWorkTime,
+        timeWorked = timeRecord.timeWorked
+    )
+}
 
-    fun Company.convertToDto(): CompanyGetDto {
-        return CompanyGetDto(
-            nameCompany = this.nameCompany
-        )
-    }
+private fun Company.convertToDto(): CompanyGetDto {
+    return CompanyGetDto(
+        nameCompany = this.nameCompany
+    )
+}
 
 
