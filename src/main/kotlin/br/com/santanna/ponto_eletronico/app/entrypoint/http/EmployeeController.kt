@@ -33,6 +33,11 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
         return ResponseEntity.ok(employees)
     }
 
+    @PutMapping("/update-password")
+    fun updatePassword(@Valid @RequestBody updatePasswordDto: UpdatePassword): ResponseEntity<Void> {
+        employeeService.updatePassword(updatePasswordDto)
+        return ResponseEntity.ok().build()
+    }
 
     @GetMapping("/busca-nome")
     fun getEmployeeByNameAndSurname(
