@@ -14,4 +14,5 @@ interface EmployeeService {
     fun registerEmployee(managerCpf: String, createEmployeeDto: CreateEmployeeDto): EmployeeDto
     fun updateEmployee(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto
     fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto)
+    fun updatePassword(updatePasswordDto: UpdatePassword)
 }

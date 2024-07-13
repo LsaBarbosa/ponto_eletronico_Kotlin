@@ -1,6 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
+import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.*
@@ -137,17 +138,36 @@ class EmployeeServiceImpl(
             throw IllegalArgumentException("Invalid password")
         }
 
-        val encryptedPassword = updateEmployeeRequestDto.updateEmployeeDto.passwords?.let { BCryptPasswordEncoder().encode(it) }
-
         employeeToUpdate.apply {
+            name=updateEmployeeRequestDto.updateEmployeeDto.name
+            surname=updateEmployeeRequestDto.updateEmployeeDto.surname
             salary = updateEmployeeRequestDto.updateEmployeeDto.salary ?: salary
-            passwords = encryptedPassword ?: passwords
             position = updateEmployeeRequestDto.updateEmployeeDto.position ?: position
             role = updateEmployeeRequestDto.updateEmployeeDto.role ?: role
         }
 
         val updatedEmployeeEntity = employeeDataProvider.save(employeeToUpdate)
         return convertToUpdateEmployeeDto(updatedEmployeeEntity)
+    }
+
+    @Transactional
+    override fun updatePassword(updatePasswordDto: UpdatePassword) {
+        val employee = employeeDataProvider.findCpf(updatePasswordDto.cpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${updatePasswordDto.cpf}")
+
+        val isOldPasswordValid = BCryptPasswordEncoder().matches(updatePasswordDto.oldPassword, employee.password)
+        if (!isOldPasswordValid) {
+            throw IllegalArgumentException("Invalid old password")
+        }
+
+        if (updatePasswordDto.newPassword != updatePasswordDto.confirmPassword) {
+            throw IllegalArgumentException("New password and confirmation do not match")
+        }
+
+        val newEncryptedPassword = BCryptPasswordEncoder().encode(updatePasswordDto.newPassword)
+        employee.passwords = newEncryptedPassword
+
+        employeeDataProvider.save(employee)
     }
 
     @Transactional
@@ -180,10 +200,11 @@ class EmployeeServiceImpl(
 
     private fun convertToUpdateEmployeeDto(employee: Employee?): UpdateEmployeeDto {
         return UpdateEmployeeDto(
-            cpf = employee?.cpf,
-            role = employee?.role,
+            name = employee?.name,
+            surname = employee?.surname,
+            salary = employee?.salary,
             position = employee?.position,
-            salary = employee?.salary
+            role = employee?.role
         )
     }
 }

@@ -31,20 +31,20 @@ class ImageServiceImpl(
 ) : ImageService {
 
     @Transactional
-    override fun storeImage(uploadImageDto: UploadImageRequestDto): Image {
-        val employee = employeeDataProvider.findCpf(uploadImageDto.cpf)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: ${uploadImageDto.cpf}")
+    override fun storeImage(uploadImageRequestDto: UploadImageRequestDto): Image {
+        val employee = employeeDataProvider.findCpf(uploadImageRequestDto.cpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${uploadImageRequestDto.cpf}")
 
-        val encryptedPassword = BCryptPasswordEncoder().matches(uploadImageDto.passwords, employee.password)
+        val encryptedPassword = BCryptPasswordEncoder().matches(uploadImageRequestDto.passwords, employee.password)
 
         if (!encryptedPassword) {
             throw IllegalArgumentException("Invalid password")
         }
 
-        val filePath = storeFile(uploadImageDto.file)
+        val filePath = storeFile(uploadImageRequestDto.file)
         val image = Image(
             filePath = filePath,
-            message = uploadImageDto.message,
+            message = uploadImageRequestDto.message,
             employee = employee,
             uploadDate = LocalDate.now()
         )
