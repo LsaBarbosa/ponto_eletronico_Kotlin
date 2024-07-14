@@ -29,22 +29,9 @@ class EmployeeServiceImpl(
     private val mailSender: JavaMailSenderImpl, ) : EmployeeService {
 
     override fun getEmployeesByManager(managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): Page<EmployeeGetDto> {
-        val manager = employeeDataProvider.findCpf(managerEmployeeRequestDto.managerCpf)
-            ?: throw IllegalArgumentException("Manager not found with CPF: ${managerEmployeeRequestDto.managerCpf}")
+        val manager = validateManager(managerEmployeeRequestDto.managerCpf, managerEmployeeRequestDto.passwords)
 
-        if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("The specified employee is not a manager.")
-        }
-
-        val isPasswordValid = BCryptPasswordEncoder().matches(managerEmployeeRequestDto.passwords, manager.password)
-        if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
-        }
-
-        val company = manager.company
-            ?: throw IllegalArgumentException("Manager does not belong to any company.")
-
-        val employees = employeeDataProvider.findByCompany(company.id!!, pageable)
+        val employees = employeeDataProvider.findByCompany(manager.company!!.id!!, pageable)
         return employees.map { convertToGetEmployeeDto(it) }
     }
 
@@ -52,7 +39,6 @@ class EmployeeServiceImpl(
         val employee = employeeDataProvider.findById(id)
         return convertToGetEmployeeDto(employee)
     }
-
 
     override fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto? {
         val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name, surname)
@@ -64,25 +50,12 @@ class EmployeeServiceImpl(
     }
 
     override fun getEmployeeByCpf(request: ManagerEmployeeRequestByCPFDto): EmployeeGetDto? {
-        val manager = employeeDataProvider.findCpf(request.managerCpf)
-            ?: throw IllegalArgumentException("Manager not found with CPF: ${request.managerCpf}")
-
-        if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("The specified employee is not a manager.")
-        }
-
-        val isPasswordValid = BCryptPasswordEncoder().matches(request.passwords, manager.password)
-        if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
-        }
-
-        val company = manager.company
-            ?: throw IllegalArgumentException("Manager does not belong to any company.")
+        val manager = validateManager(request.managerCpf, request.passwords)
 
         val employee = employeeDataProvider.findCpf(request.employeeCpf)
             ?: throw IllegalArgumentException("Employee not found with CPF: ${request.employeeCpf}")
 
-        if (employee.company?.id != company.id) {
+        if (employee.company?.id != manager.company!!.id) {
             throw IllegalArgumentException("The specified employee does not belong to the manager's company.")
         }
 
@@ -91,17 +64,7 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun registerEmployee(managerCpf: String, createEmployeeDto: CreateEmployeeDto): EmployeeDto {
-        val manager = employeeDataProvider.findCpf(createEmployeeDto.managerCpf)
-            ?: throw IllegalArgumentException("Manager not found with CPF: ${createEmployeeDto.managerCpf}")
-
-        if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("The specified manager is not authorized to create employees.")
-        }
-
-        val isPasswordValid = BCryptPasswordEncoder().matches(createEmployeeDto.passwordsManager, manager.password)
-        if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
-        }
+        val manager = validateManager(createEmployeeDto.managerCpf, createEmployeeDto.passwordsManager)
 
         val employeeCpf = createEmployeeDto.cpf.let { employeeDataProvider.findCpf(it) }
         if (employeeCpf != null) {
@@ -109,9 +72,6 @@ class EmployeeServiceImpl(
         }
 
         val encryptedPassword = BCryptPasswordEncoder().encode(createEmployeeDto.passwords)
-        val company = manager.company
-            ?: throw IllegalArgumentException("Manager does not belong to any company.")
-
         val employeeEntity = Employee(
             name = createEmployeeDto.name,
             surname = createEmployeeDto.surname,
@@ -121,7 +81,7 @@ class EmployeeServiceImpl(
             email = createEmployeeDto.email,
             role = createEmployeeDto.role ?: EmployeeRole.USER,
             passwords = encryptedPassword,
-            company = company
+            company = manager.company
         )
 
         val savedEmployeeEntity = employeeDataProvider.save(employeeEntity)
@@ -133,20 +93,13 @@ class EmployeeServiceImpl(
         val employeeToUpdate = employeeDataProvider.findCpf(updateEmployeeRequestDto.employeeCpfTarget)
             ?: throw IllegalArgumentException("Employee not found with CPF: ${updateEmployeeRequestDto.employeeCpfTarget}")
 
-        val updatingEmployee = employeeDataProvider.findCpf(updateEmployeeRequestDto.employeeManagerCpf)
-            ?: throw IllegalArgumentException("Employee not found with CPF: ${updateEmployeeRequestDto.employeeManagerCpf}")
-
-        val isPasswordValid =
-            BCryptPasswordEncoder().matches(updateEmployeeRequestDto.passwords, updatingEmployee.password)
-        if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
-        }
+        validateManager(updateEmployeeRequestDto.employeeManagerCpf, updateEmployeeRequestDto.passwords)
 
         employeeToUpdate.apply {
             name = updateEmployeeRequestDto.updateEmployeeDto.name
             surname = updateEmployeeRequestDto.updateEmployeeDto.surname
             salary = updateEmployeeRequestDto.updateEmployeeDto.salary ?: salary
-            email=updateEmployeeRequestDto.updateEmployeeDto.email
+            email = updateEmployeeRequestDto.updateEmployeeDto.email
             position = updateEmployeeRequestDto.updateEmployeeDto.position ?: position
             role = updateEmployeeRequestDto.updateEmployeeDto.role ?: role
         }
@@ -177,17 +130,10 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
-        val employeeTarget = employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeCpfTarget)
+         employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeCpfTarget)
             ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteEmployeeRequestDto.employeeCpfTarget}")
 
-        val deletingEmployee = employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeManagerCpf)
-            ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteEmployeeRequestDto.employeeManagerCpf}")
-
-        val isPasswordValid =
-            BCryptPasswordEncoder().matches(deleteEmployeeRequestDto.passwords, deletingEmployee.password)
-        if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
-        }
+        validateManager(deleteEmployeeRequestDto.employeeManagerCpf, deleteEmployeeRequestDto.passwords)
 
         employeeDataProvider.deleteByCpf(deleteEmployeeRequestDto.employeeCpfTarget)
     }
@@ -207,6 +153,23 @@ class EmployeeServiceImpl(
         employeeDataProvider.save(employee)
 
         sendEmail(employee.email!!, newPassword)
+    }
+
+
+    private fun validateManager(managerCpf: String, password: String): Employee {
+        val manager = employeeDataProvider.findCpf(managerCpf)
+            ?: throw IllegalArgumentException("Manager not found with CPF: $managerCpf")
+
+        if (manager.role != EmployeeRole.MANAGER) {
+            throw IllegalArgumentException("The specified employee is not a manager.")
+        }
+
+        val isPasswordValid = BCryptPasswordEncoder().matches(password, manager.password)
+        if (!isPasswordValid) {
+            throw IllegalArgumentException("Invalid password")
+        }
+
+        return manager
     }
 
     private fun generateRandomPassword(): String {
@@ -243,6 +206,8 @@ class EmployeeServiceImpl(
         helper.setText(htmlContent, true)
         mailSender.send(message)
     }
+
+
 
     private fun convertToDto(employee: Employee?): EmployeeDto {
         return EmployeeDto(

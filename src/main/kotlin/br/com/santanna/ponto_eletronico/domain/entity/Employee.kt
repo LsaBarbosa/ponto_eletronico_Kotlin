@@ -13,7 +13,6 @@ data class Employee(
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     var id: UUID? = null,
 
-
     var name: String? = null,
 
     var surname: String? = null,

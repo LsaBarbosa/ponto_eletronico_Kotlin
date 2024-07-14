@@ -11,6 +11,7 @@ import java.util.*
 
 data class EmployeeDto (
       var id: UUID? = null,
+
       @field:NotBlank(message = "O nome não pode estar em branco")
       var name: String? = null,
 
