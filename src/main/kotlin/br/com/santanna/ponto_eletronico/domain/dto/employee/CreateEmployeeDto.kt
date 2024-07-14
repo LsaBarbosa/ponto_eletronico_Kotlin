@@ -1,6 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.dto.employee
 
 import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
+import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
@@ -28,6 +29,7 @@ data class CreateEmployeeDto(
     @field:NotBlank(message = "A senha não pode estar em branco")
     @field:Size(min = 8, max = 50, message = "A senha deve ter no mínimo 8 caracteres")
     var passwords: String? = null,
-
+    @field:Email(message = "Email é obrigatório")
+    var email: String? = null,
     var role: EmployeeRole? = null
 )

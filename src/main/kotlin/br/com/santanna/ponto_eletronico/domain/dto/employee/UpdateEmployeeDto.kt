@@ -1,15 +1,29 @@
 package br.com.santanna.ponto_eletronico.domain.dto.employee
 
 import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 
 
 data class UpdateEmployeeDto(
-    var salary: Double? = null,
+
+    @field:NotBlank(message = "O nome não pode estar em branco")
     var name: String? = null,
+
+    @field:NotBlank(message = "O sobrenome não pode estar em branco")
     var surname: String? = null,
+
+    @field:NotNull(message = "O salário não pode estar em branco")
+    var salary: Double? = null,
+
+    @field:NotBlank(message = "A posição não pode estar em branco")
     @field:Size(min = 1, max = 100, message = "A posição deve ter entre 1 e 100 caracteres")
     var position: String? = null,
+
+    @field:Email(message = "Email é obrigatório")
+    var email: String? = null,
     var role: EmployeeRole? = null
 )
 

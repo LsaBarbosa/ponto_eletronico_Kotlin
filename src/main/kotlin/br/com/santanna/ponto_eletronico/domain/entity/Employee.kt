@@ -21,12 +21,12 @@ data class Employee(
     var position: String? = null,
 
     var passwords: String? = null,
-
+    var email: String? = null,
 
     var cpf: String? = null,
 
     @Enumerated(EnumType.STRING)
-    var role: EmployeeRole?=null,
+    var role: EmployeeRole? = null,
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     @JsonIgnoreProperties("employee")
@@ -41,8 +41,8 @@ data class Employee(
     var images: List<Image>? = null
 
 
-): UserDetails {
-    constructor() : this(null, null, null, null, null, null, null, EmployeeRole.USER, emptyList(), null)
+) : UserDetails {
+    constructor() : this(null, null, null, null, null, null, null, null, EmployeeRole.USER, emptyList(), null)
 
 
     override fun getAuthorities(): Collection<GrantedAuthority> {
@@ -52,15 +52,17 @@ data class Employee(
                 SimpleGrantedAuthority("ROLE_MANAGER"),
                 SimpleGrantedAuthority("ROLE_USER")
             )
+
             EmployeeRole.MANAGER -> listOf(
                 SimpleGrantedAuthority("ROLE_MANAGER"),
                 SimpleGrantedAuthority("ROLE_USER")
             )
+
             else -> listOf(SimpleGrantedAuthority("ROLE_USER"))
         }
     }
 
-    override fun getPassword(): String? =passwords
+    override fun getPassword(): String? = passwords
 
     override fun getUsername(): String? = cpf
 

@@ -10,7 +10,9 @@ data class EmployeeGetDto(
     var salary: Double? = null,
     var position: String? = null,
     var cpf: String? = null,
-var role: EmployeeRole?=null,
+    var role: EmployeeRole? = null,
+
+    var email: String? = null,
     val company: CompanyGetDto? = null
 )
 

@@ -15,4 +15,5 @@ interface EmployeeService {
     fun updateEmployee(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto
     fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto)
     fun updatePassword(updatePasswordDto: UpdatePassword)
+    fun resetPassword(resetPasswordDto: ResetPasswordDto)
 }
