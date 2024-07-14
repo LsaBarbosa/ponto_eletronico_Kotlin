@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class EmployeeDataProviderImpl(val employeeRepository: EmployeeRepository) : EmployeeDataProvider {
@@ -22,7 +23,7 @@ class EmployeeDataProviderImpl(val employeeRepository: EmployeeRepository) : Emp
         return employeeRepository.save(employee)
     }
 
-    override fun findById(id: Long): Employee {
+    override fun findById(id: UUID): Employee {
         val employee = employeeRepository.findById(id)
             .orElseThrow { ObjectNotFoundException("Colaborador não encontrado") }
         return employee

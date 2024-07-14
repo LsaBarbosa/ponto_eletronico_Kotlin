@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
+import java.util.UUID
 
 @RestController
 @RequestMapping("/colaborador")
@@ -18,7 +19,7 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
 
 
     @GetMapping("/{id}")
-    fun getEmployeeById(@PathVariable("id") id: Long): ResponseEntity<EmployeeGetDto?> {
+    fun getEmployeeById(@PathVariable("id") id: UUID): ResponseEntity<EmployeeGetDto?> {
         val employee = employeeService.getEmployeeById(id)
         return ResponseEntity.ok(employee)
 

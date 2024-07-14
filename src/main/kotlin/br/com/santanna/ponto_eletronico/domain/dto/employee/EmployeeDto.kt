@@ -6,10 +6,12 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import org.hibernate.validator.constraints.br.CNPJ
+import java.util.*
 
 
 data class EmployeeDto (
-      var id: Long? = null,
+      var id: UUID? = null,
+
       @field:NotBlank(message = "O nome não pode estar em branco")
       var name: String? = null,
 

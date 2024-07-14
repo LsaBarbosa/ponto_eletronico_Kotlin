@@ -5,12 +5,13 @@ import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
+import java.util.*
+import kotlin.collections.ArrayList
 
 @Entity
 data class Employee(
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
-
+    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    var id: UUID? = null,
 
     var name: String? = null,
 
