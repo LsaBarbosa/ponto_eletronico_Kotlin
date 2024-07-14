@@ -78,7 +78,7 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider,  
 
     @Transactional
     override fun deleteCompanyByCNPJ(deleteCompanyRequestDto: DeleteCompanyRequestDto) {
-        val company = companyDataProvider.findByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
+        companyDataProvider.findByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
             ?: throw ObjectNotFoundException("Company not found with CNPJ: ${deleteCompanyRequestDto.companyCNPJ}")
 
         val employee = employeeDataProvider.findCpf(deleteCompanyRequestDto.employeeCpf)
@@ -91,13 +91,7 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider,  
 
         companyDataProvider.deleteByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
     }
-    fun convertToEntity(companyDto: CompanyDTO): Company {
-        return Company(
-            id = companyDto.id,
-            nameCompany = companyDto.nameCompany,
-            companyCNPJ = companyDto.companyCNPJ
-        )
-    }
+
 
     fun convertToDto(company: Company?): CompanyDTO {
         return CompanyDTO(
