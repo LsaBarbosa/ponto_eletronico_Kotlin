@@ -95,13 +95,13 @@ class EmployeeServiceImpl(
 
         validateManager(updateEmployeeRequestDto.employeeManagerCpf, updateEmployeeRequestDto.passwords)
 
-        employeeToUpdate.apply {
-            name = updateEmployeeRequestDto.updateEmployeeDto.name
-            surname = updateEmployeeRequestDto.updateEmployeeDto.surname
-            salary = updateEmployeeRequestDto.updateEmployeeDto.salary ?: salary
-            email = updateEmployeeRequestDto.updateEmployeeDto.email
-            position = updateEmployeeRequestDto.updateEmployeeDto.position ?: position
-            role = updateEmployeeRequestDto.updateEmployeeDto.role ?: role
+        updateEmployeeRequestDto.updateEmployeeDto.apply {
+            name?.let { employeeToUpdate.name = it }
+            surname?.let { employeeToUpdate.surname = it }
+            salary?.let { employeeToUpdate.salary = it }
+            email?.let { employeeToUpdate.email = it }
+            position?.let { employeeToUpdate.position = it }
+            role?.let { employeeToUpdate.role = it }
         }
 
         val updatedEmployeeEntity = employeeDataProvider.save(employeeToUpdate)
