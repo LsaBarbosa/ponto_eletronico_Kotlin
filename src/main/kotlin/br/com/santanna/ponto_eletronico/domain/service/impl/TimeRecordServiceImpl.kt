@@ -8,6 +8,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
+import br.com.santanna.ponto_eletronico.infrastructure.util.DateUtils
 import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
@@ -26,7 +27,7 @@ import kotlin.reflect.KMutableProperty1
 private const val CHECKIN_EXCEPTION = "Necessário realizar o checkout para o checkin em aberto"
 private const val CHECKOUT_EXCEPTION = "Não há checkin aberto para ser encerrado"
 private const val ZONE_TIME = "America/Sao_Paulo"
-private const val TIME_PATTERN = "HH:mm"
+
 
 
 @Service
@@ -77,7 +78,9 @@ data class TimeRecordServiceImpl(
         val timeRecord = timeRecordDataProvider.findById(updateTimeRecordRequestDto.timeRecordId)
             ?: throw ObjectNotFoundException("Time record not found with ID: ${updateTimeRecordRequestDto.timeRecordId}")
 
-        updateRecordFields(timeRecord, updateTimeRecordRequestDto.updateTimeRecordDto)
+        updateTimeRecordRequestDto.updateTimeRecordDto.let {
+            updateRecordFields(timeRecord, it)
+        }
 
         val savedUpdate = timeRecordDataProvider.save(timeRecord)
         return convertToUpdateTimeRecordDto(savedUpdate)
@@ -132,7 +135,7 @@ data class TimeRecordServiceImpl(
     }
 
     private fun validateEmployeeAndPassword(employeeCpfTarget: String, employeeManagerCpf: String, password: String) {
-         findEmployeeByCpfOrThrow(employeeCpfTarget)
+        findEmployeeByCpfOrThrow(employeeCpfTarget)
         val manager = findEmployeeByCpfOrThrow(employeeManagerCpf)
 
         if (!BCryptPasswordEncoder().matches(password, manager.password)) {
@@ -157,17 +160,17 @@ data class TimeRecordServiceImpl(
     private fun createRecordCheckinDto(savedCheckin: TimeRecord): RecordCheckinDto {
         return RecordCheckinDto(
             id = savedCheckin.id,
-            startOfWorkTime = savedCheckin.startWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
-            startOfWorkDate = savedCheckin.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE)
+            startOfWorkTime = DateUtils.formatTime(savedCheckin.startWorkTime),
+            startOfWorkDate = DateUtils.formatDate(savedCheckin.startWorkTime?.toLocalDate())
         )
     }
 
     private fun createRecordCheckoutDto(savedCheckout: TimeRecord): RecordCheckoutDto {
         return RecordCheckoutDto(
             id = savedCheckout.id,
-            endWorkTime = savedCheckout.endWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
+            endWorkTime = DateUtils.formatTime(savedCheckout.endWorkTime),
             timeWorked = formatTimeWorked(savedCheckout.timeWorked),
-            endWorkDate = savedCheckout.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE)
+            endWorkDate = DateUtils.formatDate(savedCheckout.endWorkTime?.toLocalDate())
         )
     }
 
@@ -184,12 +187,13 @@ data class TimeRecordServiceImpl(
         dateType: String
     ) {
         if (newDate != null && newTime != null) {
-            val newDateTime = LocalDateTime.parse("$newDate $newTime", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+            val newDateTime = DateUtils.parseDateTime(newDate, newTime)
             validateDateChange(dateTimeField.get(timeRecord), newDateTime, dateType)
             dateTimeField.set(timeRecord, newDateTime)
 
             if (dateTimeField == TimeRecord::endWorkTime) {
-                timeRecord.timeWorked = Duration.between(timeRecord.startWorkTime, newDateTime).toMinutes()
+                val duration = Duration.between(timeRecord.startWorkTime, newDateTime)
+                timeRecord.timeWorked = duration.toMinutes()
             }
         }
     }
@@ -240,10 +244,10 @@ data class TimeRecordServiceImpl(
     private fun convertToDetailedTimeRecordDto(timeRecord: TimeRecord): DetailedTimeRecordDto {
         return DetailedTimeRecordDto(
             id = timeRecord.id,
-            startWorkTime = timeRecord.startWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
-            endWorkTime = timeRecord.endWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
-            startWorkDate = timeRecord.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
-            endWorkDate = timeRecord.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
+            startWorkTime = DateUtils.formatTime(timeRecord.startWorkTime),
+            endWorkTime = DateUtils.formatTime(timeRecord.endWorkTime),
+            startWorkDate = DateUtils.formatDate(timeRecord.startWorkTime?.toLocalDate()),
+            endWorkDate = DateUtils.formatDate(timeRecord.endWorkTime?.toLocalDate()),
             timeWorked = formatTimeWorked(timeRecord.timeWorked)
         )
     }
