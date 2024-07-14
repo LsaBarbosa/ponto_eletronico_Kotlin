@@ -15,18 +15,19 @@ import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth.Compa
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.mail.javamail.JavaMailSenderImpl
+import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import java.security.SecureRandom
 
 
 @Service
 class EmployeeServiceImpl(
     private val employeeDataProvider: EmployeeDataProvider,
+    private val mailSender: JavaMailSenderImpl, ) : EmployeeService {
 
-
-) : EmployeeService {
-
-    override  fun getEmployeesByManager(managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): Page<EmployeeGetDto> {
+    override fun getEmployeesByManager(managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): Page<EmployeeGetDto> {
         val manager = employeeDataProvider.findCpf(managerEmployeeRequestDto.managerCpf)
             ?: throw IllegalArgumentException("Manager not found with CPF: ${managerEmployeeRequestDto.managerCpf}")
 
@@ -116,6 +117,7 @@ class EmployeeServiceImpl(
             salary = createEmployeeDto.salary,
             position = createEmployeeDto.position,
             cpf = createEmployeeDto.cpf,
+            email = createEmployeeDto.email,
             role = createEmployeeDto.role ?: EmployeeRole.USER,
             passwords = encryptedPassword,
             company = company
@@ -133,14 +135,15 @@ class EmployeeServiceImpl(
         val updatingEmployee = employeeDataProvider.findCpf(updateEmployeeRequestDto.employeeManagerCpf)
             ?: throw IllegalArgumentException("Employee not found with CPF: ${updateEmployeeRequestDto.employeeManagerCpf}")
 
-        val isPasswordValid = BCryptPasswordEncoder().matches(updateEmployeeRequestDto.passwords, updatingEmployee.password)
+        val isPasswordValid =
+            BCryptPasswordEncoder().matches(updateEmployeeRequestDto.passwords, updatingEmployee.password)
         if (!isPasswordValid) {
             throw IllegalArgumentException("Invalid password")
         }
 
         employeeToUpdate.apply {
-            name=updateEmployeeRequestDto.updateEmployeeDto.name
-            surname=updateEmployeeRequestDto.updateEmployeeDto.surname
+            name = updateEmployeeRequestDto.updateEmployeeDto.name
+            surname = updateEmployeeRequestDto.updateEmployeeDto.surname
             salary = updateEmployeeRequestDto.updateEmployeeDto.salary ?: salary
             position = updateEmployeeRequestDto.updateEmployeeDto.position ?: position
             role = updateEmployeeRequestDto.updateEmployeeDto.role ?: role
@@ -171,26 +174,81 @@ class EmployeeServiceImpl(
     }
 
     @Transactional
-    override  fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
+    override fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
         val employeeTarget = employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeCpfTarget)
             ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteEmployeeRequestDto.employeeCpfTarget}")
 
         val deletingEmployee = employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeManagerCpf)
             ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteEmployeeRequestDto.employeeManagerCpf}")
 
-        val isPasswordValid = BCryptPasswordEncoder().matches(deleteEmployeeRequestDto.passwords, deletingEmployee.password)
+        val isPasswordValid =
+            BCryptPasswordEncoder().matches(deleteEmployeeRequestDto.passwords, deletingEmployee.password)
         if (!isPasswordValid) {
             throw IllegalArgumentException("Invalid password")
         }
 
         employeeDataProvider.deleteByCpf(deleteEmployeeRequestDto.employeeCpfTarget)
     }
+
+    @Transactional
+    override fun resetPassword(resetPasswordDto: ResetPasswordDto) {
+        val employee = employeeDataProvider.findCpf(resetPasswordDto.cpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: ${resetPasswordDto.cpf}")
+
+        if (employee.email != resetPasswordDto.email) {
+            throw IllegalArgumentException("Invalid email")
+        }
+
+        val newPassword = generateRandomPassword()
+        val newEncryptedPassword = BCryptPasswordEncoder().encode(newPassword)
+        employee.passwords = newEncryptedPassword
+        employeeDataProvider.save(employee)
+
+        sendEmail(employee.email!!, newPassword)
+    }
+
+    private fun generateRandomPassword(): String {
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        val random = SecureRandom()
+        val password = StringBuilder()
+        for (i in 0 until 8) {
+            password.append(chars[random.nextInt(chars.length)])
+        }
+        return password.toString()
+    }
+
+    private fun sendEmail(to: String, newPassword: String) {
+        val message = mailSender.createMimeMessage()
+        val helper = MimeMessageHelper(message, true)
+
+        helper.setTo(to)
+        helper.setSubject("Redefinição de Senha usuário Kronos")
+        helper.setText("Olá,espero que tudo esteja bem!\n\n\n Aqui está sua senha provisória $newPassword \n\n\n\n Você no controle do seu TEMPO")
+        val htmlContent = """
+            <html>
+            <body>
+                <h1>Redefinição de Senha</h1>
+                <h2>Olá,espero que tudo esteja bem!</h2>
+                <p>Sua nova senha é: <strong>$newPassword</strong></p>
+                <p>Por favor, altere sua senha ao fazer o login.</p>
+                <br/>
+                <p>Atenciosamente,</p>
+                <h3>Equipe Kronos, você no controle do seu TEMPO</h3>
+            </body>
+            </html>
+        """.trimIndent()
+
+        helper.setText(htmlContent, true)
+        mailSender.send(message)
+    }
+
     private fun convertToDto(employee: Employee?): EmployeeDto {
         return EmployeeDto(
             id = employee?.id,
             cpf = employee?.cpf,
             role = employee?.role,
             name = employee?.name,
+            email = employee?.email,
             surname = employee?.surname,
             position = employee?.position,
             salary = employee?.salary,
@@ -203,40 +261,41 @@ class EmployeeServiceImpl(
             name = employee?.name,
             surname = employee?.surname,
             salary = employee?.salary,
+            email = employee?.email,
             position = employee?.position,
             role = employee?.role
         )
     }
+
+    private fun convertToGetEmployeeDto(employee: Employee?): EmployeeGetDto {
+        employee?.timeWorked?.map { convertToTimeRecordDto(it!!) }
+
+        return EmployeeGetDto(
+            id = employee?.id,
+            name = employee?.name,
+            surname = employee?.surname,
+            email = employee?.email,
+            salary = employee?.salary,
+            position = employee?.position,
+            cpf = employee?.cpf,
+            role = employee?.role,
+            company = employee?.company?.convertToDto()
+        )
+    }
+
+    private fun convertToTimeRecordDto(timeRecord: TimeRecord): TimeRecordDto {
+        return TimeRecordDto(
+            id = timeRecord.id,
+            startWorkTime = timeRecord.startWorkTime,
+            endWorkTime = timeRecord.endWorkTime,
+            timeWorked = timeRecord.timeWorked
+        )
+    }
+
+    private fun Company.convertToDto(): CompanyGetDto {
+        return CompanyGetDto(
+            nameCompany = this.nameCompany
+        )
+    }
+
 }
-
-private fun convertToGetEmployeeDto(employee: Employee?): EmployeeGetDto {
-    employee?.timeWorked?.map { convertToTimeRecordDto(it!!) }
-
-    return EmployeeGetDto(
-        id = employee?.id,
-        name = employee?.name,
-        surname = employee?.surname,
-        salary = employee?.salary,
-        position = employee?.position,
-        cpf = employee?.cpf,
-        role = employee?.role,
-        company = employee?.company?.convertToDto()
-    )
-}
-
-private fun convertToTimeRecordDto(timeRecord: TimeRecord): TimeRecordDto {
-    return TimeRecordDto(
-        id = timeRecord.id,
-        startWorkTime = timeRecord.startWorkTime,
-        endWorkTime = timeRecord.endWorkTime,
-        timeWorked = timeRecord.timeWorked
-    )
-}
-
-private fun Company.convertToDto(): CompanyGetDto {
-    return CompanyGetDto(
-        nameCompany = this.nameCompany
-    )
-}
-
-

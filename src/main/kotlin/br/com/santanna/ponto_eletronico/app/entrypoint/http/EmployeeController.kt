@@ -83,5 +83,10 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
         return ResponseEntity.noContent().build()
     }
 
+    @PostMapping("/reset-password")
+    fun resetPassword(@Valid @RequestBody resetPasswordDto: ResetPasswordDto): ResponseEntity<Void> {
+        employeeService.resetPassword(resetPasswordDto)
+        return ResponseEntity.ok().build()
+    }
 
 }
