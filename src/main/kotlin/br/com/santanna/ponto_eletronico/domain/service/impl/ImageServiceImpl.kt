@@ -3,6 +3,7 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.image.*
+import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.domain.service.ImageService
 import br.com.santanna.ponto_eletronico.infrastructure.repository.ImageRepository
@@ -28,7 +29,7 @@ class ImageServiceImpl(
     private val imageRepository: ImageRepository,
     private val employeeDataProvider: EmployeeDataProvider,
 
-) : ImageService {
+    ) : ImageService {
 
     @Transactional
     override fun storeImage(uploadImageRequestDto: UploadImageRequestDto): Image {
@@ -83,80 +84,41 @@ class ImageServiceImpl(
 
 
     @Transactional
-    override fun deleteImageById(deleteImageRequestDto: DeleteImageRequestDto){
-        val employee = employeeDataProvider.findCpf(deleteImageRequestDto.employeeCpfTarget)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: ${deleteImageRequestDto.employeeCpfTarget}")
-
-        val deletingEmployee = employeeDataProvider.findCpf(deleteImageRequestDto.employeeManagerCpf)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: ${deleteImageRequestDto.employeeManagerCpf}")
-
-        val isPasswordValid = BCryptPasswordEncoder().matches(deleteImageRequestDto.passwords, deletingEmployee.password)
-        if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
-        }
-
+    override fun deleteImageById(deleteImageRequestDto: DeleteImageRequestDto) {
+        validateEmployeeAndPassword(deleteImageRequestDto.employeeCpfTarget, deleteImageRequestDto.passwords)
         val image = imageRepository.findByIdAndEmployeeCpf(deleteImageRequestDto.imageId, deleteImageRequestDto.employeeCpfTarget)
             ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ ${deleteImageRequestDto.imageId} $FOR_EMPLOYEE_WITH_CPF_ ${deleteImageRequestDto.employeeCpfTarget}")
-
         imageRepository.delete(image)
         deleteFile(image.filePath!!)
     }
+
     @Transactional
     override fun updateImageMessage(updateImageRequestDto: UpdateImageRequestDto): ImageListDto {
-        val employeeTarget = employeeDataProvider.findCpf(updateImageRequestDto.employeeCpfTarget)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: ${updateImageRequestDto.employeeCpfTarget}")
-
-        val updatingEmployee = employeeDataProvider.findCpf(updateImageRequestDto.employeeManagerCpf)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: ${updateImageRequestDto.employeeManagerCpf}")
-
-        val isPasswordValid = BCryptPasswordEncoder().matches(updateImageRequestDto.passwords, updatingEmployee.password)
-        if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
-        }
-
+        val employee = validateEmployeeAndPassword(updateImageRequestDto.employeeCpfTarget, updateImageRequestDto.passwords)
         val image = imageRepository.findByIdAndEmployeeCpf(updateImageRequestDto.imageId, updateImageRequestDto.employeeCpfTarget)
             ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_ ${updateImageRequestDto.imageId} $FOR_EMPLOYEE_WITH_CPF_ ${updateImageRequestDto.employeeCpfTarget}")
-
         image.message = updateImageRequestDto.updateImageMessageDto.message
         val updatedImage = imageRepository.save(image)
-        val employee = updatedImage.employee!!
-
-        return ImageListDto(
-            id = updatedImage.id,
-            name = employee.name,
-            surname = employee.surname,
-            cpf = employee.cpf,
-            filePath = updatedImage.filePath,
-            message = updatedImage.message,
-            uploadDate = updatedImage.uploadDate
-        )
+        return convertToImageListDto(updatedImage, employee)
     }
 
     override fun getImagesByEmployeeCpfAndDateRange(imageSearchDto: ImageSearchDto): List<ImageListDto> {
-        val employee = employeeDataProvider.findCpf(imageSearchDto.cpf)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: ${imageSearchDto.cpf}")
-
-        val isPasswordValid = BCryptPasswordEncoder().matches(imageSearchDto.passwords, employee.password)
-        if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
-        }
-
+        val employee = validateEmployeeAndPassword(imageSearchDto.cpf, imageSearchDto.passwords)
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
         val startDate = LocalDate.parse(imageSearchDto.startDate, formatter)
         val endDate = LocalDate.parse(imageSearchDto.endDate, formatter)
-
         val images = imageRepository.findAllByEmployeeCpfAndDateRange(imageSearchDto.cpf, startDate, endDate)
-        return images.map { image ->
-            ImageListDto(
-                id = image.id,
-                name = employee.name,
-                surname = employee.surname,
-                cpf = employee.cpf,
-                filePath = image.filePath,
-                message = image.message,
-                uploadDate = image.uploadDate
-            )
+        return images.map { image -> convertToImageListDto(image, employee) }
+    }
+
+    private fun validateEmployeeAndPassword(cpf: String, password: String): Employee {
+        val employee = employeeDataProvider.findCpf(cpf)
+            ?: throw ObjectNotFoundException("Employee not found with CPF: $cpf")
+        val isPasswordValid = BCryptPasswordEncoder().matches(password, employee.password)
+        if (!isPasswordValid) {
+            throw IllegalArgumentException("Invalid password")
         }
+        return employee
     }
 
     private fun deleteFile(filePath: String) {
@@ -187,5 +149,16 @@ class ImageServiceImpl(
         return Files.readAllBytes(path)
     }
 
+    private fun convertToImageListDto(image: Image, employee: Employee): ImageListDto {
+        return ImageListDto(
+            id = image.id,
+            name = employee.name,
+            surname = employee.surname,
+            cpf = employee.cpf,
+            filePath = image.filePath,
+            message = image.message,
+            uploadDate = image.uploadDate
+        )
+    }
 
 }
