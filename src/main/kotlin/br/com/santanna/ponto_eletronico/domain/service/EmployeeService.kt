@@ -4,10 +4,11 @@ import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import java.util.UUID
 
 interface EmployeeService {
     fun getEmployeesByManager(managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): Page<EmployeeGetDto>
-    fun getEmployeeById(id: Long): EmployeeGetDto?
+    fun getEmployeeById(id: UUID): EmployeeGetDto?
     fun getEmployeeByCpf(request: ManagerEmployeeRequestByCPFDto): EmployeeGetDto?
     fun getEmployeeEntityByCpf(cpf: String): Employee?
     fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto?

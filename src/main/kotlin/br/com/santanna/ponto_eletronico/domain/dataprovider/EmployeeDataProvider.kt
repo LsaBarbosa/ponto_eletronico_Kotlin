@@ -4,12 +4,13 @@ import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.userdetails.UserDetails
+import java.util.*
 
 interface EmployeeDataProvider {
 
 
     fun save(employee: Employee): Employee
-    fun findById(id: Long): Employee
+    fun findById(id: UUID): Employee
     fun findByNameAndSurnameIgnoreCase(name: String?, surname: String?): Employee?
     fun findByCpf(cpf: String): UserDetails?
     fun findCpf(cpf: String?): Employee?

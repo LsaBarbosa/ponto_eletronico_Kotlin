@@ -20,6 +20,7 @@ import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.security.SecureRandom
+import java.util.*
 
 
 @Service
@@ -47,7 +48,7 @@ class EmployeeServiceImpl(
         return employees.map { convertToGetEmployeeDto(it) }
     }
 
-    override fun getEmployeeById(id: Long): EmployeeGetDto? {
+    override fun getEmployeeById(id: UUID): EmployeeGetDto? {
         val employee = employeeDataProvider.findById(id)
         return convertToGetEmployeeDto(employee)
     }
@@ -145,6 +146,7 @@ class EmployeeServiceImpl(
             name = updateEmployeeRequestDto.updateEmployeeDto.name
             surname = updateEmployeeRequestDto.updateEmployeeDto.surname
             salary = updateEmployeeRequestDto.updateEmployeeDto.salary ?: salary
+            email=updateEmployeeRequestDto.updateEmployeeDto.email
             position = updateEmployeeRequestDto.updateEmployeeDto.position ?: position
             role = updateEmployeeRequestDto.updateEmployeeDto.role ?: role
         }
