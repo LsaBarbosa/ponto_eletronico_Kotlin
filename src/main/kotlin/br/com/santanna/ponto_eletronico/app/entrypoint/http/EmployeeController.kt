@@ -2,20 +2,17 @@ package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
-import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth
-import br.com.santanna.ponto_eletronico.infrastructure.security.login.AuthenticationDTO
-import br.com.santanna.ponto_eletronico.infrastructure.security.login.LoginResponseDTO
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
-import java.util.UUID
+import java.util.*
 
 @RestController
 @RequestMapping("/colaborador")
-class EmployeeController(val employeeService: EmployeeService, val authService: Auth) {
+class EmployeeController(val employeeService: EmployeeService ) {
 
 
     @GetMapping("/{id}")
@@ -72,11 +69,7 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
         return ResponseEntity.ok(updatedEmployeeDto)
     }
 
-    @PostMapping("/login")
-    fun login(@RequestBody data: AuthenticationDTO): ResponseEntity<LoginResponseDTO> {
-        val token = authService.login(data)
-        return ResponseEntity.ok(token)
-    }
+
 
     @DeleteMapping
     fun deleteEmployee(@RequestBody deleteEmployeeRequestDto: DeleteEmployeeRequestDto): ResponseEntity<Void> {
