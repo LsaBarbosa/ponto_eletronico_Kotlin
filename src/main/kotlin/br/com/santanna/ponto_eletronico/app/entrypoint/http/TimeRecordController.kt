@@ -24,19 +24,13 @@ class TimeRecordController(
 ) {
 
     @PostMapping("/entrada")
-    fun registerCheckin(@RequestParam("cpf") cpf: String): ResponseEntity<RecordCheckinDto> {
-
-        val checkin = timeRecordService.registerCheckin(cpf)
-        return ResponseEntity.ok().body(modelMapper.map(checkin, RecordCheckinDto::class.java))
-
+    fun checkin(): ResponseEntity<RecordCheckinDto> {
+        return ResponseEntity.ok(timeRecordService.registerCheckin())
     }
 
     @PostMapping("/saida")
-    fun registerCheckout(@RequestParam("cpf") cpf: String): ResponseEntity<RecordCheckoutDto> {
-
-        val checkout = timeRecordService.registerCheckout(cpf)
-        return ResponseEntity.ok().body(modelMapper.map(checkout, RecordCheckoutDto::class.java))
-
+    fun checkout(): ResponseEntity<RecordCheckoutDto> {
+        return ResponseEntity.ok(timeRecordService.registerCheckout())
     }
     @PutMapping
     fun updateTimeRecord(@Valid @RequestBody updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): ResponseEntity<UpdateTimeRecordDto> {
@@ -46,33 +40,52 @@ class TimeRecordController(
 
     @GetMapping("/registros")
     fun getTimeRecordsByEmployeeNameAndDateRange(
-        @RequestParam("cpf") cpf: String,
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String,
         @PageableDefault(size = 5) pageable: Pageable
     ): Page<DetailedTimeRecordDto> {
         val startDate = LocalDate.parse(startDateStr)
         val endDate = LocalDate.parse(endDateStr)
-        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageable(cpf, startDate, endDate, pageable)
+        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageable( startDate, endDate, pageable)
     }
 
 
     @GetMapping("/hora-extra")
     fun getBalanceHoursByDateByEmployeeNameAndDateRange(
-        @RequestParam("cpf") cpf: String,
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
     ): ResponseEntity<BalanceHoursDto> {
 
         val startDate = LocalDate.parse(startDateStr)
         val endDate = LocalDate.parse(endDateStr)
-        val timeRecords = timeRecordService.balanceHoursByDate(cpf, startDate, endDate)
+        val timeRecords = timeRecordService.balanceHoursByDate( startDate, endDate)
         val balanceHoursDto = modelMapper.map(timeRecords, BalanceHoursDto::class.java)
         return ResponseEntity.ok().body(balanceHoursDto)
 
     }
 
-    @DeleteMapping("/{id}")
+
+    @GetMapping("/registros/gestao")
+    fun getTimeRecordsByEmployeeNameAndDateRangeForManager(
+        @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto,
+        @PageableDefault(size = 5) pageable: Pageable
+    ): Page<DetailedTimeRecordDto> {
+
+        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(searchByDateTimeRecordRequestDto, pageable)
+    }
+
+
+    @GetMapping("/hora-extra/gestao")
+    fun getBalanceHoursByDateByEmployeeNameAndDateRangeForManager(
+        @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto
+    ): ResponseEntity<BalanceHoursDto> {
+        val timeRecords = timeRecordService.balanceHoursByDateForManager(searchByDateTimeRecordRequestDto)
+        val balanceHoursDto = modelMapper.map(timeRecords, BalanceHoursDto::class.java)
+        return ResponseEntity.ok().body(balanceHoursDto)
+
+    }
+
+    @DeleteMapping
     fun deleteTimeRecord(@RequestBody deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto): ResponseEntity<Void> {
         timeRecordService.deleteTimeRecord(deleteTimeRecordRequestDto)
         return ResponseEntity.noContent().build()
@@ -85,7 +98,7 @@ class TimeRecordController(
         @RequestParam("endDate") endDate: String
     ): ResponseEntity<ByteArray> {
         val employee = employeeService.getEmployeeEntityByCpf(cpf) ?: throw IllegalArgumentException("Employee not found")
-        val records = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageable(cpf, LocalDate.parse(startDate), LocalDate.parse(endDate), PageRequest.of(0, Int.MAX_VALUE)).content
+        val records = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableForPDF(cpf, LocalDate.parse(startDate), LocalDate.parse(endDate), PageRequest.of(0, Int.MAX_VALUE)).content
         val pdfData = pdfGeneratorService.generateTimeRecordsPdf(records, employee, startDate, endDate)
 
         val headers = HttpHeaders().apply {

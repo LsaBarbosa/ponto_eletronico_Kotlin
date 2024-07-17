@@ -2,27 +2,20 @@ package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
-import br.com.santanna.ponto_eletronico.infrastructure.security.login.Auth
-import br.com.santanna.ponto_eletronico.infrastructure.security.login.AuthenticationDTO
-import br.com.santanna.ponto_eletronico.infrastructure.security.login.LoginResponseDTO
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
-import java.util.UUID
 
 @RestController
 @RequestMapping("/colaborador")
-class EmployeeController(val employeeService: EmployeeService, val authService: Auth) {
+class EmployeeController(val employeeService: EmployeeService ) {
 
-
-    @GetMapping("/{id}")
-    fun getEmployeeById(@PathVariable("id") id: UUID): ResponseEntity<EmployeeGetDto?> {
-        val employee = employeeService.getEmployeeById(id)
-        return ResponseEntity.ok(employee)
-
+    @GetMapping("/id")
+    fun getEmployeeById(): ResponseEntity<EmployeeGetDto> {
+        return ResponseEntity.ok(employeeService.getEmployeeById())
     }
 
     @GetMapping("/meus-colaboradores")
@@ -58,10 +51,9 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
 
     @PostMapping("criar-colaborador")
     fun registerNewEmployee(
-        @RequestParam("managerCpf") managerCpf: String,
         @Valid @RequestBody createEmployeeDto: CreateEmployeeDto
     ): ResponseEntity<EmployeeDto> {
-        val employeeCreated = employeeService.registerEmployee(managerCpf, createEmployeeDto)
+        val employeeCreated = employeeService.registerEmployee( createEmployeeDto)
         val uri = URI.create("/employees/${employeeCreated.id}")
         return ResponseEntity.created(uri).body(employeeCreated)
     }
@@ -70,12 +62,6 @@ class EmployeeController(val employeeService: EmployeeService, val authService: 
     fun updateEmployee(@Valid @RequestBody updateEmployeeRequestDto: UpdateEmployeeRequestDto): ResponseEntity<UpdateEmployeeDto> {
         val updatedEmployeeDto = employeeService.updateEmployee(updateEmployeeRequestDto)
         return ResponseEntity.ok(updatedEmployeeDto)
-    }
-
-    @PostMapping("/login")
-    fun login(@RequestBody data: AuthenticationDTO): ResponseEntity<LoginResponseDTO> {
-        val token = authService.login(data)
-        return ResponseEntity.ok(token)
     }
 
     @DeleteMapping

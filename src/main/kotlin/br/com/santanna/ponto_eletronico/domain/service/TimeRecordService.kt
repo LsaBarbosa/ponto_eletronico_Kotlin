@@ -6,10 +6,13 @@ import org.springframework.data.domain.Pageable
 import java.time.LocalDate
 
 interface TimeRecordService {
-    fun registerCheckin(cpf: String): RecordCheckinDto?
-    fun registerCheckout(cpf: String): RecordCheckoutDto?
+    fun registerCheckin(): RecordCheckinDto?
+    fun registerCheckout(): RecordCheckoutDto?
     fun updateTimeRecord(updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): UpdateTimeRecordDto
-    fun balanceHoursByDate(cpf: String, startDate: LocalDate, endDate: LocalDate): BalanceHoursDto
-    fun getTimeRecordsByEmployeeCpfAndDateRangePageable(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto>
+    fun balanceHoursByDateForManager(searchRequestDto: SearchByDateTimeRecordRequestDto): BalanceHoursDto
+    fun balanceHoursByDate(  startDate: LocalDate, endDate: LocalDate): BalanceHoursDto
+    fun getTimeRecordsByEmployeeCpfAndDateRangePageable( startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto>
+    fun getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(searchRequestDto: SearchByDateTimeRecordRequestDto, pageable: Pageable): Page<DetailedTimeRecordDto>
+    fun getTimeRecordsByEmployeeCpfAndDateRangePageableForPDF(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto>
     fun deleteTimeRecord(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto)
     }
