@@ -91,7 +91,7 @@ data class TimeRecordServiceImpl(
         return convertToUpdateTimeRecordDto(savedUpdate)
     }
 
-    override fun balanceHoursByDate(cpf: String, startDate: LocalDate, endDate: LocalDate): BalanceHoursDto {
+    override fun balanceHoursByDateForManager(cpf: String, startDate: LocalDate, endDate: LocalDate): BalanceHoursDto {
         val timeRecords = findTimeRecordsByDateRange(cpf, startDate, endDate)
         val recordsByDate = timeRecords.groupBy { it.startWorkTime?.toLocalDate() }
 
@@ -109,18 +109,57 @@ data class TimeRecordServiceImpl(
         return BalanceHoursDto(employeeCpf = cpf, balance = formattedBalance)
     }
 
-    override fun getTimeRecordsByEmployeeCpfAndDateRangePageable(
-        cpf: String,
-        startDate: LocalDate,
-        endDate: LocalDate,
-        pageable: Pageable
-    ): Page<DetailedTimeRecordDto> {
+    override fun getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto> {
         val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(
             cpf, startDate.atStartOfDay(), endDate.atTime(23, 59, 59), pageable
         )
         return timeRecords.map { convertToDetailedTimeRecordDto(it) }
     }
 
+    override fun balanceHoursByDate(startDate: LocalDate, endDate: LocalDate): BalanceHoursDto {
+        val id = getCurrentUserId()
+        val employee = employeeDataProvider.findById(id)
+
+        val timeRecords = findTimeRecordsByDateRange(employee.cpf!!, startDate, endDate)
+        val recordsByDate = timeRecords.groupBy { it.startWorkTime?.toLocalDate() }
+
+        var totalWorkedMinutes = 0L
+        var totalExpectedMinutes = 0L
+
+        for ((_, records) in recordsByDate) {
+            val workedMinutesPerDay = records.sumOf { it.timeWorked ?: 0 }
+            totalWorkedMinutes += workedMinutesPerDay
+            totalExpectedMinutes += 8 * 60
+        }
+
+        val balance = totalWorkedMinutes - totalExpectedMinutes
+
+        val balanceHours = abs(balance / 60)
+        val balanceRemainingMinutes = abs(balance % 60)
+
+        val sign = if (balance < 0) "-" else ""
+
+        val formattedBalance = String.format("%s%02d:%02d", sign, balanceHours, balanceRemainingMinutes)
+
+        return BalanceHoursDto(
+            employeeCpf = employee.cpf!!,
+            balance = formattedBalance
+        )
+    }
+
+    override fun getTimeRecordsByEmployeeCpfAndDateRangePageable(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        pageable: Pageable
+    ): Page<DetailedTimeRecordDto> {
+        val id = getCurrentUserId()
+        val employee = employeeDataProvider.findById(id)
+
+        val startDateTime = startDate.atStartOfDay()
+        val endDateTime = endDate.atTime(23, 59, 59)
+        val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(employee.cpf!!, startDateTime, endDateTime, pageable)
+        return timeRecords.map { convertToDetailedTimeRecordDto(it) }
+    }
     @Transactional
     override fun deleteTimeRecord(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto) {
         validateEmployeeAndPassword(
