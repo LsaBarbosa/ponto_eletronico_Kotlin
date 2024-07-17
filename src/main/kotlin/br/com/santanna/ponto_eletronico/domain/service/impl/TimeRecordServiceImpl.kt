@@ -8,11 +8,13 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
+import br.com.santanna.ponto_eletronico.infrastructure.security.configsec.JwtTokenUtil
 import br.com.santanna.ponto_eletronico.infrastructure.util.DateUtils
 import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -20,6 +22,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlin.math.abs
 import kotlin.reflect.KMutableProperty1
 
@@ -33,12 +36,13 @@ private const val ZONE_TIME = "America/Sao_Paulo"
 @Service
 data class TimeRecordServiceImpl(
     private val timeRecordDataProvider: TimeRecordDataProvider, private val employeeDataProvider: EmployeeDataProvider,
-    private val mapper: ModelMapper
+    private val mapper: ModelMapper, private val jwtTokenUtil: JwtTokenUtil
 ): TimeRecordService {
 
     @Transactional
-    override fun registerCheckin(cpf: String): RecordCheckinDto? {
-        val employee = findEmployeeByCpfOrThrow(cpf)
+    override fun registerCheckin(): RecordCheckinDto? {
+        val id = getCurrentUserId()
+        val employee = employeeDataProvider.findById(id)
 
         findLastTimeRecord(employee)?.let {
             throw Exception(CHECKIN_EXCEPTION)
@@ -54,8 +58,9 @@ data class TimeRecordServiceImpl(
     }
 
     @Transactional
-    override fun registerCheckout(cpf: String): RecordCheckoutDto? {
-        val employee = findEmployeeByCpfOrThrow(cpf)
+    override fun registerCheckout(): RecordCheckoutDto? {
+        val id = getCurrentUserId()
+        val employee = employeeDataProvider.findById(id)
 
         val lastRecord = findLastTimeRecord(employee) ?: throw Exception(CHECKOUT_EXCEPTION)
         val currentDateTimeInBrasilia = LocalDateTime.now(ZoneId.of(ZONE_TIME))
@@ -250,5 +255,10 @@ data class TimeRecordServiceImpl(
             endWorkDate = DateUtils.formatDate(timeRecord.endWorkTime?.toLocalDate()),
             timeWorked = formatTimeWorked(timeRecord.timeWorked)
         )
+    }
+    private fun getCurrentUserId(): UUID {
+        val authentication = SecurityContextHolder.getContext().authentication
+        val token = authentication.credentials.toString()
+        return jwtTokenUtil.getUserIdFromToken(token)
     }
 }

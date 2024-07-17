@@ -10,8 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import java.security.SignatureException
-import java.util.*
+
 
 @Component
 class JwtRequestFilter (
@@ -28,16 +27,12 @@ class JwtRequestFilter (
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7)
             try {
-                val claims = jwtTokenUtil.getClaimsFromToken(jwtToken)
+                val claims = Jwts.parser().setSigningKey(jwtTokenUtil.secretKey).parseClaimsJws(jwtToken).body
                 username = claims.subject
-                val userId = UUID.fromString(claims["id"].toString())
-                val userRole = claims["role"].toString()
             } catch (e: IllegalArgumentException) {
                 logger.warn("Unable to get JWT Token")
             } catch (e: ExpiredJwtException) {
                 logger.warn("JWT Token has expired")
-            } catch (e: SignatureException) {
-                logger.warn("JWT signature does not match locally computed signature")
             }
         } else {
             logger.warn("JWT Token does not begin with Bearer String")
@@ -47,7 +42,7 @@ class JwtRequestFilter (
             val userDetails = customUserDetailsService.loadUserByUsername(username)
 
             if (jwtTokenUtil.validateToken(jwtToken!!, userDetails.username)) {
-                val authenticationToken = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
+                val authenticationToken = UsernamePasswordAuthenticationToken(userDetails, jwtToken, userDetails.authorities)
                 authenticationToken.details = WebAuthenticationDetailsSource().buildDetails(request)
                 SecurityContextHolder.getContext().authentication = authenticationToken
             }

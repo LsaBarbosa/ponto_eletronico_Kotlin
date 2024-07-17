@@ -30,14 +30,6 @@ class WebSecurityConfig (
     }
 
     @Bean
-    fun authenticationProvider(): DaoAuthenticationProvider {
-        val authProvider = DaoAuthenticationProvider()
-        authProvider.setUserDetailsService(customUserDetailsService)
-        authProvider.setPasswordEncoder(passwordEncoder())
-        return authProvider
-    }
-
-    @Bean
     fun authenticationManager(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
         return authenticationConfiguration.authenticationManager
     }
@@ -45,20 +37,10 @@ class WebSecurityConfig (
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .csrf { csrf -> csrf.disable() }
-            .authorizeHttpRequests { authorize ->
-                authorize
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .anyRequest().authenticated()
-            }
-            .exceptionHandling { exceptionHandling ->
-                exceptionHandling
-                    .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-            }
-            .sessionManagement { sessionManagement ->
-                sessionManagement
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            }
+            .csrf { it.disable() }
+            .authorizeHttpRequests { it.requestMatchers("/api/auth/**").permitAll().anyRequest().authenticated() }
+            .exceptionHandling { it.authenticationEntryPoint(jwtAuthenticationEntryPoint) }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
 
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter::class.java)
 

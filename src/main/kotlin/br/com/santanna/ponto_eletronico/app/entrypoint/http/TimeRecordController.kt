@@ -4,6 +4,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.domain.service.PdfGeneratorService
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
+import br.com.santanna.ponto_eletronico.infrastructure.security.configsec.AuthService
 import jakarta.validation.Valid
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
@@ -24,19 +25,13 @@ class TimeRecordController(
 ) {
 
     @PostMapping("/entrada")
-    fun registerCheckin(@RequestParam("cpf") cpf: String): ResponseEntity<RecordCheckinDto> {
-
-        val checkin = timeRecordService.registerCheckin(cpf)
-        return ResponseEntity.ok().body(modelMapper.map(checkin, RecordCheckinDto::class.java))
-
+    fun checkin(): ResponseEntity<RecordCheckinDto> {
+        return ResponseEntity.ok(timeRecordService.registerCheckin())
     }
 
     @PostMapping("/saida")
-    fun registerCheckout(@RequestParam("cpf") cpf: String): ResponseEntity<RecordCheckoutDto> {
-
-        val checkout = timeRecordService.registerCheckout(cpf)
-        return ResponseEntity.ok().body(modelMapper.map(checkout, RecordCheckoutDto::class.java))
-
+    fun checkout(): ResponseEntity<RecordCheckoutDto> {
+        return ResponseEntity.ok(timeRecordService.registerCheckout())
     }
     @PutMapping
     fun updateTimeRecord(@Valid @RequestBody updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): ResponseEntity<UpdateTimeRecordDto> {

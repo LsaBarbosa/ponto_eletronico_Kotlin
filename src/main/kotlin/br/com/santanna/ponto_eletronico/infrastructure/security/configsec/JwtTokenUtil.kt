@@ -11,7 +11,7 @@ import java.util.*
 @Component
 class JwtTokenUtil {
     @Value("\${jwt.secret}")
-    private lateinit var secretKey: String
+     lateinit var secretKey: String
 
     @Value("\${jwt.expiration}")
     private var expiration: Long = 0
@@ -31,17 +31,27 @@ class JwtTokenUtil {
             .compact()
     }
 
-
     fun getClaimsFromToken(token: String): Claims {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body
+    }
+
+    fun getUserIdFromToken(token: String): UUID {
+        val claims = getClaimsFromToken(token)
+        return UUID.fromString(claims["id"].toString())
+    }
+
+    fun getRoleFromToken(token: String): String {
+        val claims = getClaimsFromToken(token)
+        return claims["role"].toString()
     }
 
     fun isTokenExpired(token: String): Boolean {
         return getClaimsFromToken(token).expiration.before(Date())
     }
 
-    fun validateToken(token: String, cpf: String): Boolean {
-        val username = getClaimsFromToken(token).subject
-        return username == cpf && !isTokenExpired(token)
+    fun validateToken(token: String, username: String): Boolean {
+        val tokenUsername = getClaimsFromToken(token).subject
+        return username == tokenUsername && !isTokenExpired(token)
     }
+
 }
