@@ -48,9 +48,11 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
             var dailyWorkedMinutes = 0L
             dailyRecords.forEachIndexed { index, record ->
                 table.addCell(createCell(record.id.toString(), font))
-                table.addCell(createCell(record.startWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "", font))
+                table.addCell(createCell(record.startWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "",
+                    font))
                 table.addCell(createCell(record.startWorkTime ?: "", font))
-                table.addCell(createCell(record.endWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "", font))
+                table.addCell(createCell(record.endWorkDate?.let { LocalDate.parse(it).format(dateFormatter) } ?: "",
+                    font))
                 table.addCell(createCell(record.endWorkTime ?: "", font))
                 table.addCell(createCell(record.timeWorked ?: "", font))
 
@@ -100,8 +102,9 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
         boldFont: PdfFont,
         dateFormatter: DateTimeFormatter
     ) {
-        val title = Paragraph("Registro de Horas").setFont(boldFont).setFontSize(18f).setTextAlignment(TextAlignment.CENTER)
-            .setMarginBottom(8f)
+        val title =
+            Paragraph("Registro de Horas").setFont(boldFont).setFontSize(18f).setTextAlignment(TextAlignment.CENTER)
+                .setMarginBottom(8f)
 
         val dateRange = Paragraph(
             "Data inicial ${LocalDate.parse(startDate).format(dateFormatter)}\n Data final ${
@@ -218,6 +221,7 @@ class PdfGeneratorServiceImpl : PdfGeneratorService {
             else -> paragraph.setFontColor(ColorConstants.BLACK)
         }
 
-        return Cell().add(paragraph).setTextAlignment(TextAlignment.CENTER).setBorderTop(null).setBorderBottom(null).setBorderLeft(null).setBorderRight(null)
+        return Cell().add(paragraph).setTextAlignment(TextAlignment.CENTER).setBorderTop(null).setBorderBottom(null)
+            .setBorderLeft(null).setBorderRight(null)
     }
 }

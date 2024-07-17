@@ -63,16 +63,15 @@ class TimeRecordController(
         return ResponseEntity.ok().body(balanceHoursDto)
 
     }
+
+
     @GetMapping("/registros/gestao")
     fun getTimeRecordsByEmployeeNameAndDateRangeForManager(
-        @RequestParam("cpf") cpf: String,
-        @RequestParam("startDate") startDateStr: String,
-        @RequestParam("endDate") endDateStr: String,
+        @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto,
         @PageableDefault(size = 5) pageable: Pageable
     ): Page<DetailedTimeRecordDto> {
-        val startDate = LocalDate.parse(startDateStr)
-        val endDate = LocalDate.parse(endDateStr)
-        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(cpf, startDate, endDate, pageable)
+
+        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(searchByDateTimeRecordRequestDto, pageable)
     }
 
 
@@ -104,7 +103,7 @@ class TimeRecordController(
         @RequestParam("endDate") endDate: String
     ): ResponseEntity<ByteArray> {
         val employee = employeeService.getEmployeeEntityByCpf(cpf) ?: throw IllegalArgumentException("Employee not found")
-        val records = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(cpf, LocalDate.parse(startDate), LocalDate.parse(endDate), PageRequest.of(0, Int.MAX_VALUE)).content
+        val records = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableForPDF(cpf, LocalDate.parse(startDate), LocalDate.parse(endDate), PageRequest.of(0, Int.MAX_VALUE)).content
         val pdfData = pdfGeneratorService.generateTimeRecordsPdf(records, employee, startDate, endDate)
 
         val headers = HttpHeaders().apply {

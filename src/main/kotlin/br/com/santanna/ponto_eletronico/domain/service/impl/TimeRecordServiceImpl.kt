@@ -6,10 +6,10 @@ import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.entity.Employee
+import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
 import br.com.santanna.ponto_eletronico.infrastructure.security.configsec.JwtTokenUtil
-import br.com.santanna.ponto_eletronico.infrastructure.util.DateUtils
 import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
@@ -30,6 +30,7 @@ import kotlin.reflect.KMutableProperty1
 private const val CHECKIN_EXCEPTION = "Necessário realizar o checkout para o checkin em aberto"
 private const val CHECKOUT_EXCEPTION = "Não há checkin aberto para ser encerrado"
 private const val ZONE_TIME = "America/Sao_Paulo"
+private const val timePattern = "HH:mm"
 
 
 
@@ -74,11 +75,7 @@ data class TimeRecordServiceImpl(
 
     @Transactional
     override fun updateTimeRecord(updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): UpdateTimeRecordDto {
-        validateEmployeeAndPassword(
-            updateTimeRecordRequestDto.employeeCpfTarget,
-            updateTimeRecordRequestDto.employeeManagerCpf,
-            updateTimeRecordRequestDto.passwords
-        )
+      validateManager(updateTimeRecordRequestDto.passwords)
 
         val timeRecord = timeRecordDataProvider.findById(updateTimeRecordRequestDto.timeRecordId)
             ?: throw ObjectNotFoundException("Time record not found with ID: ${updateTimeRecordRequestDto.timeRecordId}")
@@ -109,7 +106,34 @@ data class TimeRecordServiceImpl(
         return BalanceHoursDto(employeeCpf = cpf, balance = formattedBalance)
     }
 
-    override fun getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto> {
+    override fun getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(
+        searchRequestDto: SearchByDateTimeRecordRequestDto,
+        pageable: Pageable
+    ): Page<DetailedTimeRecordDto> {
+        val manager = validateManager(searchRequestDto.passwords)
+        val employeeTarget = employeeDataProvider.findCpf(searchRequestDto.employeeCpfTarget)
+            ?: throw IllegalArgumentException("Employee not found with CPF: ${searchRequestDto.employeeCpfTarget}")
+
+        if (employeeTarget.company?.id != manager.company?.id) {
+            throw IllegalArgumentException("The specified employee does not belong to the manager's company.")
+        }
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val startDate = searchRequestDto.searchByDateTimeRecordDto.startDate?.let { LocalDate.parse(it, formatter) }
+        val endDate = searchRequestDto.searchByDateTimeRecordDto.endDate?.let { LocalDate.parse(it, formatter) }
+
+        val startDateTime = startDate?.atStartOfDay()
+        val endDateTime = endDate?.atTime(23, 59, 59)
+
+        val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(
+            searchRequestDto.employeeCpfTarget,
+            startDateTime!!,
+            endDateTime!!,
+            pageable
+        )
+        return timeRecords.map { convertToDetailedTimeRecordDto(it) }
+    }
+
+    override fun getTimeRecordsByEmployeeCpfAndDateRangePageableForPDF(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto> {
         val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(
             cpf, startDate.atStartOfDay(), endDate.atTime(23, 59, 59), pageable
         )
@@ -187,6 +211,22 @@ data class TimeRecordServiceImpl(
         }
     }
 
+    private fun validateManager(password: String): Employee {
+        val id = getCurrentUserId()
+        val manager = employeeDataProvider.findById(id)
+
+        if (manager.role != EmployeeRole.MANAGER) {
+            throw IllegalArgumentException("The specified employee is not a manager.")
+        }
+
+        val isPasswordValid = BCryptPasswordEncoder().matches(password, manager.password)
+        if (!isPasswordValid) {
+            throw IllegalArgumentException("Invalid password")
+        }
+
+        return manager
+    }
+
     private fun findEmployeeByCpfOrThrow(cpf: String): Employee {
         return employeeDataProvider.findCpf(cpf) ?: throw ObjectNotFoundException("Employee not found with CPF: $cpf")
     }
@@ -204,17 +244,17 @@ data class TimeRecordServiceImpl(
     private fun createRecordCheckinDto(savedCheckin: TimeRecord): RecordCheckinDto {
         return RecordCheckinDto(
             id = savedCheckin.id,
-            startOfWorkTime = DateUtils.formatTime(savedCheckin.startWorkTime),
-            startOfWorkDate = DateUtils.formatDate(savedCheckin.startWorkTime?.toLocalDate())
+            startOfWorkTime = savedCheckin.startWorkTime?.format(DateTimeFormatter.ofPattern(timePattern)),
+            startOfWorkDate = savedCheckin.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE)
         )
     }
 
     private fun createRecordCheckoutDto(savedCheckout: TimeRecord): RecordCheckoutDto {
         return RecordCheckoutDto(
             id = savedCheckout.id,
-            endWorkTime = DateUtils.formatTime(savedCheckout.endWorkTime),
+            endWorkTime = savedCheckout.endWorkTime?.format(DateTimeFormatter.ofPattern(timePattern)),
             timeWorked = formatTimeWorked(savedCheckout.timeWorked),
-            endWorkDate = DateUtils.formatDate(savedCheckout.endWorkTime?.toLocalDate())
+            endWorkDate = savedCheckout.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
         )
     }
 
@@ -231,7 +271,7 @@ data class TimeRecordServiceImpl(
         dateType: String
     ) {
         if (newDate != null && newTime != null) {
-            val newDateTime = DateUtils.parseDateTime(newDate, newTime)
+            val newDateTime = LocalDateTime.parse("$newDate $newTime", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
             validateDateChange(dateTimeField.get(timeRecord), newDateTime, dateType)
             dateTimeField.set(timeRecord, newDateTime)
 
@@ -288,10 +328,10 @@ data class TimeRecordServiceImpl(
     private fun convertToDetailedTimeRecordDto(timeRecord: TimeRecord): DetailedTimeRecordDto {
         return DetailedTimeRecordDto(
             id = timeRecord.id,
-            startWorkTime = DateUtils.formatTime(timeRecord.startWorkTime),
-            endWorkTime = DateUtils.formatTime(timeRecord.endWorkTime),
-            startWorkDate = DateUtils.formatDate(timeRecord.startWorkTime?.toLocalDate()),
-            endWorkDate = DateUtils.formatDate(timeRecord.endWorkTime?.toLocalDate()),
+            startWorkTime = timeRecord.startWorkTime?.format(DateTimeFormatter.ofPattern(timePattern)),
+            endWorkTime = timeRecord.endWorkTime?.format(DateTimeFormatter.ofPattern(timePattern)),
+            startWorkDate = timeRecord.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
+            endWorkDate = timeRecord.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
             timeWorked = formatTimeWorked(timeRecord.timeWorked)
         )
     }
