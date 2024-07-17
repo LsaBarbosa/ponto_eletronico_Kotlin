@@ -5,12 +5,11 @@ import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
-import java.util.*
 
 data class CreateEmployeeDto(
-    val managerCpf: String,
+
     val passwordsManager: String,
-    var id: UUID? = null,
+
     @field:NotBlank(message = "O nome não pode estar em branco")
     var name: String? = null,
 

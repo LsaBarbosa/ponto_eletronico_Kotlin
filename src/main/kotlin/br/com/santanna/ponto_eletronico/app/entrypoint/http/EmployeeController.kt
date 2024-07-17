@@ -8,18 +8,14 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
-import java.util.*
 
 @RestController
 @RequestMapping("/colaborador")
 class EmployeeController(val employeeService: EmployeeService ) {
 
-
-    @GetMapping("/{id}")
-    fun getEmployeeById(@PathVariable("id") id: UUID): ResponseEntity<EmployeeGetDto?> {
-        val employee = employeeService.getEmployeeById(id)
-        return ResponseEntity.ok(employee)
-
+    @GetMapping("/id")
+    fun getEmployeeById(): ResponseEntity<EmployeeGetDto> {
+        return ResponseEntity.ok(employeeService.getEmployeeById())
     }
 
     @GetMapping("/meus-colaboradores")
@@ -55,10 +51,9 @@ class EmployeeController(val employeeService: EmployeeService ) {
 
     @PostMapping("criar-colaborador")
     fun registerNewEmployee(
-        @RequestParam("managerCpf") managerCpf: String,
         @Valid @RequestBody createEmployeeDto: CreateEmployeeDto
     ): ResponseEntity<EmployeeDto> {
-        val employeeCreated = employeeService.registerEmployee(managerCpf, createEmployeeDto)
+        val employeeCreated = employeeService.registerEmployee( createEmployeeDto)
         val uri = URI.create("/employees/${employeeCreated.id}")
         return ResponseEntity.created(uri).body(employeeCreated)
     }
@@ -68,8 +63,6 @@ class EmployeeController(val employeeService: EmployeeService ) {
         val updatedEmployeeDto = employeeService.updateEmployee(updateEmployeeRequestDto)
         return ResponseEntity.ok(updatedEmployeeDto)
     }
-
-
 
     @DeleteMapping
     fun deleteEmployee(@RequestBody deleteEmployeeRequestDto: DeleteEmployeeRequestDto): ResponseEntity<Void> {
