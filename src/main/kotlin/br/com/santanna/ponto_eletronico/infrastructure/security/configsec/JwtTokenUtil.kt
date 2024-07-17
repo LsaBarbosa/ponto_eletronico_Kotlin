@@ -9,8 +9,9 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class JwtTokenUtil {  @Value("\${jwt.secret}")
-private lateinit var secretKey: String
+class JwtTokenUtil {
+    @Value("\${jwt.secret}")
+    private lateinit var secretKey: String
 
     @Value("\${jwt.expiration}")
     private var expiration: Long = 0
@@ -30,15 +31,6 @@ private lateinit var secretKey: String
             .compact()
     }
 
-    private fun doGenerateToken(claims: Map<String, Any>, subject: String): String {
-        return Jwts.builder()
-            .setClaims(claims)
-            .setSubject(subject)
-            .setIssuedAt(Date(System.currentTimeMillis()))
-            .setExpiration(Date(System.currentTimeMillis() + expiration * 1000))
-            .signWith(SignatureAlgorithm.HS512, secretKey)
-            .compact()
-    }
 
     fun getClaimsFromToken(token: String): Claims {
         return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body
