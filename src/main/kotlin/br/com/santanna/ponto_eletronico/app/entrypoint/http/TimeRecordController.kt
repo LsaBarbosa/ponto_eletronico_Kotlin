@@ -4,7 +4,6 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.domain.service.PdfGeneratorService
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
-import br.com.santanna.ponto_eletronico.infrastructure.security.configsec.AuthService
 import jakarta.validation.Valid
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
