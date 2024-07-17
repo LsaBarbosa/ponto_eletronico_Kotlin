@@ -152,6 +152,7 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
+
          employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeCpfTarget)
             ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteEmployeeRequestDto.employeeCpfTarget}")
 

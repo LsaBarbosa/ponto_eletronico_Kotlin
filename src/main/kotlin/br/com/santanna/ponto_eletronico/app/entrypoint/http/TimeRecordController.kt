@@ -77,14 +77,9 @@ class TimeRecordController(
 
     @GetMapping("/hora-extra/gestao")
     fun getBalanceHoursByDateByEmployeeNameAndDateRangeForManager(
-        @RequestParam("cpf") cpf: String,
-        @RequestParam("startDate") startDateStr: String,
-        @RequestParam("endDate") endDateStr: String
+        @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto
     ): ResponseEntity<BalanceHoursDto> {
-
-        val startDate = LocalDate.parse(startDateStr)
-        val endDate = LocalDate.parse(endDateStr)
-        val timeRecords = timeRecordService.balanceHoursByDateForManager(cpf, startDate, endDate)
+        val timeRecords = timeRecordService.balanceHoursByDateForManager(searchByDateTimeRecordRequestDto)
         val balanceHoursDto = modelMapper.map(timeRecords, BalanceHoursDto::class.java)
         return ResponseEntity.ok().body(balanceHoursDto)
 

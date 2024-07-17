@@ -9,7 +9,7 @@ interface TimeRecordService {
     fun registerCheckin(): RecordCheckinDto?
     fun registerCheckout(): RecordCheckoutDto?
     fun updateTimeRecord(updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): UpdateTimeRecordDto
-    fun balanceHoursByDateForManager(cpf: String, startDate: LocalDate, endDate: LocalDate): BalanceHoursDto
+    fun balanceHoursByDateForManager(searchRequestDto: SearchByDateTimeRecordRequestDto): BalanceHoursDto
     fun balanceHoursByDate(  startDate: LocalDate, endDate: LocalDate): BalanceHoursDto
     fun getTimeRecordsByEmployeeCpfAndDateRangePageable( startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto>
     fun getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(searchRequestDto: SearchByDateTimeRecordRequestDto, pageable: Pageable): Page<DetailedTimeRecordDto>

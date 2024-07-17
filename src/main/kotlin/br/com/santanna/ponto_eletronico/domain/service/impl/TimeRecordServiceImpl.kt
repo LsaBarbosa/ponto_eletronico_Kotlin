@@ -88,8 +88,13 @@ data class TimeRecordServiceImpl(
         return convertToUpdateTimeRecordDto(savedUpdate)
     }
 
-    override fun balanceHoursByDateForManager(cpf: String, startDate: LocalDate, endDate: LocalDate): BalanceHoursDto {
-        val timeRecords = findTimeRecordsByDateRange(cpf, startDate, endDate)
+
+    override fun balanceHoursByDateForManager(searchRequestDto: SearchByDateTimeRecordRequestDto): BalanceHoursDto {
+        validateManager(searchRequestDto.passwords)
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val startDate = searchRequestDto.searchByDateTimeRecordDto.startDate?.let { LocalDate.parse(it, formatter) }
+        val endDate = searchRequestDto.searchByDateTimeRecordDto.endDate?.let { LocalDate.parse(it, formatter) }
+        val timeRecords = findTimeRecordsByDateRange(searchRequestDto.employeeCpfTarget,startDate!!, endDate!!)
         val recordsByDate = timeRecords.groupBy { it.startWorkTime?.toLocalDate() }
 
         var totalWorkedMinutes = 0L
@@ -103,13 +108,10 @@ data class TimeRecordServiceImpl(
         val balance = totalWorkedMinutes - totalExpectedMinutes
         val formattedBalance = formatBalance(balance)
 
-        return BalanceHoursDto(employeeCpf = cpf, balance = formattedBalance)
+        return BalanceHoursDto(employeeCpf = searchRequestDto.employeeCpfTarget, balance = formattedBalance)
     }
 
-    override fun getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(
-        searchRequestDto: SearchByDateTimeRecordRequestDto,
-        pageable: Pageable
-    ): Page<DetailedTimeRecordDto> {
+    override fun getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(searchRequestDto: SearchByDateTimeRecordRequestDto, pageable: Pageable):Page<DetailedTimeRecordDto> {
         val manager = validateManager(searchRequestDto.passwords)
         val employeeTarget = employeeDataProvider.findCpf(searchRequestDto.employeeCpfTarget)
             ?: throw IllegalArgumentException("Employee not found with CPF: ${searchRequestDto.employeeCpfTarget}")
@@ -184,13 +186,10 @@ data class TimeRecordServiceImpl(
         val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(employee.cpf!!, startDateTime, endDateTime, pageable)
         return timeRecords.map { convertToDetailedTimeRecordDto(it) }
     }
+
     @Transactional
     override fun deleteTimeRecord(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto) {
-        validateEmployeeAndPassword(
-            deleteTimeRecordRequestDto.employeeCpfTarget,
-            deleteTimeRecordRequestDto.employeeManagerCpf,
-            deleteTimeRecordRequestDto.passwords
-        )
+     validateManager(deleteTimeRecordRequestDto.passwords)
 
         val timeRecord = timeRecordDataProvider.findById(deleteTimeRecordRequestDto.timeRecordId)
             ?: throw ObjectNotFoundException("Time record not found with ID: ${deleteTimeRecordRequestDto.timeRecordId}")
@@ -202,14 +201,6 @@ data class TimeRecordServiceImpl(
         timeRecordDataProvider.delete(timeRecord)
     }
 
-    private fun validateEmployeeAndPassword(employeeCpfTarget: String, employeeManagerCpf: String, password: String) {
-        findEmployeeByCpfOrThrow(employeeCpfTarget)
-        val manager = findEmployeeByCpfOrThrow(employeeManagerCpf)
-
-        if (!BCryptPasswordEncoder().matches(password, manager.password)) {
-            throw IllegalArgumentException("Invalid password")
-        }
-    }
 
     private fun validateManager(password: String): Employee {
         val id = getCurrentUserId()
