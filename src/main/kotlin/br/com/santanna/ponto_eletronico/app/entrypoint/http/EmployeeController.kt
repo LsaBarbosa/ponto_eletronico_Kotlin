@@ -2,6 +2,7 @@ package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
 import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -11,6 +12,7 @@ import java.net.URI
 
 @RestController
 @RequestMapping("/colaborador")
+@Tag(name = "Employee", description = "APIs relacionadas aos funcionários")
 class EmployeeController(val employeeService: EmployeeService ) {
 
     @GetMapping("/id")

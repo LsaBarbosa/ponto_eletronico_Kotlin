@@ -5,6 +5,8 @@ import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeeCo
 import br.com.santanna.ponto_eletronico.domain.dto.company.CreateCompanyDto
 import br.com.santanna.ponto_eletronico.domain.dto.company.DeleteCompanyRequestDto
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -13,22 +15,26 @@ import org.springframework.web.bind.annotation.*
 import java.net.URI
 
 @RestController
-@RequestMapping("/empresa")
+@RequestMapping("/api/empresa")
+@Tag(name = "Company", description = "End-point para gestão da empresa")
 class CompanyController(private val companyService: CompanyService) {
 
     @GetMapping
+    @Operation(summary = "Lista todas as empresas")
     fun allCompanies(pageable: Pageable): ResponseEntity<Page<CompanyWithEmployeeCountDto>> {
         val companies = companyService.getAllCompanies(pageable)
         return ResponseEntity.ok(companies)
     }
 
     @GetMapping("/busca-cnpj")
+    @Operation(summary = "Retorna a empresa específica pelo cnpj")
     fun getCompanybyCNPJ(@RequestParam companyCNPJ: String): ResponseEntity<CompanyDTO> {
         val company = companyService.getCompanyByCNPJ(companyCNPJ)
         return ResponseEntity.ok().body(company)
     }
 
     @GetMapping("/busca-nome-empresa")
+    @Operation(summary = "Retorna a empresa específica pelo nome")
     fun getCompanybyName(@RequestParam nameCompany: String): ResponseEntity<CompanyDTO> {
         val company = companyService.getCompaniesByName(nameCompany)
         return ResponseEntity.ok().body(company)
@@ -36,6 +42,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @PostMapping
+    @Operation(summary = "Registra a empresa no sistema")
     fun registerCompany(@Valid @RequestBody createCompanyDto: CreateCompanyDto): ResponseEntity<CompanyDTO> {
         val companyCreated = companyService.registerCompany(createCompanyDto)
         val uri: URI = URI.create("/company/${companyCreated.id}")
@@ -43,6 +50,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @PutMapping
+    @Operation(summary = "Altera nome da empresa")
     fun updateCompany(
         @RequestParam companyCNPJ: String,
         @Valid @RequestBody companyDTO: CompanyDTO
@@ -52,6 +60,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @DeleteMapping
+    @Operation(summary = "Exclui a empresa do sistema pelo cnpj")
     fun deleteCompany(@RequestBody deleteCompanyRequestDto: DeleteCompanyRequestDto): ResponseEntity<Void> {
         companyService.deleteCompanyByCNPJ(deleteCompanyRequestDto)
         return ResponseEntity.noContent().build()
