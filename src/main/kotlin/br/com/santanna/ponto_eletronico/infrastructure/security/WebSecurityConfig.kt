@@ -45,7 +45,7 @@ class WebSecurityConfig (
                         "/swagger-ui.html",
                         "/webjars/**"
                     ).permitAll()
-                    .anyRequest().authenticated()
+                    .anyRequest().permitAll()
             }
             .exceptionHandling { exceptionHandling ->
                 exceptionHandling
