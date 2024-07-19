@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.domain.dto.image
+package br.com.santanna.ponto_eletronico.domain.dto.image.search
 
 import java.time.LocalDate
 

@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security.configsec
+package br.com.santanna.ponto_eletronico.infrastructure.security
 
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts

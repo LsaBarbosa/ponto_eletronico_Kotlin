@@ -11,7 +11,7 @@ import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
-import br.com.santanna.ponto_eletronico.infrastructure.security.configsec.JwtTokenUtil
+import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
 
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
@@ -29,7 +29,8 @@ import java.util.*
 @Service
 class EmployeeServiceImpl(
     private val employeeDataProvider: EmployeeDataProvider,
-    private val mailSender: JavaMailSenderImpl, private val jwtTokenUtil: JwtTokenUtil) : EmployeeService {
+    private val mailSender: JavaMailSenderImpl, private val jwtTokenUtil: JwtTokenUtil
+) : EmployeeService {
 
     override fun getEmployeesByManager(managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): Page<EmployeeGetDto> {
         val id = getCurrentUserId()

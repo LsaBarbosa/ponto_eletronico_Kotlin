@@ -4,6 +4,9 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.domain.service.PdfGeneratorService
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
@@ -17,28 +20,34 @@ import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
 @RestController
-@RequestMapping("/ponto")
+@RequestMapping("/api/ponto")
+@Tag(name = "Controle de Horas", description = "End-point para gestão da empresa")
+@SecurityRequirement(name = "Bearer Authentication")
 class TimeRecordController(
     private val timeRecordService: TimeRecordService, private val employeeService: EmployeeService,
     private val modelMapper: ModelMapper, private val pdfGeneratorService: PdfGeneratorService
 ) {
 
     @PostMapping("/entrada")
+    @Operation(summary = "Registra a entrada do funcionário")
     fun checkin(): ResponseEntity<RecordCheckinDto> {
         return ResponseEntity.ok(timeRecordService.registerCheckin())
     }
 
     @PostMapping("/saida")
+    @Operation(summary = "Registra a saída do funcionário")
     fun checkout(): ResponseEntity<RecordCheckoutDto> {
         return ResponseEntity.ok(timeRecordService.registerCheckout())
     }
     @PutMapping
+    @Operation(summary = "Altera o registro do funcionário")
     fun updateTimeRecord(@Valid @RequestBody updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): ResponseEntity<UpdateTimeRecordDto> {
         val updatedTimeRecordDto = timeRecordService.updateTimeRecord(updateTimeRecordRequestDto)
         return ResponseEntity.ok(updatedTimeRecordDto)
     }
 
     @GetMapping("/registros")
+    @Operation(summary = "Busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRange(
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String,
@@ -51,6 +60,7 @@ class TimeRecordController(
 
 
     @GetMapping("/hora-extra")
+    @Operation(summary = "Busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRange(
         @RequestParam("startDate") startDateStr: String,
         @RequestParam("endDate") endDateStr: String
@@ -66,6 +76,7 @@ class TimeRecordController(
 
 
     @GetMapping("/registros/gestao")
+    @Operation(summary = "Administrador busca o regostro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRangeForManager(
         @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto,
         @PageableDefault(size = 5) pageable: Pageable
@@ -76,6 +87,7 @@ class TimeRecordController(
 
 
     @GetMapping("/hora-extra/gestao")
+    @Operation(summary = "Administrador busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRangeForManager(
         @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto
     ): ResponseEntity<BalanceHoursDto> {
@@ -86,12 +98,14 @@ class TimeRecordController(
     }
 
     @DeleteMapping
+    @Operation(summary = "Administrador deleta o registro de horas do funcionário")
     fun deleteTimeRecord(@RequestBody deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto): ResponseEntity<Void> {
         timeRecordService.deleteTimeRecord(deleteTimeRecordRequestDto)
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/export")
+    @Operation(summary = "Relatório das horas do funcionário")
     fun exportTimeRecords(
         @RequestParam("cpf") cpf: String,
         @RequestParam("startDate") startDate: String,

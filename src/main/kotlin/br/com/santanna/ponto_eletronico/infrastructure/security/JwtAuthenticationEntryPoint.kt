@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security.configsec
+package br.com.santanna.ponto_eletronico.infrastructure.security
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

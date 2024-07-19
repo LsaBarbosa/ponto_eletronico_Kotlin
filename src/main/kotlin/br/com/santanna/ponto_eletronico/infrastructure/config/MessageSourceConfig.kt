@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.infrastructure.util
+package br.com.santanna.ponto_eletronico.infrastructure.config
 
 import org.springframework.context.MessageSource
 import org.springframework.context.annotation.Bean

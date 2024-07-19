@@ -9,7 +9,7 @@ import br.com.santanna.ponto_eletronico.domain.entity.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
-import br.com.santanna.ponto_eletronico.infrastructure.security.configsec.JwtTokenUtil
+import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
 import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page

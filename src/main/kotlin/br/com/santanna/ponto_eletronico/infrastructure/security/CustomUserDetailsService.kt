@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security.configsec
+package br.com.santanna.ponto_eletronico.infrastructure.security
 
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import org.springframework.security.core.userdetails.UserDetails

@@ -1,7 +1,14 @@
 package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
-import br.com.santanna.ponto_eletronico.domain.dto.image.*
+import br.com.santanna.ponto_eletronico.domain.dto.image.manager.ManagerImageRequestDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.search.ImageListDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.search.ImageSearchDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.update.UpdateImageMessageDto
+import br.com.santanna.ponto_eletronico.domain.dto.image.update.UploadImageRequestDto
 import br.com.santanna.ponto_eletronico.domain.service.ImageService
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
@@ -11,17 +18,19 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@RequestMapping("/images")
+@RequestMapping("/api/images")
+@Tag(name = "Imagem", description = "End-point para gestão das imagens")
+@SecurityRequirement(name = "Bearer Authentication")
 class ImageController(private val imageService: ImageService) {
 
     @PostMapping("/upload")
-    fun uploadImage(  @RequestPart("cpf") cpf: String,
-                      @RequestPart("passwords") passwords: String,
-                      @RequestPart("file") file: MultipartFile,
-                      @RequestPart("message", required = false) message: String?): ResponseEntity<Void> {
+    @Operation(summary = "Upload de imagem")
+    fun uploadImage(
+
+        @RequestPart("file") file: MultipartFile,
+        @RequestPart("message", required = false) message: String?
+    ): ResponseEntity<Void> {
         val uploadImageRequestDto = UploadImageRequestDto(
-            cpf = cpf,
-            passwords = passwords,
             file = file,
             message = message
         )
@@ -29,43 +38,90 @@ class ImageController(private val imageService: ImageService) {
         return ResponseEntity.ok().build()
     }
 
-
-    @GetMapping("/download")
-    fun downloadImage(@RequestParam("cpf") cpf: String): ResponseEntity<ByteArrayResource> {
-        val imageData = imageService.getImageByEmployeeCpf(cpf)
-        val resource = ByteArrayResource(imageData)
-
-        return ResponseEntity.ok()
-            .contentType(MediaType.IMAGE_JPEG)
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$cpf-image.jpg\"")
-            .body(resource)
-    }
-
-    @GetMapping
-    fun searchImages(@Valid @RequestBody imageSearchDto: ImageSearchDto): ResponseEntity<List<ImageListDto>> {
-        val images = imageService.getImagesByEmployeeCpfAndDateRange(imageSearchDto)
+    @GetMapping("/my-images")
+    @Operation(summary = "Lista todas as imagens do funcionário logado")
+    fun getImages(@RequestBody imageSearchDto: ImageSearchDto): ResponseEntity<List<ImageListDto>> {
+        val images = imageService.getImagesForCurrentUser(imageSearchDto)
         return ResponseEntity.ok(images)
     }
 
-    @GetMapping("/download/{id}")
-    fun downloadImageById(@PathVariable id: Long): ResponseEntity<ByteArrayResource> {
-        val imageData = imageService.getImageById(id)
+    @GetMapping("/download/{imageId}")
+    @Operation(summary = "Download de imagem")
+    fun downloadImage(@PathVariable imageId: Long): ResponseEntity<ByteArrayResource> {
+        val imageData = imageService.getImageByIdForCurrentUser(imageId)
         val resource = ByteArrayResource(imageData)
 
         return ResponseEntity.ok()
             .contentType(MediaType.IMAGE_JPEG)
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"image-$id.jpg\"")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$imageId-image.jpg\"")
             .body(resource)
     }
-    @PatchMapping
-    fun updateImageMessage(@Valid @RequestBody updateImageRequestDto: UpdateImageRequestDto): ResponseEntity<ImageListDto> {
-        val imageDto = imageService.updateImageMessage(updateImageRequestDto)
+
+    @PatchMapping("/{imageId}")
+    @Operation(summary = "Altera a descrição da imagem")
+    fun updateImageMessage(
+        @PathVariable imageId: Long,
+        @Valid @RequestBody updateImageMessageDto: UpdateImageMessageDto
+    ): ResponseEntity<ImageListDto> {
+        val imageDto = imageService.updateImageMessageForCurrentUser(imageId, updateImageMessageDto)
         return ResponseEntity.ok(imageDto)
     }
 
-    @DeleteMapping("/{id}")
-    fun deleteImageById(@RequestBody deleteImageRequestDto: DeleteImageRequestDto): ResponseEntity<Void> {
-        imageService.deleteImageById(deleteImageRequestDto)
+    @DeleteMapping("/{imageId}")
+    @Operation(summary = "Deleta imagem por ID")
+    fun deleteImageById(@PathVariable imageId: Long): ResponseEntity<Void> {
+        imageService.deleteImageByIdForCurrentUser(imageId)
         return ResponseEntity.noContent().build()
     }
+
+    @GetMapping("/manager/{cpf}")
+    @Operation(summary = "Busca todas as imagens do funcionário pelo manager")
+    fun getImagesByEmployeeCpfAsManager(
+        @PathVariable cpf: String,
+        @RequestBody imageSearchDto: ImageSearchDto
+    ): ResponseEntity<List<ImageListDto>> {
+        val managerImageRequestDto =
+            ManagerImageRequestDto(employeeCpf = cpf, imageId = null, updateImageMessageDto = null)
+        val images = imageService.getImagesByEmployeeCpfAsManager(managerImageRequestDto, imageSearchDto)
+        return ResponseEntity.ok(images)
+    }
+
+    @GetMapping("/manager/download/{imageId}")
+    @Operation(summary = "Download de imagem pelo manager")
+    fun downloadImageAsManager(@PathVariable imageId: Long, @RequestParam("cpf") cpf: String): ResponseEntity<ByteArrayResource> {
+        val managerImageRequestDto = ManagerImageRequestDto(employeeCpf = cpf, imageId = imageId, updateImageMessageDto = null)
+        val imageData = imageService.getImageByIdAsManager(managerImageRequestDto)
+        val resource = ByteArrayResource(imageData)
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.IMAGE_JPEG)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$imageId-image.jpg\"")
+            .body(resource)
+    }
+
+    @PatchMapping("/manager/{imageId}")
+    @Operation(summary = "Altera a descrição da imagem pelo manager")
+    fun updateImageMessageAsManager(
+        @PathVariable imageId: Long,
+        @Valid @RequestBody updateImageMessageDto: UpdateImageMessageDto,
+        @RequestParam("cpf") cpf: String
+    ): ResponseEntity<ImageListDto> {
+        val managerImageRequestDto =
+            ManagerImageRequestDto(employeeCpf = cpf, imageId = imageId, updateImageMessageDto = updateImageMessageDto)
+        val imageDto = imageService.updateImageMessageAsManager(managerImageRequestDto)
+        return ResponseEntity.ok(imageDto)
+    }
+
+
+
+    @DeleteMapping("/manager/{imageId}")
+    @Operation(summary = "Deleta imagem por ID pelo manager")
+    fun deleteImageByIdAsManager(@PathVariable imageId: Long, @RequestParam("cpf") cpf: String): ResponseEntity<Void> {
+        val managerImageRequestDto =
+            ManagerImageRequestDto(employeeCpf = cpf, imageId = imageId, updateImageMessageDto = null)
+        imageService.deleteImageByIdAsManager(managerImageRequestDto)
+        return ResponseEntity.noContent().build()
+    }
+
+
 }

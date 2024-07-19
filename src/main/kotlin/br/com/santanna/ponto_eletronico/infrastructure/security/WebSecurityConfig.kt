@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security.configsec
+package br.com.santanna.ponto_eletronico.infrastructure.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -34,10 +34,27 @@ class WebSecurityConfig (
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .csrf { it.disable() }
-            .authorizeHttpRequests { it.requestMatchers("/api/auth/**").permitAll().anyRequest().authenticated() }
-            .exceptionHandling { it.authenticationEntryPoint(jwtAuthenticationEntryPoint) }
-            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+            .csrf { csrf -> csrf.disable() }
+            .authorizeHttpRequests { authorize ->
+                authorize
+                    .requestMatchers(
+                        "/api/auth/**",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/swagger-resources/**",
+                        "/swagger-ui.html",
+                        "/webjars/**"
+                    ).permitAll()
+                    .anyRequest().permitAll()
+            }
+            .exceptionHandling { exceptionHandling ->
+                exceptionHandling
+                    .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+            }
+            .sessionManagement { sessionManagement ->
+                sessionManagement
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            }
 
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter::class.java)
 
@@ -47,7 +64,12 @@ class WebSecurityConfig (
     @Bean
     fun webSecurityCustomizer(): WebSecurityCustomizer {
         return WebSecurityCustomizer { web ->
-            web.ignoring().requestMatchers("/api/auth/**")
+            web.ignoring().requestMatchers( "/api/auth/**",
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/swagger-resources/**",
+                "/swagger-ui.html",
+                "/webjars/**")
         }
     }
 
