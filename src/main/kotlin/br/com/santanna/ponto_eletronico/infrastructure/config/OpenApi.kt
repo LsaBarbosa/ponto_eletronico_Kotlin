@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration
 class OpenApi {
     @Bean
     fun customOpenAPI(): OpenAPI {
-        val securitySchemeName = "bearerAuth"
+
         return OpenAPI()
             .info(
                 Info()
@@ -31,17 +31,18 @@ class OpenApi {
                     .description("SpringDoc Documentation")
                     .url("https://springdoc.org")
             )
-            .addSecurityItem(SecurityRequirement().addList(securitySchemeName))
+            .addSecurityItem(
+                SecurityRequirement().addList("Bearer Authentication")
+            )
             .components(
-                io.swagger.v3.oas.models.Components().addSecuritySchemes(
-                    securitySchemeName,
-                    SecurityScheme()
-                        .name(securitySchemeName)
-                        .type(Type.HTTP)
-                        .scheme("bearer")
-                        .bearerFormat("JWT")
-                        .`in`(In.HEADER)
-                )
+                io.swagger.v3.oas.models.Components()
+                    .addSecuritySchemes(
+                        "Bearer Authentication",
+                        SecurityScheme()
+                            .type(Type.HTTP)
+                            .scheme("bearer")
+                            .bearerFormat("JWT")
+                    )
             )
     }
 

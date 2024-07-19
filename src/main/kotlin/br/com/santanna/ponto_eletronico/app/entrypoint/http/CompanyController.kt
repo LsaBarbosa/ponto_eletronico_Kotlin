@@ -6,6 +6,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.company.CreateCompanyDto
 import br.com.santanna.ponto_eletronico.domain.dto.company.DeleteCompanyRequestDto
 import br.com.santanna.ponto_eletronico.domain.service.CompanyService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
@@ -16,7 +17,8 @@ import java.net.URI
 
 @RestController
 @RequestMapping("/api/empresa")
-@Tag(name = "Company", description = "End-point para gestão da empresa")
+@Tag(name = "Empresas", description = "End-point para gestão da empresa")
+@SecurityRequirement(name = "Bearer Authentication")
 class CompanyController(private val companyService: CompanyService) {
 
     @GetMapping
