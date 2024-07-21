@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
+import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.ImageDataProvider
@@ -14,12 +15,8 @@ import br.com.santanna.ponto_eletronico.domain.service.util.image.ImageServiceUt
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-private const val NO_IMAGE_FOUND_WITH_ID_ = "Nenhuma imagem para o ID: "
-
-
-private const val FOR_EMPLOYEE_WITH_CPF_ = "registrada no CPF: "
+private const val NO_IMAGE_FOUND_WITH_ID_ = "Nenhuma imagem encontrada para o ID: "
 
 @Service
 class ImageServiceImpl(
@@ -28,90 +25,150 @@ class ImageServiceImpl(
     private val employeeDataProvider: EmployeeDataProvider,
     private val imageServiceUtils: ImageServiceUtils,
 
-) : ImageService {
+    ) : ImageService {
 
     override fun getImageByIdForCurrentUser(imageId: Long): ByteArray {
         val userId = imageServiceUtils.getCurrentUserId()
         val image = imageDataProvider.findByIdAndEmployeeId(imageId, userId)
-            ?: throw ObjectNotFoundException("No image found for user ID: $userId and image ID: $imageId")
+            ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_: $userId")
         return imageServiceUtils.loadFileAsResource(image.filePath!!)
     }
+
     override fun getImagesForCurrentUser(imageSearchDto: ImageSearchDto): List<ImageListDto> {
         val id = imageServiceUtils.getCurrentUserId()
         val employee = employeeDataProvider.findById(id)
-        val startDate = LocalDate.parse(imageSearchDto.startDate, DateTimeFormatter.ofPattern("dd-MM-yyyy"))
-        val endDate = LocalDate.parse(imageSearchDto.endDate, DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+        val startDate = imageServiceUtils.localDateParse(imageSearchDto.startDate)
+        val endDate = imageServiceUtils.localDateParse(imageSearchDto.endDate)
         val images = imageDataProvider.findAllByEmployeeIdAndDateRange(id, startDate, endDate)
         return images.map { image -> imageServiceUtils.convertToImageListDto(image, employee) }
     }
+
     @Transactional
-    override fun storeImage(uploadImageRequestDto: UploadImageRequestDto): Image {
-        val userId = imageServiceUtils.getCurrentUserId()
-        val employee = employeeDataProvider.findById(userId)
-        val filePath = imageServiceUtils.storeFile(uploadImageRequestDto.file)
-        val image = Image(
-            filePath = filePath,
-            message = uploadImageRequestDto.message,
-            employee = employee,
-            uploadDate = LocalDate.now()
-        )
-        return imageDataProvider.save(image)
+    override fun storeImageForCurrentUser(uploadImageRequestDto: UploadImageRequestDto): Image {
+        try {
+            val userId = imageServiceUtils.getCurrentUserId()
+            val employee = employeeDataProvider.findById(userId)
+            val filePath = imageServiceUtils.storeFile(uploadImageRequestDto.file)
+            val image = Image(
+                filePath = filePath,
+                message = uploadImageRequestDto.message,
+                employee = employee,
+                uploadDate = LocalDate.now()
+            )
+            return imageDataProvider.save(image)
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException(ex.message!!)
+
+        }
     }
+
     @Transactional
     override fun deleteImageByIdForCurrentUser(imageId: Long) {
-        val userId = imageServiceUtils.getCurrentUserId()
-        val image = imageDataProvider.findByIdAndEmployeeId(imageId, userId)
-            ?: throw ObjectNotFoundException("No image found for ID: $imageId and Employee ID: $userId")
-        imageDataProvider.delete(image)
-        imageServiceUtils.deleteFile(image.filePath!!)
+        try {
 
-    }
-    @Transactional
-    override fun updateImageMessageForCurrentUser(imageId: Long,updateImageMessageDto: UpdateImageMessageDto): ImageListDto {
-        val userId = imageServiceUtils.getCurrentUserId()
-        val image = imageDataProvider.findByIdAndEmployeeId(imageId, userId)
-            ?: throw ObjectNotFoundException("No image found with ID: $imageId for employee with ID: $userId")
-        image.message = updateImageMessageDto.message
-        val updatedImage = imageDataProvider.save(image)
-        return imageServiceUtils.convertToImageListDto(updatedImage, image.employee!!)
-    }
-
-
-    override fun getImagesByEmployeeCpfAsManager(managerImageRequestDto: ManagerImageRequestDto, imageSearchDto: ImageSearchDto): List<ImageListDto> {
-
-        val employee = imageServiceUtils.validateSameCompany(managerImageRequestDto)
-        val startDate = LocalDate.parse(imageSearchDto.startDate, DateTimeFormatter.ofPattern("dd-MM-yyyy"))
-        val endDate = LocalDate.parse(imageSearchDto.endDate, DateTimeFormatter.ofPattern("dd-MM-yyyy"))
-        val images = imageDataProvider.findAllByEmployeeCpfAndDateRange(managerImageRequestDto.employeeCpf, startDate, endDate)
-        return images.map { image -> imageServiceUtils.convertToImageListDto(image, employee) }
+            val userId = imageServiceUtils.getCurrentUserId()
+            val image = imageDataProvider.findByIdAndEmployeeId(imageId, userId)
+                ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_: $imageId")
+            imageDataProvider.delete(image)
+            imageServiceUtils.deleteFile(image.filePath!!)
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException(ex.message!!)
+        }
     }
 
     @Transactional
+    override fun updateImageMessageForCurrentUser(
+        imageId: Long,
+        updateImageMessageDto: UpdateImageMessageDto
+    ): ImageListDto {
+        try {
+
+            val userId = imageServiceUtils.getCurrentUserId()
+            val image = imageDataProvider.findByIdAndEmployeeId(imageId, userId)
+                ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_: $imageId")
+            image.message = updateImageMessageDto.message
+            val updatedImage = imageDataProvider.save(image)
+            return imageServiceUtils.convertToImageListDto(updatedImage, image.employee!!)
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException(ex.message)
+
+        }
+    }
+
+
+    override fun getImagesByEmployeeCpfAsManager(
+        managerImageRequestDto: ManagerImageRequestDto,
+        imageSearchDto: ImageSearchDto
+    ): List<ImageListDto> {
+        try {
+            val employee = imageServiceUtils.validateSameCompany(managerImageRequestDto)
+            val startDate = imageServiceUtils.localDateParse(imageSearchDto.startDate)
+            val endDate = imageServiceUtils.localDateParse(imageSearchDto.endDate)
+            val images = imageDataProvider.findAllByEmployeeCpfAndDateRange(
+                managerImageRequestDto.employeeCpf,
+                startDate,
+                endDate
+            )
+            return images.map { image -> imageServiceUtils.convertToImageListDto(image, employee) }
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException(ex.message)
+
+        }
+    }
+
+    @Transactional
+
     override fun deleteImageByIdAsManager(managerImageRequestDto: ManagerImageRequestDto) {
-        imageServiceUtils.validateSameCompany(managerImageRequestDto)
-        val image = imageDataProvider.findByIdAndEmployeeCpf(managerImageRequestDto.imageId, managerImageRequestDto.employeeCpf)
-            ?: throw ObjectNotFoundException("No image found with ID: ${managerImageRequestDto.imageId} for employee with CPF: ${managerImageRequestDto.employeeCpf}")
-        imageDataProvider.delete(image)
-        imageServiceUtils.deleteFile(image.filePath!!)
+        try {
+            imageServiceUtils.validateSameCompany(managerImageRequestDto)
+            val image =
+                imageDataProvider.findByIdAndEmployeeCpf(
+                    managerImageRequestDto.imageId,
+                    managerImageRequestDto.employeeCpf
+                )
+                    ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_: ${managerImageRequestDto.imageId}")
+            imageDataProvider.delete(image)
+            imageServiceUtils.deleteFile(image.filePath!!)
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException(ex.message)
+
+        }
     }
 
     @Transactional
     override fun updateImageMessageAsManager(managerImageRequestDto: ManagerImageRequestDto): ImageListDto {
-        imageServiceUtils.validateSameCompany(managerImageRequestDto)
-        val image = imageDataProvider.findByIdAndEmployeeCpf(managerImageRequestDto.imageId, managerImageRequestDto.employeeCpf)
-            ?: throw ObjectNotFoundException("No image found with ID: ${managerImageRequestDto.imageId} for employee with CPF: ${managerImageRequestDto.employeeCpf}")
-        image.message = managerImageRequestDto.updateImageMessageDto?.message
-        val updatedImage = imageDataProvider.save(image)
-        return imageServiceUtils.convertToImageListDto(updatedImage, image.employee!!)
+        try {
+            imageServiceUtils.validateSameCompany(managerImageRequestDto)
+            val image = imageDataProvider.findByIdAndEmployeeCpf(
+                managerImageRequestDto.imageId,
+                managerImageRequestDto.employeeCpf
+            )
+                ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_: ${managerImageRequestDto.imageId}")
+            image.message = managerImageRequestDto.updateImageMessageDto?.message
+            val updatedImage = imageDataProvider.save(image)
+            return imageServiceUtils.convertToImageListDto(updatedImage, image.employee!!)
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException(ex.message)
+
+        }
     }
 
     @Transactional
-    override fun getImageByIdAsManager(managerImageRequestDto: ManagerImageRequestDto): ByteArray {
-        imageServiceUtils.validateSameCompany(managerImageRequestDto)
-        val image = imageDataProvider.findByIdAndEmployeeCpf(managerImageRequestDto.imageId, managerImageRequestDto.employeeCpf)
-            ?: throw ObjectNotFoundException("No image found with ID: ${managerImageRequestDto.imageId} for employee with CPF: ${managerImageRequestDto.employeeCpf}")
 
-        return imageServiceUtils.loadFileAsResource(image.filePath!!)
+    override fun getImageByIdAsManager(managerImageRequestDto: ManagerImageRequestDto): ByteArray {
+        try {
+            imageServiceUtils.validateSameCompany(managerImageRequestDto)
+            val image = imageDataProvider.findByIdAndEmployeeCpf(
+                managerImageRequestDto.imageId,
+                managerImageRequestDto.employeeCpf
+            )
+                ?: throw ObjectNotFoundException("$NO_IMAGE_FOUND_WITH_ID_: ${managerImageRequestDto.imageId}")
+
+            return imageServiceUtils.loadFileAsResource(image.filePath!!)
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException(ex.message)
+
+        }
     }
 
 

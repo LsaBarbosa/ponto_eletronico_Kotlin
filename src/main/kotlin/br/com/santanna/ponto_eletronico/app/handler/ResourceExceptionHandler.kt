@@ -20,7 +20,7 @@ class ResourceExceptionHandler {
     @ExceptionHandler(Exception::class)
     fun handleAllExceptions(ex: Exception, request: HttpServletRequest): ResponseEntity<StandardError> {
         val status = HttpStatus.INTERNAL_SERVER_ERROR
-        val error = "Internal server error"
+        val error = ex.message
         val timestamp = LocalDateTime.now()
         val path = request.requestURI
 
@@ -32,7 +32,7 @@ class ResourceExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrityViolationException(ex: DataIntegrityViolationException, request: HttpServletRequest): ResponseEntity<StandardError> {
         val status = HttpStatus.BAD_REQUEST
-        val error = "Data integrity violation"
+        val error = ex.message
         val timestamp = LocalDateTime.now()
         val path = request.requestURI
 
@@ -44,7 +44,7 @@ class ResourceExceptionHandler {
     @ExceptionHandler(ObjectNotFoundException::class)
     fun handleObjectNotFoundException(ex: ObjectNotFoundException, request: HttpServletRequest): ResponseEntity<StandardError> {
         val status = HttpStatus.NOT_FOUND
-        val error = ex.message // Use the message from your custom exception
+        val error = ex.message
         val timestamp = LocalDateTime.now()
         val path = request.requestURI
 
@@ -66,7 +66,7 @@ class ResourceExceptionHandler {
         val errorResponse = ValidationError(
             timestamp = LocalDateTime.now(),
             status = HttpStatus.BAD_REQUEST.value(),
-            error = "Validation failed",
+            error = ex.message,
             path = request.requestURI,
             validationErrors = errors
         )

@@ -20,11 +20,5 @@ interface ImageRepository: JpaRepository<Image, Long> {
     @Query("SELECT i FROM Image i WHERE i.employee.cpf = :cpf AND i.uploadDate BETWEEN :startDate AND :endDate")
     fun findAllByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate): List<Image>
     fun findByIdAndEmployeeCpf(id: Long, cpf: String): Image?
-//    fun findByEmployeeCpf(cpf: String): Image?
-//    fun findAllByEmployeeCpf(cpf: String): List<Image>
-//
-//
-//    fun findAllByEmployeeId(employeeId: UUID): List<Image>
-//    @Query("SELECT i FROM Image i WHERE i.employee.cpf = :cpf AND i.uploadDate BETWEEN :startDate AND :endDate")
-//    fun findAllByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate): List<Image>
+
 }

@@ -218,9 +218,6 @@ data class TimeRecordServiceImpl(
         return manager
     }
 
-    private fun findEmployeeByCpfOrThrow(cpf: String): Employee {
-        return employeeDataProvider.findCpf(cpf) ?: throw ObjectNotFoundException("Employee not found with CPF: $cpf")
-    }
 
     private fun findTimeRecordsByDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()

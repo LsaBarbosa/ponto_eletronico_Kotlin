@@ -13,8 +13,3 @@ interface ImageDataProvider {
     fun findByIdAndEmployeeCpf(imageId: Long?, employeeCpf: String): Image?
 }
 
-//    fun findByEmployeeCpf(cpf: String): Image?
-//    fun findAllByEmployeeCpf(cpf: String): List<Image>
-//
-//    fun findAllByEmployeeId(employeeId: UUID): List<Image>
-//}

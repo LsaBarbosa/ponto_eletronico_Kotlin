@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.infrastructure.dataProvider.impl
 
+import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.ImageDataProvider
 import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.infrastructure.repository.ImageRepository
@@ -13,46 +14,52 @@ class ImageDataProviderImpl(
 ) : ImageDataProvider {
 
     override fun save(image: Image): Image {
+        try {
+
         return imageRepository.save(image)
+        }catch (ex:Exception){
+            throw DataIntegrityViolationException("Erro no processamento dos dados, image:$image")
+        }
+
     }
 
-
     override fun findByIdAndEmployeeId(imageId: Long, employeeId: UUID): Image? {
-        return imageRepository.findByIdAndEmployeeId(imageId, employeeId)
+        try {
+            return imageRepository.findByIdAndEmployeeId(imageId, employeeId)
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException("Erro no processamento dos dados, employeeId:$employeeId, imageId:$imageId")
+        }
     }
 
     override fun findAllByEmployeeIdAndDateRange(
-        employeeId: UUID,
-        startDate: LocalDate,
-        endDate: LocalDate
+        employeeId: UUID, startDate: LocalDate, endDate: LocalDate
     ): List<Image> {
-        return imageRepository.findAllByEmployeeIdAndDateRange(employeeId, startDate, endDate)
+        try {
+            return imageRepository.findAllByEmployeeIdAndDateRange(employeeId, startDate, endDate)
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException("Erro no processamento dos dados, employeeId:$employeeId, startDate:$startDate,endDate:$endDate")
+
+        }
     }
 
     override fun findAllByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate): List<Image> {
-        return imageRepository.findAllByEmployeeCpfAndDateRange(cpf, startDate, endDate)
+        try {
+            return imageRepository.findAllByEmployeeCpfAndDateRange(cpf, startDate, endDate)
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException("Erro no processamento dos dados, CPF:$cpf, startDate$startDate, endDate$endDate")
+        }
     }
 
     override fun findByIdAndEmployeeCpf(imageId: Long?, employeeCpf: String): Image? {
-        return imageId?.let { imageRepository.findByIdAndEmployeeCpf(it, employeeCpf) }
+        return try {
+            return imageId?.let { imageRepository.findByIdAndEmployeeCpf(it, employeeCpf) }
+        } catch (ex: Exception) {
+            throw DataIntegrityViolationException("Erro no processamento dos dados, imageId:$imageId, employeeCpf:$employeeCpf")
+        }
+
     }
 
     override fun delete(image: Image) {
         imageRepository.delete(image)
     }
 }
-
-//
-//    override fun findAllByEmployeeCpf(cpf: String): List<Image> {
-//        return imageRepository.findAllByEmployeeCpf(cpf)
-//    }
-//
-//    override fun findByIdAndEmployeeCpf(imageId: Long?, employeeCpf: String): Image? {
-//        return imageId?.let { imageRepository.findByIdAndEmployeeCpf(it, employeeCpf) }
-//    }
-//    override fun findAllByEmployeeId(employeeId: UUID): List<Image> {
-//        return imageRepository.findAllByEmployeeId(employeeId)
-//    }
-//
-//
-//}

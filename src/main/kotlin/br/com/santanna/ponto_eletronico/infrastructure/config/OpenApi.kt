@@ -51,7 +51,7 @@ class OpenApi {
     fun publicApi(): GroupedOpenApi {
         return GroupedOpenApi.builder()
             .group("public")
-            .pathsToMatch("/api/**")
+            .pathsToMatch("/**")
             .build()
     }
 }

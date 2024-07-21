@@ -17,6 +17,8 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Component
@@ -59,7 +61,7 @@ class ImageServiceUtils (private val employeeDataProvider: EmployeeDataProvider,
             cpf = employee.cpf,
             filePath = image.filePath,
             message = image.message,
-            uploadDate = image.uploadDate
+            uploadDate = image.uploadDate?.format(dateFormatter)
         )
     }
 
@@ -97,4 +99,8 @@ class ImageServiceUtils (private val employeeDataProvider: EmployeeDataProvider,
         val token = authentication.credentials as String
         return jwtTokenUtil.getUserIdFromToken(token)
     }
+
+    fun localDateParse(date:String): LocalDate =
+        LocalDate.parse(date, DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
 }
