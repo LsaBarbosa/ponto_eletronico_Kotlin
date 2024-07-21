@@ -8,7 +8,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.image.update.UploadImageReque
 import br.com.santanna.ponto_eletronico.domain.entity.Image
 
 interface ImageService {
-    fun storeImage(uploadImageRequestDto: UploadImageRequestDto): Image
+    fun storeImageForCurrentUser(uploadImageRequestDto: UploadImageRequestDto): Image
     fun getImagesForCurrentUser(imageSearchDto: ImageSearchDto): List<ImageListDto>
     fun getImageByIdForCurrentUser(imageId: Long): ByteArray
     fun deleteImageByIdForCurrentUser(imageId: Long)

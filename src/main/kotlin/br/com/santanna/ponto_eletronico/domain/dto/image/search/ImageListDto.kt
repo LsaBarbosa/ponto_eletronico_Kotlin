@@ -9,5 +9,5 @@ data class ImageListDto(
     val cpf: String?,
     val filePath: String?,
     val message: String?,
-    val uploadDate: LocalDate?
+    val uploadDate: String?
 )
