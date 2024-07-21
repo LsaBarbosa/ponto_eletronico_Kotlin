@@ -6,45 +6,41 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import java.util.*
-import kotlin.collections.ArrayList
 
 @Entity
 data class Employee(
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     var id: UUID? = null,
 
-    var name: String? = null,
+    var name: String = "",
 
-    var surname: String? = null,
+    var surname: String = "",
 
-    var salary: Double? = null,
+    var salary: Double = 0.0,
 
-    var position: String? = null,
+    var position: String = "",
 
-    var passwords: String? = null,
-    var email: String? = null,
+    var passwords: String = "",
 
-    var cpf: String? = null,
+    var email: String = "",
+
+    var cpf: String = "",
 
     @Enumerated(EnumType.STRING)
-    var role: EmployeeRole? = null,
+    var role: EmployeeRole = EmployeeRole.USER,
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     @JsonIgnoreProperties("employee")
-    var timeWorked: List<TimeRecord?> = ArrayList(),
+    var timeWorked: List<TimeRecord> = listOf(),
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
-
     var company: Company? = null,
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    var images: List<Image>? = null
-
+    var images: List<Image> = listOf()
 
 ) : UserDetails {
-    constructor() : this(null, null, null, null, null, null, null, null, EmployeeRole.USER, emptyList(), null)
-
 
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return when (this.role) {
@@ -63,9 +59,9 @@ data class Employee(
         }
     }
 
-    override fun getPassword(): String? = passwords
+    override fun getPassword(): String = passwords
 
-    override fun getUsername(): String? = cpf
+    override fun getUsername(): String = cpf
 
     override fun isAccountNonExpired(): Boolean = true
     override fun isAccountNonLocked(): Boolean = true

@@ -6,14 +6,14 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
 interface EmployeeService {
-    fun getEmployeesByManager(managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): Page<EmployeeGetDto>
-    fun getEmployeeById(): EmployeeGetDto?
-    fun getEmployeeByCpf(request: ManagerEmployeeRequestByCPFDto): EmployeeGetDto?
     fun getEmployeeEntityByCpf(cpf: String): Employee?
-    fun getEmployeeByNameAndSurname(name: String, surname: String): EmployeeGetDto?
-    fun registerEmployee(createEmployeeDto: CreateEmployeeDto): EmployeeDto
-    fun updateEmployee(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto
-    fun deleteEmployee(deleteEmployeeRequestDto: DeleteEmployeeRequestDto)
-    fun updatePassword(updatePasswordDto: UpdatePassword)
+    fun getEmployeeById(): EmployeeGetDto?
     fun resetPassword(resetPasswordDto: ResetPasswordDto)
+    fun updatePassword(updatePasswordDto: UpdatePassword)
+    fun getEmployeesAsManager(managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): Page<EmployeeGetDto>
+    fun getEmployeeByCpfAsManager(request: ManagerEmployeeRequestByCPFDto): EmployeeGetDto?
+    fun getEmployeeByNameAndSurnameAsManager(name: String, surname: String): EmployeeGetDto?
+    fun registerEmployeeAsManager(createEmployeeDto: CreateEmployeeDto): EmployeeDto
+    fun updateEmployeeAsManager(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto
+    fun deleteEmployeeAsManager(deleteEmployeeRequestDto: DeleteEmployeeRequestDto)
 }

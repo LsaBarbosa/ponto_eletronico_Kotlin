@@ -11,25 +11,25 @@ data class CreateEmployeeDto(
     val passwordsManager: String,
 
     @field:NotBlank(message = "O nome não pode estar em branco")
-    var name: String? = null,
+    var name: String,
 
     @field:NotBlank(message = "O sobrenome não pode estar em branco")
-    var surname: String? = null,
+    var surname: String,
 
     @field:NotNull(message = "O salário não pode estar em branco")
-    var salary: Double? = null,
+    var salary: Double,
 
     @field:NotBlank(message = "A posição não pode estar em branco")
     @field:Size(min = 1, max = 100, message = "A posição deve ter entre 1 e 100 caracteres")
-    var position: String? = null,
+    var position: String ,
 
     @field:Size(min = 11, max = 11, message = "O CPF deve ter exatamente 11 caracteres")
-    var cpf: String? = null,
+    var cpf: String ,
 
     @field:NotBlank(message = "A senha não pode estar em branco")
     @field:Size(min = 8, max = 50, message = "A senha deve ter no mínimo 8 caracteres")
-    var passwords: String? = null,
+    var passwords: String ,
     @field:Email(message = "Email é obrigatório")
-    var email: String? = null,
-    var role: EmployeeRole? = null
+    var email: String,
+    var role: EmployeeRole
 )
