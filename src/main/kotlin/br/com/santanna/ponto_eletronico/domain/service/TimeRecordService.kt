@@ -8,7 +8,7 @@ import java.time.LocalDate
 interface TimeRecordService {
     fun registerCheckin(): RecordCheckinDto?
     fun registerCheckout(): RecordCheckoutDto?
-    fun balanceHoursByDate(  startDate: LocalDate, endDate: LocalDate): BalanceHoursDto
+    fun balanceHoursByDate(  searchByDateTimeRecordDto:SearchByDateTimeRecordDto): BalanceHoursDto
     fun getTimeRecordsByEmployeeCpfAndDateRangePageable( searchByDateTimeRecordDto:SearchByDateTimeRecordDto, pageable: Pageable): Page<DetailedTimeRecordDto>
     fun updateTimeRecordAsManager(updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): UpdateTimeRecordDto
     fun balanceHoursByDateAsManager(searchRequestDto: SearchByDateTimeRecordRequestDto): BalanceHoursDto

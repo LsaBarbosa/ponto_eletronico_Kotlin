@@ -19,7 +19,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlin.math.abs
 
 
@@ -152,13 +151,20 @@ data class TimeRecordServiceImpl(
         return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }
     }
 
-    override fun balanceHoursByDate(startDate: LocalDate, endDate: LocalDate): BalanceHoursDto {
+    override fun balanceHoursByDate(searchByDateTimeRecordDto: SearchByDateTimeRecordDto): BalanceHoursDto {
         val id = timeRecordUtils.getCurrentUserId()
         val employee = employeeDataProvider.findById(id)
 
-        val timeRecords =
-            timeRecordUtils.findTimeRecordsByDateRange(employee.cpf, startDate, endDate, timeRecordDataProvider)
+        val startDate =  searchByDateTimeRecordDto.startDate?.let { LocalDate.parse(it, dateFormatter) }
+        val endDate =  searchByDateTimeRecordDto.endDate?.let { LocalDate.parse(it, dateFormatter) }
+        val timeRecords = timeRecordUtils.findTimeRecordsByDateRange(
+            employee.cpf,
+            startDate!!,
+            endDate!!,
+            timeRecordDataProvider
+        )
         val recordsByDate = timeRecords.groupBy { it.startWorkTime?.toLocalDate() }
+
 
         var totalWorkedMinutes = 0L
         var totalExpectedMinutes = 0L

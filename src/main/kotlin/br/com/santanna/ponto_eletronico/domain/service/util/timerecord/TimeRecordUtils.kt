@@ -69,7 +69,7 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
         dateType: String
     ) {
         if (newDate != null && newTime != null) {
-            val newDateTime = LocalDateTime.parse("$newDate $newTime", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+            val newDateTime = LocalDateTime.parse("$newDate $newTime", DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm"))
             validateDateChange(dateTimeField.get(timeRecord), newDateTime, dateType)
             dateTimeField.set(timeRecord, newDateTime)
 
@@ -79,6 +79,7 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
             }
         }
     }
+
     private fun validateDateChange(currentDateTime: LocalDateTime?, newDateTime: LocalDateTime, dateType: String) {
         if (currentDateTime == null) {
             throw DataIntegrityViolationException("$dateType Data nao pode ser vazia ")
