@@ -8,11 +8,11 @@ import java.time.LocalDate
 interface TimeRecordService {
     fun registerCheckin(): RecordCheckinDto?
     fun registerCheckout(): RecordCheckoutDto?
-    fun updateTimeRecord(updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): UpdateTimeRecordDto
-    fun balanceHoursByDateForManager(searchRequestDto: SearchByDateTimeRecordRequestDto): BalanceHoursDto
-    fun balanceHoursByDate(  startDate: LocalDate, endDate: LocalDate): BalanceHoursDto
-    fun getTimeRecordsByEmployeeCpfAndDateRangePageable( startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto>
-    fun getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(searchRequestDto: SearchByDateTimeRecordRequestDto, pageable: Pageable): Page<DetailedTimeRecordDto>
-    fun getTimeRecordsByEmployeeCpfAndDateRangePageableForPDF(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto>
-    fun deleteTimeRecord(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto)
+    fun balanceHoursByDate(  searchByDateTimeRecordDto:SearchByDateTimeRecordDto): BalanceHoursDto
+    fun getTimeRecordsByEmployeeCpfAndDateRangePageable( searchByDateTimeRecordDto:SearchByDateTimeRecordDto, pageable: Pageable): Page<DetailedTimeRecordDto>
+    fun updateTimeRecordAsManager(updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): UpdateTimeRecordDto
+    fun balanceHoursByDateAsManager(searchRequestDto: SearchByDateTimeRecordRequestDto): BalanceHoursDto
+    fun getTimeRecordsByEmployeeCpfAndDateRangePageableAsManager(searchRequestDto: SearchByDateTimeRecordRequestDto, pageable: Pageable): Page<DetailedTimeRecordDto>
+    fun getTimeRecordsByEmployeeCpfAndDateRangePageableToPDFAsManager(cpf: String, startDate: LocalDate, endDate: LocalDate, pageable: Pageable): Page<DetailedTimeRecordDto>
+    fun deleteTimeRecordAsManager(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto)
     }
