@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 data class TimeRecord(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    var id: Long  = 0,
     var startWorkTime: LocalDateTime? = null,
     var endWorkTime: LocalDateTime? = null,
     var timeWorked: Long? = null,

@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Component
-class ImageServiceUtils (private val employeeDataProvider: EmployeeDataProvider, private val jwtTokenUtil: JwtTokenUtil,) {
+class ImageServiceUtils (private val employeeDataProvider: EmployeeDataProvider, private val jwtTokenUtil: JwtTokenUtil) {
 
 
     fun deleteFile(filePath: String) {

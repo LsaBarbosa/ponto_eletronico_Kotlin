@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
 @RestController
-@RequestMapping("/api/ponto")
+@RequestMapping("registro")
 @Tag(name = "Controle de Horas", description = "End-point para gestão da empresa")
 @SecurityRequirement(name = "Bearer Authentication")
 class TimeRecordController(
@@ -39,27 +39,19 @@ class TimeRecordController(
     fun checkout(): ResponseEntity<RecordCheckoutDto> {
         return ResponseEntity.ok(timeRecordService.registerCheckout())
     }
-    @PutMapping
-    @Operation(summary = "Altera o registro do funcionário")
-    fun updateTimeRecord(@Valid @RequestBody updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): ResponseEntity<UpdateTimeRecordDto> {
-        val updatedTimeRecordDto = timeRecordService.updateTimeRecord(updateTimeRecordRequestDto)
-        return ResponseEntity.ok(updatedTimeRecordDto)
-    }
 
-    @GetMapping("/registros")
+
+    @GetMapping("/relatorio")
     @Operation(summary = "Busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRange(
-        @RequestParam("startDate") startDateStr: String,
-        @RequestParam("endDate") endDateStr: String,
+        @RequestBody searchByDateTimeRecordDto:SearchByDateTimeRecordDto,
         @PageableDefault(size = 5) pageable: Pageable
     ): Page<DetailedTimeRecordDto> {
-        val startDate = LocalDate.parse(startDateStr)
-        val endDate = LocalDate.parse(endDateStr)
-        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageable( startDate, endDate, pageable)
+        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageable(searchByDateTimeRecordDto, pageable)
     }
 
 
-    @GetMapping("/hora-extra")
+    @GetMapping("/balanco")
     @Operation(summary = "Busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRange(
         @RequestParam("startDate") startDateStr: String,
@@ -75,23 +67,23 @@ class TimeRecordController(
     }
 
 
-    @GetMapping("/registros/gestao")
-    @Operation(summary = "Administrador busca o regostro de horas do funcionário")
+    @GetMapping("/adm/relatorio")
+    @Operation(summary = "Administrador busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRangeForManager(
         @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto,
         @PageableDefault(size = 5) pageable: Pageable
     ): Page<DetailedTimeRecordDto> {
 
-        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableForManager(searchByDateTimeRecordRequestDto, pageable)
+        return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableAsManager(searchByDateTimeRecordRequestDto, pageable)
     }
 
 
-    @GetMapping("/hora-extra/gestao")
+    @GetMapping("/adm/balanco")
     @Operation(summary = "Administrador busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRangeForManager(
         @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto
     ): ResponseEntity<BalanceHoursDto> {
-        val timeRecords = timeRecordService.balanceHoursByDateForManager(searchByDateTimeRecordRequestDto)
+        val timeRecords = timeRecordService.balanceHoursByDateAsManager(searchByDateTimeRecordRequestDto)
         val balanceHoursDto = modelMapper.map(timeRecords, BalanceHoursDto::class.java)
         return ResponseEntity.ok().body(balanceHoursDto)
 
@@ -100,11 +92,18 @@ class TimeRecordController(
     @DeleteMapping
     @Operation(summary = "Administrador deleta o registro de horas do funcionário")
     fun deleteTimeRecord(@RequestBody deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto): ResponseEntity<Void> {
-        timeRecordService.deleteTimeRecord(deleteTimeRecordRequestDto)
+        timeRecordService.deleteTimeRecordAsManager(deleteTimeRecordRequestDto)
         return ResponseEntity.noContent().build()
     }
 
-    @GetMapping("/export")
+    @PutMapping
+    @Operation(summary = "Altera o registro do funcionário")
+    fun updateTimeRecord(@Valid @RequestBody updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): ResponseEntity<UpdateTimeRecordDto> {
+        val updatedTimeRecordDto = timeRecordService.updateTimeRecordAsManager(updateTimeRecordRequestDto)
+        return ResponseEntity.ok(updatedTimeRecordDto)
+    }
+
+    @GetMapping("/adm/relatorio/download")
     @Operation(summary = "Relatório das horas do funcionário")
     fun exportTimeRecords(
         @RequestParam("cpf") cpf: String,
@@ -112,7 +111,7 @@ class TimeRecordController(
         @RequestParam("endDate") endDate: String
     ): ResponseEntity<ByteArray> {
         val employee = employeeService.getEmployeeEntityByCpf(cpf) ?: throw IllegalArgumentException("Employee not found")
-        val records = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableForPDF(cpf, LocalDate.parse(startDate), LocalDate.parse(endDate), PageRequest.of(0, Int.MAX_VALUE)).content
+        val records = timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableToPDFAsManager(cpf, LocalDate.parse(startDate), LocalDate.parse(endDate), PageRequest.of(0, Int.MAX_VALUE)).content
         val pdfData = pdfGeneratorService.generateTimeRecordsPdf(records, employee, startDate, endDate)
 
         val headers = HttpHeaders().apply {
