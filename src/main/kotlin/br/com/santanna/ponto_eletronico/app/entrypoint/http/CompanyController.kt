@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*
 import java.net.URI
 
 @RestController
-@RequestMapping("/api/empresa")
+@RequestMapping("/empresa")
 @Tag(name = "Empresas", description = "End-point para gestão da empresa")
 @SecurityRequirement(name = "Bearer Authentication")
 class CompanyController(private val companyService: CompanyService) {

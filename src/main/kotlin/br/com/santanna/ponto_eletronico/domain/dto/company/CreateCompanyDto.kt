@@ -21,7 +21,7 @@ data class CreateCompanyDto(
     var managerCpf: String,
     @field:NotBlank(message = "A senha do gerente não pode estar em branco")
     @field:Size(min = 8, max = 50, message = "A senha do gerente deve ter no mínimo 8 caracteres")
-    var managerPasswords: String
+    var managerPasswords: String,
 
-
+    var address: AddressDTO? = null,
 )

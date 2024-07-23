@@ -1,5 +1,8 @@
-package br.com.santanna.ponto_eletronico.domain.entity
+package br.com.santanna.ponto_eletronico.domain.entity.employee
 
+import br.com.santanna.ponto_eletronico.domain.entity.Image
+import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.entity.company.Company
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority

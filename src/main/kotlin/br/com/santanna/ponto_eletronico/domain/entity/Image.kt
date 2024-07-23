@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.entity
 
+import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size

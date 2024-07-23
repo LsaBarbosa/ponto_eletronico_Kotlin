@@ -1,6 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.dto.employee
 
-import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
+import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull

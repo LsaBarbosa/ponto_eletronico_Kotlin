@@ -7,8 +7,8 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.DetailedTimeRecord
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.RecordCheckinDto
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.RecordCheckoutDto
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.UpdateTimeRecordDto
-import br.com.santanna.ponto_eletronico.domain.entity.Employee
-import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
+import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
+import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
 import org.springframework.security.core.context.SecurityContextHolder

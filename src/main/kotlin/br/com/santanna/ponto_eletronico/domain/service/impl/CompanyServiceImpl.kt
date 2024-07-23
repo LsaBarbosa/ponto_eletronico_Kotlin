@@ -1,18 +1,20 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
-import br.com.santanna.ponto_eletronico.domain.entity.Company
-import br.com.santanna.ponto_eletronico.domain.entity.Employee
-import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
-import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeeCountDto
-import br.com.santanna.ponto_eletronico.domain.dto.employee.SimpleEmployeeDto
-import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
-import br.com.santanna.ponto_eletronico.domain.service.CompanyService
 import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
+import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
+import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeeCountDto
 import br.com.santanna.ponto_eletronico.domain.dto.company.CreateCompanyDto
 import br.com.santanna.ponto_eletronico.domain.dto.company.DeleteCompanyRequestDto
-import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
+import br.com.santanna.ponto_eletronico.domain.dto.todto.CompanyToDto
+import br.com.santanna.ponto_eletronico.domain.entity.company.Address
+import br.com.santanna.ponto_eletronico.domain.entity.company.Company
+import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
+import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
+import br.com.santanna.ponto_eletronico.domain.service.CompanyService
+import br.com.santanna.ponto_eletronico.infrastructure.config.CepService
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -20,33 +22,52 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
-class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider,  private val employeeDataProvider: EmployeeDataProvider) : CompanyService {
+class CompanyServiceImpl(
+    private val companyDataProvider: CompanyDataprovider,
+    private val employeeDataProvider: EmployeeDataProvider,
+    private val companyToDto: CompanyToDto,
+    private val cepService: CepService
+) : CompanyService {
 
     override fun getAllCompanies(pageable: Pageable): Page<CompanyWithEmployeeCountDto> {
         val companies = companyDataProvider.findAll(pageable)
-        return companies.map { convertToCompanyWithEmployeeCountDto(it) }
+        return companies.map { companyToDto.convertToCompanyWithEmployeeCountDto(it) }
     }
 
     override fun getCompanyByCNPJ(companyCNPJ: String?): CompanyDTO {
         val company = companyDataProvider.findByCompanyCNPJ(companyCNPJ)
-        return  convertToDtoCompany(company)
+        return companyToDto.convertToDtoCompany(company)
     }
 
     override fun getCompaniesByName(nameCompany: String): CompanyDTO {
         val company = companyDataProvider.findByNameCompanyContainsIgnoreCase(nameCompany)
-        return  convertToDtoCompany(company)
+        return companyToDto.convertToDtoCompany(company)
     }
 
     @Transactional
     override fun registerCompany(createCompanyDto: CreateCompanyDto): CompanyDTO {
         val isExistCompany = companyDataProvider.existsByNameCompanyIgnoreCase(createCompanyDto.nameCompany)
         if (isExistCompany) {
-            throw DataIntegrityViolationException("Empresa já existe")
+            throw DataIntegrityViolationException("Empresa já cadastrada")
         }
+        val addressDto = createCompanyDto.address?.postalCode?.let { cepService.getEnderecoByCep(it) }
+
+        if (addressDto == null) {
+            throw IllegalArgumentException("CEP inválido ou não encontrado")
+        }
+
+        val address = Address(
+            postalCode = addressDto.postalCode,
+            street = addressDto.street,
+            city = addressDto.city,
+            state = addressDto.state,
+            number = createCompanyDto.address?.number // Manter o número do DTO original
+        )
 
         val companyEntity = Company(
             nameCompany = createCompanyDto.nameCompany,
-            companyCNPJ = createCompanyDto.companyCNPJ
+            companyCNPJ = createCompanyDto.companyCNPJ,
+            address = address
         )
 
         val savedCompanyEntity = companyDataProvider.save(companyEntity)
@@ -60,75 +81,54 @@ class CompanyServiceImpl(private val companyDataProvider: CompanyDataprovider,  
             cpf = createCompanyDto.managerCpf,
             role = EmployeeRole.MANAGER,
             passwords = encryptedPassword,
-            company = savedCompanyEntity
+            company = savedCompanyEntity,
+
         )
 
         employeeDataProvider.save(managerEntity)
 
-        return convertToDto(savedCompanyEntity)
-    }
+        return companyToDto.convertToDto(savedCompanyEntity)
+}
 
-    @Transactional
-    override fun updateCompany(companyCNPJ: String?, companyDto: CompanyDTO): CompanyDTO {
-        val existingCompany = companyDataProvider.findByCompanyCNPJ(companyCNPJ)
-        existingCompany?.nameCompany = companyDto.nameCompany ?: existingCompany?.nameCompany
-        val updatedCompanyEntity = companyDataProvider.save(existingCompany!!)
-        return  convertToDto(updatedCompanyEntity)
-    }
+@Transactional
+override fun updateCompany(companyCNPJ: String?, companyDto: CompanyDTO): CompanyDTO {
+    val existingCompany = companyDataProvider.findByCompanyCNPJ(companyCNPJ)
 
-    @Transactional
-    override fun deleteCompanyByCNPJ(deleteCompanyRequestDto: DeleteCompanyRequestDto) {
-        companyDataProvider.findByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
-            ?: throw ObjectNotFoundException("Company not found with CNPJ: ${deleteCompanyRequestDto.companyCNPJ}")
-
-        val employee = employeeDataProvider.findCpf(deleteCompanyRequestDto.employeeCpf)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: ${deleteCompanyRequestDto.employeeCpf}")
-
-        val encryptedPassword = BCryptPasswordEncoder().matches(deleteCompanyRequestDto.passwords, employee.password)
-        if (!encryptedPassword) {
-            throw IllegalArgumentException("Invalid password")
-        }
-
-        companyDataProvider.deleteByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
-    }
+    existingCompany?.nameCompany = companyDto.nameCompany ?: existingCompany?.nameCompany
+    val updatedAddress = companyDto.address?.postalCode?.let { postalCode ->
+        val addressDto = cepService.getEnderecoByCep(postalCode)
 
 
-    fun convertToDto(company: Company?): CompanyDTO {
-        return CompanyDTO(
-            id = company?.id,
-            nameCompany = company?.nameCompany,
-            companyCNPJ = company?.companyCNPJ
+        Address(
+            street = addressDto.street,
+            city = addressDto.city,
+            state = addressDto.state,
+            postalCode = postalCode,
+            number = companyDto.address?.number
         )
+    } ?: existingCompany?.address
+
+    existingCompany?.address = updatedAddress
+
+    val updatedCompanyEntity = existingCompany?.let { companyDataProvider.save(it) }
+    return companyToDto.convertToDto(updatedCompanyEntity)
+}
+
+@Transactional
+override fun deleteCompanyByCNPJ(deleteCompanyRequestDto: DeleteCompanyRequestDto) {
+    companyDataProvider.findByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
+        ?: throw ObjectNotFoundException("Company not found with CNPJ: ${deleteCompanyRequestDto.companyCNPJ}")
+
+    val employee = employeeDataProvider.findCpf(deleteCompanyRequestDto.employeeCpf)
+        ?: throw ObjectNotFoundException("Employee not found with CPF: ${deleteCompanyRequestDto.employeeCpf}")
+
+    val encryptedPassword = BCryptPasswordEncoder().matches(deleteCompanyRequestDto.passwords, employee.password)
+    if (!encryptedPassword) {
+        throw IllegalArgumentException("Invalid password")
     }
 
-    fun convertToDtoCompany(company: Company?): CompanyDTO {
-        val simpleEmployeeDtos = company?.employees?.mapNotNull { convertToSimpleEmployeeDto(it) }
+    companyDataProvider.deleteByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
+}
 
-        return CompanyDTO(
-            id = company?.id,
-            nameCompany = company?.nameCompany,
-            companyCNPJ = company?.companyCNPJ,
-            employees = simpleEmployeeDtos
-        )
-    }
 
-    fun convertToSimpleEmployeeDto(employee: Employee?): SimpleEmployeeDto? {
-        return employee?.let {
-            SimpleEmployeeDto(
-                id = it.id,
-                name = it.name,
-                surname = it.surname,
-                salary = it.salary,
-                position = it.position
-            )
-        }
-    }
-    private fun convertToCompanyWithEmployeeCountDto(company: Company): CompanyWithEmployeeCountDto {
-        val employeeCount = company.employees.size.toLong()
-        return CompanyWithEmployeeCountDto(
-            nameCompany = company.nameCompany ?: "",
-            companyCNPJ = company.companyCNPJ ?: "",
-            employeeCount = employeeCount
-        )
-    }
 }

@@ -1,6 +1,6 @@
 package br.com.santanna.ponto_eletronico.infrastructure.repository
 
-import br.com.santanna.ponto_eletronico.domain.entity.Company
+import br.com.santanna.ponto_eletronico.domain.entity.company.Company
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 

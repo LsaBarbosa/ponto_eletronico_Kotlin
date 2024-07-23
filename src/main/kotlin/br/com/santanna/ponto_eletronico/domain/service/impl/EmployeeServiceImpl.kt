@@ -5,8 +5,8 @@ import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundExceptio
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.dto.todto.EmployeeToDto
-import br.com.santanna.ponto_eletronico.domain.entity.Employee
-import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
+import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
+import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.domain.service.util.employee.EmployeeServiceUtils
 import jakarta.transaction.Transactional
@@ -14,7 +14,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
-import java.util.*
 
 
 @Service

@@ -1,7 +1,7 @@
 package br.com.santanna.ponto_eletronico.infrastructure.dataProvider.impl
 
 import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
-import br.com.santanna.ponto_eletronico.domain.entity.Employee
+import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.infrastructure.repository.TimeRecordRepository
 import org.springframework.data.domain.Page
