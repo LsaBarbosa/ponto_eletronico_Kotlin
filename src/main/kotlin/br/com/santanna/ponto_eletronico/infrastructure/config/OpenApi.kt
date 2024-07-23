@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration
 class OpenApi {
     @Bean
     fun customOpenAPI(): OpenAPI {
-
         return OpenAPI()
             .info(
                 Info()
@@ -45,7 +44,6 @@ class OpenApi {
                     )
             )
     }
-
 
     @Bean
     fun publicApi(): GroupedOpenApi {

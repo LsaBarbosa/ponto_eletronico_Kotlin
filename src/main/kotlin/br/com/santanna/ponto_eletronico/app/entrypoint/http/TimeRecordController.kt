@@ -20,28 +20,28 @@ import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
 @RestController
-@RequestMapping("registro")
-@Tag(name = "Controle de Horas", description = "End-point para gestão da empresa")
+@RequestMapping("time")
+@Tag(name = "Controle de Horas", description = "End-point para gestão do banco de horas")
 @SecurityRequirement(name = "Bearer Authentication")
 class TimeRecordController(
     private val timeRecordService: TimeRecordService, private val employeeService: EmployeeService,
     private val modelMapper: ModelMapper, private val pdfGeneratorService: PdfGeneratorService
 ) {
 
-    @PostMapping("/entrada")
+    @PostMapping("/checkin")
     @Operation(summary = "Registra a entrada do funcionário")
     fun checkin(): ResponseEntity<RecordCheckinDto> {
         return ResponseEntity.ok(timeRecordService.registerCheckin())
     }
 
-    @PostMapping("/saida")
+    @PostMapping("/checkout")
     @Operation(summary = "Registra a saída do funcionário")
     fun checkout(): ResponseEntity<RecordCheckoutDto> {
         return ResponseEntity.ok(timeRecordService.registerCheckout())
     }
 
 
-    @GetMapping("/relatorio")
+    @GetMapping("search/report")
     @Operation(summary = "Busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRange(
         @RequestBody searchByDateTimeRecordDto:SearchByDateTimeRecordDto,
@@ -51,7 +51,7 @@ class TimeRecordController(
     }
 
 
-    @GetMapping("/balanco")
+    @GetMapping("search/balance")
     @Operation(summary = "Busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRange(
         @RequestBody searchByDateTimeRecordDto:SearchByDateTimeRecordDto
@@ -64,7 +64,7 @@ class TimeRecordController(
     }
 
 
-    @GetMapping("/adm/relatorio")
+    @GetMapping("search/adm/report")
     @Operation(summary = "Administrador busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRangeForManager(
         @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto,
@@ -75,7 +75,7 @@ class TimeRecordController(
     }
 
 
-    @GetMapping("/adm/balanco")
+    @GetMapping("search/adm/balance")
     @Operation(summary = "Administrador busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRangeForManager(
         @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto
@@ -86,21 +86,21 @@ class TimeRecordController(
 
     }
 
-    @DeleteMapping
+    @DeleteMapping("/adm/delete")
     @Operation(summary = "Administrador deleta o registro de horas do funcionário")
     fun deleteTimeRecord(@RequestBody deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto): ResponseEntity<Void> {
         timeRecordService.deleteTimeRecordAsManager(deleteTimeRecordRequestDto)
         return ResponseEntity.noContent().build()
     }
 
-    @PutMapping
+    @PutMapping("/adm/update")
     @Operation(summary = "Altera o registro do funcionário")
     fun updateTimeRecord(@Valid @RequestBody updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): ResponseEntity<UpdateTimeRecordDto> {
         val updatedTimeRecordDto = timeRecordService.updateTimeRecordAsManager(updateTimeRecordRequestDto)
         return ResponseEntity.ok(updatedTimeRecordDto)
     }
 
-    @GetMapping("/adm/relatorio/download")
+    @GetMapping("/search/adm/report/export")
     @Operation(summary = "Relatório das horas do funcionário")
     fun exportTimeRecords(
         @RequestParam("cpf") cpf: String,
