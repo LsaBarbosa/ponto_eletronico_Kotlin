@@ -45,7 +45,7 @@ class WebSecurityConfig (
                         "/swagger-ui.html",
                         "/webjars/**"
                     ).permitAll()
-                    .anyRequest().permitAll()
+                    .anyRequest().authenticated()
             }
             .exceptionHandling { exceptionHandling ->
                 exceptionHandling
@@ -64,13 +64,14 @@ class WebSecurityConfig (
     @Bean
     fun webSecurityCustomizer(): WebSecurityCustomizer {
         return WebSecurityCustomizer { web ->
-            web.ignoring().requestMatchers( "/api/auth/**",
+            web.ignoring().requestMatchers(
+                "/api/auth/**",
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
                 "/swagger-resources/**",
                 "/swagger-ui.html",
-                "/webjars/**")
+                "/webjars/**"
+            )
         }
     }
-
 }

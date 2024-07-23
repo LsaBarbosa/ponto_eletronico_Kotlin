@@ -12,13 +12,16 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/auth")
-@Tag(name = "Authentication", description = "End-point para autenticação")
-class AuthController (
+@RequestMapping("/authentication")
+@Tag(name = "Authentication", description = "End-point para autenticação do usuário no sistema")
+class AuthController(
     private val authService: AuthService
 ) {
     @PostMapping("/login")
-    @Operation(summary = "Registrando login com sucesso")
+    @Operation(
+        summary = "Gerar token ",
+        description = "Usuário ao realizar login com sucesso, o sistema gera um token que será utilizado no header.\n O id no usuario está dentro do token "
+    )
     fun login(@RequestBody authenticationRequest: AuthenticationRequest): ResponseEntity<JwtResponse> {
         return authService.authenticate(authenticationRequest)
     }

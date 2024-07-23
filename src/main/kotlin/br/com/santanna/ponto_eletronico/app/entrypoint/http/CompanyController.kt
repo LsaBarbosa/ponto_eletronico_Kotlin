@@ -16,27 +16,33 @@ import org.springframework.web.bind.annotation.*
 import java.net.URI
 
 @RestController
-@RequestMapping("/empresa")
-@Tag(name = "Empresas", description = "End-point para gestão da empresa")
+@RequestMapping("/company")
+@Tag(name = "Empresa", description = "End-point para gestão da empresa")
 @SecurityRequirement(name = "Bearer Authentication")
 class CompanyController(private val companyService: CompanyService) {
 
-    @GetMapping
-    @Operation(summary = "Lista todas as empresas")
+    @GetMapping("/search/all")
+    @Operation(
+        summary = "Lista todas as empresas",
+        description = "Lista todas as empresas cadastradas, infromando a quantidade de funcionarios no sistema.\n Requer role ADMIN para acesso"
+    )
     fun allCompanies(pageable: Pageable): ResponseEntity<Page<CompanyWithEmployeeCountDto>> {
         val companies = companyService.getAllCompanies(pageable)
         return ResponseEntity.ok(companies)
     }
 
-    @GetMapping("/busca-cnpj")
-    @Operation(summary = "Retorna a empresa específica pelo cnpj")
+    @GetMapping("/search/cnpj")
+    @Operation(
+        summary = "Retorna uma empresa pelo atributo cnpj",
+        description = "Retorna dados detalhados da empresa.\n Requer role ADMIN para acesso"
+    )
     fun getCompanybyCNPJ(@RequestParam companyCNPJ: String): ResponseEntity<CompanyDTO> {
         val company = companyService.getCompanyByCNPJ(companyCNPJ)
         return ResponseEntity.ok().body(company)
     }
 
-    @GetMapping("/busca-nome-empresa")
-    @Operation(summary = "Retorna a empresa específica pelo nome")
+    @GetMapping("/search/name")
+    @Operation(summary = "Retorna uma empresa pelo atributo nome")
     fun getCompanybyName(@RequestParam nameCompany: String): ResponseEntity<CompanyDTO> {
         val company = companyService.getCompaniesByName(nameCompany)
         return ResponseEntity.ok().body(company)
@@ -44,7 +50,8 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @PostMapping
-    @Operation(summary = "Registra a empresa no sistema")
+    @Operation(summary = "Registra a empresa no sistema",
+        description = "Cadastra uma empresa no sistema passando os dados do administrador da empresa.\n Requer role ADMIN para acesso")
     fun registerCompany(@Valid @RequestBody createCompanyDto: CreateCompanyDto): ResponseEntity<CompanyDTO> {
         val companyCreated = companyService.registerCompany(createCompanyDto)
         val uri: URI = URI.create("/company/${companyCreated.id}")
@@ -52,7 +59,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @PutMapping
-    @Operation(summary = "Altera nome da empresa")
+    @Operation(summary = "Altera dados da empresa", description = "Altera alguns dados da empresa no sistema.\n Requer role ADMIN para acesso")
     fun updateCompany(
         @RequestParam companyCNPJ: String,
         @Valid @RequestBody companyDTO: CompanyDTO

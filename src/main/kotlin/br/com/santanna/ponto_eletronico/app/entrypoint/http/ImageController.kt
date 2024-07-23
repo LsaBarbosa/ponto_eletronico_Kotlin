@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@RequestMapping("/arquivos")
-@Tag(name = "Imagem", description = "End-point para gestão das imagens")
+@RequestMapping("/files")
+@Tag(name = "Arquivos", description = "End-point para gestão de arquivos")
 @SecurityRequirement(name = "Bearer Authentication")
 class ImageController(private val imageService: ImageService) {
 
@@ -38,7 +38,7 @@ class ImageController(private val imageService: ImageService) {
         return ResponseEntity.ok().build()
     }
 
-    @GetMapping("/imagens")
+    @GetMapping("/search/all")
     @Operation(summary = "Lista todas as imagens do funcionário logado")
     fun getImages(@RequestBody imageSearchDto: ImageSearchDto): ResponseEntity<List<ImageListDto>> {
         val images = imageService.getImagesForCurrentUser(imageSearchDto)
@@ -74,7 +74,7 @@ class ImageController(private val imageService: ImageService) {
         return ResponseEntity.noContent().build()
     }
 
-    @GetMapping("/adm-imagens/{cpf}")
+    @GetMapping("search/adm/imagens/{cpf}")
     @Operation(summary = "Busca todas as imagens do funcionário pelo manager")
     fun getImagesByEmployeeCpfAsManager(
         @PathVariable cpf: String,
@@ -99,7 +99,7 @@ class ImageController(private val imageService: ImageService) {
             .body(resource)
     }
 
-    @PatchMapping("/adm/{imageId}")
+    @PatchMapping("/adm/delete/{imageId}")
     @Operation(summary = "Altera a descrição da imagem pelo manager")
     fun updateImageMessageAsManager(
         @PathVariable imageId: Long,
@@ -114,7 +114,7 @@ class ImageController(private val imageService: ImageService) {
 
 
 
-    @DeleteMapping("/adm/{imageId}")
+    @DeleteMapping("/adm/delete/{imageId}")
     @Operation(summary = "Deleta imagem por ID pelo manager")
     fun deleteImageByIdAsManager(@PathVariable imageId: Long, @RequestParam("cpf") cpf: String): ResponseEntity<Void> {
         val managerImageRequestDto =
