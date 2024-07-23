@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
+import org.hibernate.validator.constraints.br.CPF
 
 data class CreateEmployeeDto(
 
@@ -24,6 +25,7 @@ data class CreateEmployeeDto(
     var position: String ,
 
     @field:Size(min = 11, max = 11, message = "O CPF deve ter exatamente 11 caracteres")
+    @field:CPF
     var cpf: String ,
 
     @field:NotBlank(message = "A senha não pode estar em branco")

@@ -3,6 +3,7 @@ package br.com.santanna.ponto_eletronico.domain.dto.company
 import br.com.santanna.ponto_eletronico.domain.dto.employee.SimpleEmployeeDto
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
+import org.hibernate.validator.constraints.br.CNPJ
 
 data class CompanyDTO(
     var id: Long? = null,
@@ -10,6 +11,7 @@ data class CompanyDTO(
     var nameCompany: String? = null,
     var address: AddressDTO? = null,
     @field:Size(min = 14, max = 14, message = "O CNPJ deve ter exatamente 14 caracteres")
+    @field:CNPJ(message = "CNPJ inválido")
     var companyCNPJ: String? = null,
     val employees: List<SimpleEmployeeDto>? = ArrayList(),
 )
