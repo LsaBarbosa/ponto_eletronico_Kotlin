@@ -10,7 +10,7 @@ interface EmployeeService {
     fun getEmployeeById(): EmployeeGetDto?
     fun resetPassword(resetPasswordDto: ResetPasswordDto)
     fun updatePassword(updatePasswordDto: UpdatePassword)
-    fun getEmployeesAsManager(managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): Page<EmployeeGetDto>
+    fun getEmployeesAsManager(  pageable: Pageable): Page<EmployeeGetDto>
     fun getEmployeeByCpfAsManager(request: ManagerEmployeeRequestByCPFDto): EmployeeGetDto?
     fun getEmployeeByNameAndSurnameAsManager(name: String, surname: String): EmployeeGetDto?
     fun registerEmployeeAsManager(createEmployeeDto: CreateEmployeeDto): EmployeeDto

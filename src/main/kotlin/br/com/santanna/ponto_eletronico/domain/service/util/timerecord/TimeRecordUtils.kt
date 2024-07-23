@@ -22,6 +22,10 @@ import java.util.*
 import kotlin.math.abs
 import kotlin.reflect.KMutableProperty1
 
+private const val DATE_PATTERN = "dd-MM-yyyy"
+
+private const val TIME_PATTERN = "HH:mm"
+
 @Component
 class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
                        private val jwtTokenUtil: JwtTokenUtil
@@ -38,19 +42,19 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
     }
 
     fun createRecordCheckinDto(savedCheckin: TimeRecord): RecordCheckinDto {
-        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val formatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
         return RecordCheckinDto(
             id = savedCheckin.id,
-            startOfWorkTime = savedCheckin.startWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            startOfWorkTime = savedCheckin.startWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
             startOfWorkDate = savedCheckin.startWorkTime?.toLocalDate()?.format(formatter)
         )
     }
 
     fun createRecordCheckoutDto(savedCheckout: TimeRecord): RecordCheckoutDto {
-        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val formatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
         return RecordCheckoutDto(
             id = savedCheckout.id,
-            endWorkTime = savedCheckout.endWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            endWorkTime = savedCheckout.endWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
             timeWorked = formatTimeWorked(savedCheckout.timeWorked),
             endWorkDate = savedCheckout.endWorkTime?.toLocalDate()?.format(formatter)
         )
@@ -123,12 +127,12 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
         val manager = employeeDataProvider.findById(id)
 
         if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("The specified employee is not a manager.")
+            throw IllegalArgumentException("Colaborador sem permissão para o recurso")
         }
 
         val isPasswordValid = BCryptPasswordEncoder().matches(password, manager.password)
         if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
+            throw IllegalArgumentException("Senha Inválida")
         }
 
         return manager
@@ -136,20 +140,20 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
 
     fun validateSameCompany(employeeCpf: String, manager: Employee) {
         val employee = employeeDataProvider.findCpf(employeeCpf)
-            ?: throw IllegalArgumentException("Employee not found with CPF: $employeeCpf")
+            ?: throw IllegalArgumentException("Colaborador com CPF: $employeeCpf não encontrado")
 
         if (employee.company?.id != manager.company?.id) {
-            throw IllegalArgumentException("The specified employee does not belong to the manager's company.")
+            throw IllegalArgumentException("Colaborador não está na empresa do gerente")
         }
     }
 
     fun convertToUpdateTimeRecordDto(savedUpdate: TimeRecord): UpdateTimeRecordDto {
-        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val formatter = DateTimeFormatter.ofPattern(DATE_PATTERN)
         return UpdateTimeRecordDto(
             id = savedUpdate.id,
-            startWorkTime = savedUpdate.startWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            startWorkTime = savedUpdate.startWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
             startWorkDate = savedUpdate.startWorkTime?.toLocalDate()?.format(formatter),
-            endWorkTime = savedUpdate.endWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            endWorkTime = savedUpdate.endWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
             endWorkDate = savedUpdate.endWorkTime?.toLocalDate()?.format(formatter)
         )
     }
@@ -157,8 +161,8 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
     fun convertToDetailedTimeRecordDto(timeRecord: TimeRecord): DetailedTimeRecordDto {
         return DetailedTimeRecordDto(
             id = timeRecord.id,
-            startWorkTime = timeRecord.startWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
-            endWorkTime = timeRecord.endWorkTime?.format(DateTimeFormatter.ofPattern("HH:mm")),
+            startWorkTime = timeRecord.startWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
+            endWorkTime = timeRecord.endWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
             startWorkDate = timeRecord.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
             endWorkDate = timeRecord.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
             timeWorked = formatTimeWorked(timeRecord.timeWorked)

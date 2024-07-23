@@ -13,8 +13,8 @@ data class CreateCompanyDto(
     var managerName: String,
     @field:NotBlank(message = "O sobrenome do gerente não pode estar em branco")
     var managerSurname: String,
-    @field:NotNull(message = "O salário do gerente não pode estar em branco")
-
+    @field:NotNull(message = "O email do gerente não pode estar em branco")
+    var managerEmail:String,
     @field:Size(min = 1, max = 100, message = "A posição deve ter entre 1 e 100 caracteres")
     var managerPosition: String,
     @field:Size(min = 11, max = 11, message = "O CPF do gerente deve ter exatamente 11 caracteres")

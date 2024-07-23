@@ -16,6 +16,18 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 
 
+private const val EMPLOYEE_NOT_FOUND = "Colaborador com CPF:"
+
+private const val IS_NOT_MANAGER = "Colaborador não possui permissão para esse recurso."
+
+private const val EMPLOYEE_DIFERENT_COMPANY = "Colaborador nao está na mesma empresa que o gerente."
+
+private const val NOT_FOUND = "não encontrado"
+
+private const val MANAGER_WITHOUT_COMPANY = "Gerente não cadastrado em nenhuma empresa."
+
+
+
 @Service
 class EmployeeServiceImpl(
     private val employeeDataProvider: EmployeeDataProvider,
@@ -40,11 +52,11 @@ class EmployeeServiceImpl(
 
         val isOldPasswordValid = BCryptPasswordEncoder().matches(updatePasswordDto.oldPassword, employee.password)
         if (!isOldPasswordValid) {
-            throw IllegalArgumentException("Invalid old password")
+            throw IllegalArgumentException("Senha antiga inválida")
         }
 
         if (updatePasswordDto.newPassword != updatePasswordDto.confirmPassword) {
-            throw IllegalArgumentException("New password and confirmation do not match")
+            throw IllegalArgumentException("Nova senha e confirmação de senha não correspondem")
         }
 
         val newEncryptedPassword = BCryptPasswordEncoder().encode(updatePasswordDto.newPassword)
@@ -56,10 +68,10 @@ class EmployeeServiceImpl(
     @Transactional
     override fun resetPassword(resetPasswordDto: ResetPasswordDto) {
         val employee = employeeDataProvider.findCpf(resetPasswordDto.cpf)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: ${resetPasswordDto.cpf}")
+            ?: throw ObjectNotFoundException("$EMPLOYEE_NOT_FOUND ${resetPasswordDto.cpf} $NOT_FOUND")
 
         if (employee.email != resetPasswordDto.email) {
-            throw IllegalArgumentException("Invalid email")
+            throw IllegalArgumentException("Email inválido")
         }
 
         val newPassword = employeeServiceUtils.generateRandomPassword()
@@ -67,16 +79,16 @@ class EmployeeServiceImpl(
         employee.passwords = newEncryptedPassword
         employeeDataProvider.save(employee)
 
-        employeeServiceUtils.sendEmail(employee.email!!, newPassword)
+        employeeServiceUtils.sendEmail(employee.email, newPassword)
     }
 
     @Transactional
     override fun registerEmployeeAsManager(createEmployeeDto: CreateEmployeeDto): EmployeeDto {
         val manager = employeeServiceUtils.validateManager(createEmployeeDto.passwordsManager)
-
+        employeeServiceUtils.validateSameCompany(createEmployeeDto.cpf,manager)
         val employeeCpf = createEmployeeDto.cpf.let { employeeDataProvider.findCpf(it) }
         if (employeeCpf != null) {
-            throw DataIntegrityViolationException("EMPLOYEE_ALREADY_EXIST")
+            throw DataIntegrityViolationException("Colaborador já existe no sistema")
         }
 
         val encryptedPassword = BCryptPasswordEncoder().encode(createEmployeeDto.passwords)
@@ -87,7 +99,7 @@ class EmployeeServiceImpl(
             position = createEmployeeDto.position,
             cpf = createEmployeeDto.cpf,
             email = createEmployeeDto.email,
-            role = createEmployeeDto.role ?: EmployeeRole.USER,
+            role = createEmployeeDto.role,
             passwords = encryptedPassword,
             company = manager.company
         )
@@ -98,10 +110,16 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun updateEmployeeAsManager(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto {
-        val employeeToUpdate = employeeDataProvider.findCpf(updateEmployeeRequestDto.employeeCpfTarget)
-            ?: throw IllegalArgumentException("Employee not found with CPF: ${updateEmployeeRequestDto.employeeCpfTarget}")
+        val id = employeeServiceUtils.getCurrentUserId()
+        val manager = employeeDataProvider.findById(id)
+        employeeServiceUtils.validateSameCompany(updateEmployeeRequestDto.employeeCpfTarget,manager)
 
-        employeeServiceUtils.validateManager(updateEmployeeRequestDto.passwords)
+        val employeeToUpdate = employeeDataProvider.findCpf(updateEmployeeRequestDto.employeeCpfTarget)
+            ?: throw IllegalArgumentException("$EMPLOYEE_NOT_FOUND ${updateEmployeeRequestDto.employeeCpfTarget} $NOT_FOUND")
+
+        if (employeeToUpdate.company?.id != manager.company!!.id) {
+            throw IllegalArgumentException(EMPLOYEE_DIFERENT_COMPANY)
+        }
 
         updateEmployeeRequestDto.updateEmployeeDto.apply {
             name?.let { employeeToUpdate.name = it }
@@ -120,23 +138,23 @@ class EmployeeServiceImpl(
     override fun deleteEmployeeAsManager(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
 
          employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeCpfTarget)
-            ?: throw IllegalArgumentException("Employee not found with CPF: ${deleteEmployeeRequestDto.employeeCpfTarget}")
+            ?: throw IllegalArgumentException("$EMPLOYEE_NOT_FOUND: ${deleteEmployeeRequestDto.employeeCpfTarget} $NOT_FOUND")
 
-        employeeServiceUtils.validateManager(deleteEmployeeRequestDto.passwords)
-
+        val manager = employeeServiceUtils.validateManager(deleteEmployeeRequestDto.passwords)
+        employeeServiceUtils.validateSameCompany(deleteEmployeeRequestDto.employeeCpfTarget,manager)
         employeeDataProvider.deleteByCpf(deleteEmployeeRequestDto.employeeCpfTarget)
     }
 
-    override fun getEmployeesAsManager(managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): Page<EmployeeGetDto> {
+    override fun getEmployeesAsManager(pageable: Pageable): Page<EmployeeGetDto> {
         val id = employeeServiceUtils.getCurrentUserId()
         val manager = employeeDataProvider.findById(id)
 
         if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("The specified employee is not a manager.")
+            throw IllegalArgumentException(IS_NOT_MANAGER)
         }
 
         val company = manager.company
-            ?: throw IllegalArgumentException("Manager does not belong to any company.")
+            ?: throw IllegalArgumentException(MANAGER_WITHOUT_COMPANY)
 
         val employees = employeeDataProvider.findByCompany(company.id!!, pageable)
         return employees.map { employeeToDto.convertToGetEmployeeDto(it) }
@@ -147,24 +165,26 @@ class EmployeeServiceImpl(
         val manager = employeeDataProvider.findById(id)
 
         if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("The specified employee is not a manager.")
+            throw IllegalArgumentException(IS_NOT_MANAGER)
         }
 
-        val company = manager.company
-            ?: throw IllegalArgumentException("Manager does not belong to any company.")
+        manager.company
+            ?: throw IllegalArgumentException(MANAGER_WITHOUT_COMPANY)
 
         val employee = employeeDataProvider.findByNameAndSurnameIgnoreCase(name, surname)
         return employeeToDto.convertToGetEmployeeDto(employee)
     }
 
     override fun getEmployeeByCpfAsManager(request: ManagerEmployeeRequestByCPFDto): EmployeeGetDto? {
-        val manager = employeeServiceUtils.validateManager(request.passwords)
+        val id = employeeServiceUtils.getCurrentUserId()
+        val manager = employeeDataProvider.findById(id)
+employeeServiceUtils.validateSameCompany(request.employeeCpf,manager)
 
         val employee = employeeDataProvider.findCpf(request.employeeCpf)
-            ?: throw IllegalArgumentException("Employee not found with CPF: ${request.employeeCpf}")
+            ?: throw IllegalArgumentException("$EMPLOYEE_NOT_FOUND ${request.employeeCpf} $NOT_FOUND")
 
         if (employee.company?.id != manager.company!!.id) {
-            throw IllegalArgumentException("The specified employee does not belong to the manager's company.")
+            throw IllegalArgumentException(EMPLOYEE_DIFERENT_COMPANY)
         }
 
         return employeeToDto.convertToGetEmployeeDto(employee)

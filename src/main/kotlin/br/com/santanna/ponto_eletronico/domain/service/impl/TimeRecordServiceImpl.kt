@@ -6,6 +6,7 @@ import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
 import br.com.santanna.ponto_eletronico.domain.service.util.timerecord.TimeRecordUtils
 import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
@@ -25,8 +26,9 @@ import kotlin.math.abs
 private const val CHECKIN_EXCEPTION = "Necessário realizar o checkout para o checkin em aberto"
 private const val CHECKOUT_EXCEPTION = "Não há checkin aberto para ser encerrado"
 private const val ZONE_TIME = "America/Sao_Paulo"
-private const val timePattern = "HH:mm"
 
+
+private const val TIME_RECORD_NOT_FOUND = "Registro de horas não encontrado no ID:"
 
 @Service
 data class TimeRecordServiceImpl(
@@ -79,7 +81,7 @@ data class TimeRecordServiceImpl(
         timeRecordUtils.validateSameCompany(updateTimeRecordRequestDto.employeeCpfTarget, manager)
 
         val timeRecord = timeRecordDataProvider.findById(updateTimeRecordRequestDto.timeRecordId)
-            ?: throw ObjectNotFoundException("Time record not found with ID: ${updateTimeRecordRequestDto.timeRecordId}")
+            ?: throw ObjectNotFoundException("$TIME_RECORD_NOT_FOUND ${updateTimeRecordRequestDto.timeRecordId}")
 
         updateTimeRecordRequestDto.updateTimeRecordDto.let {
             timeRecordUtils.updateRecordFields(timeRecord, it)
@@ -145,7 +147,15 @@ data class TimeRecordServiceImpl(
         endDate: LocalDate,
         pageable: Pageable
     ): Page<DetailedTimeRecordDto> {
+        val id = timeRecordUtils.getCurrentUserId()
+        val manager = employeeDataProvider.findById(id)
+
+        if (manager.role != EmployeeRole.MANAGER) {
+            throw IllegalArgumentException("Colaborador não tem permissão")
+        }
+        timeRecordUtils.validateSameCompany(cpf,manager)
         val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(
+
             cpf, startDate.atStartOfDay(), endDate.atTime(23, 59, 59), pageable
         )
         return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }
@@ -214,7 +224,7 @@ data class TimeRecordServiceImpl(
         timeRecordUtils.validateSameCompany(deleteTimeRecordRequestDto.employeeCpfTarget, manager)
 
         val timeRecord = timeRecordDataProvider.findById(deleteTimeRecordRequestDto.timeRecordId)
-            ?: throw ObjectNotFoundException("Time record not found with ID: ${deleteTimeRecordRequestDto.timeRecordId}")
+            ?: throw ObjectNotFoundException("$TIME_RECORD_NOT_FOUND ${deleteTimeRecordRequestDto.timeRecordId}")
 
         if (timeRecord.employee?.cpf != deleteTimeRecordRequestDto.employeeCpfTarget) {
             throw DataIntegrityViolationException("Registro não pertence ao cpf: ${deleteTimeRecordRequestDto.employeeCpfTarget} informado")
