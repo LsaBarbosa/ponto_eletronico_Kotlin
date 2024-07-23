@@ -40,8 +40,8 @@ class EmployeeController(val employeeService: EmployeeService ) {
 
     @GetMapping("/adm")
     @Operation(summary = "Administrador busca todos os funcionários")
-    fun getAllEmployeeDataAsManager(@Valid @RequestBody managerEmployeeRequestDto: ManagerEmployeeRequestDto, pageable: Pageable): ResponseEntity<Page<EmployeeGetDto>> {
-        val employees = employeeService.getEmployeesAsManager(managerEmployeeRequestDto, pageable)
+    fun getAllEmployeeDataAsManager( pageable: Pageable): ResponseEntity<Page<EmployeeGetDto>> {
+        val employees = employeeService.getEmployeesAsManager(pageable)
         return ResponseEntity.ok(employees)
     }
 

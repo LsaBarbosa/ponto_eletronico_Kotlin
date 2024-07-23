@@ -79,6 +79,7 @@ class CompanyServiceImpl(
             surname = createCompanyDto.managerSurname,
             position = createCompanyDto.managerPosition,
             cpf = createCompanyDto.managerCpf,
+            email = createCompanyDto.managerEmail,
             role = EmployeeRole.MANAGER,
             passwords = encryptedPassword,
             company = savedCompanyEntity,
@@ -95,6 +96,7 @@ override fun updateCompany(companyCNPJ: String?, companyDto: CompanyDTO): Compan
     val existingCompany = companyDataProvider.findByCompanyCNPJ(companyCNPJ)
 
     existingCompany?.nameCompany = companyDto.nameCompany ?: existingCompany?.nameCompany
+    existingCompany?.nameCompany = companyDto.nameCompany ?: existingCompany?.nameCompany
     val updatedAddress = companyDto.address?.postalCode?.let { postalCode ->
         val addressDto = cepService.getEnderecoByCep(postalCode)
 
@@ -106,6 +108,7 @@ override fun updateCompany(companyCNPJ: String?, companyDto: CompanyDTO): Compan
             postalCode = postalCode,
             number = companyDto.address?.number
         )
+
     } ?: existingCompany?.address
 
     existingCompany?.address = updatedAddress

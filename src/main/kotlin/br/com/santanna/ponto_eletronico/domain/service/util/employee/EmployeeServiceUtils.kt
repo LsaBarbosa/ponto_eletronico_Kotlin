@@ -24,20 +24,30 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
         return jwtTokenUtil.getUserIdFromToken(token)
     }
 
+
     fun validateManager(password: String): Employee {
         val id = getCurrentUserId()
         val manager = employeeDataProvider.findById(id)
 
         if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("The specified employee is not a manager.")
+            throw IllegalArgumentException("Colaborador sem permissão para o recurso")
         }
 
         val isPasswordValid = BCryptPasswordEncoder().matches(password, manager.password)
         if (!isPasswordValid) {
-            throw IllegalArgumentException("Invalid password")
+            throw IllegalArgumentException("Senha Inválida")
         }
 
         return manager
+    }
+
+    fun validateSameCompany(employeeCpf: String, manager: Employee) {
+        val employee = employeeDataProvider.findCpf(employeeCpf)
+            ?: throw IllegalArgumentException("Colaborador com CPF:$employeeCpf não encontrado")
+
+        if (employee.company?.id != manager.company?.id) {
+            throw IllegalArgumentException("Colaborador não está na empresa do gerente")
+        }
     }
 
     fun generateRandomPassword(): String {
