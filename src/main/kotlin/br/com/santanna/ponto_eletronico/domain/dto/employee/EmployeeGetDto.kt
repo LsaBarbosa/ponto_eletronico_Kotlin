@@ -1,7 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.dto.employee
 
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyGetDto
-import br.com.santanna.ponto_eletronico.domain.entity.EmployeeRole
+import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
 
 data class EmployeeGetDto(
 

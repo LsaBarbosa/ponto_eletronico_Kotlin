@@ -1,5 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.entity
 
+import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
 import java.time.LocalDateTime

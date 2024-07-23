@@ -2,18 +2,20 @@ package br.com.santanna.ponto_eletronico.infrastructure.dataProvider.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
-import br.com.santanna.ponto_eletronico.domain.entity.Company
+import br.com.santanna.ponto_eletronico.domain.entity.company.Company
 import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+
+private const val CNPJ_NOT_FOUND= "Não foi encontrado o CNPJ:"
 
 @Service
 class CompanyDataProviderImpl(val companyRepository: CompanyRepository): CompanyDataprovider {
 
     override fun findByCompanyCNPJ(companyCNPJ: String?): Company {
         val company = companyRepository.findByCompanyCNPJ(companyCNPJ)
-            ?: throw ObjectNotFoundException("Não foi encontrado o CNPJ: $companyCNPJ no sistema")
+            ?: throw ObjectNotFoundException("$CNPJ_NOT_FOUND: $companyCNPJ")
         return company
     }
 
@@ -29,7 +31,7 @@ class CompanyDataProviderImpl(val companyRepository: CompanyRepository): Company
 
     override fun deleteByCompanyCNPJ(companyCNPJ: String) {
         val companyToDelete = companyRepository.findByCompanyCNPJ(companyCNPJ)
-            ?: throw ObjectNotFoundException("Não foi encontrado o CNPJ: $companyCNPJ no sistema")
+            ?: throw ObjectNotFoundException("$CNPJ_NOT_FOUND $companyCNPJ")
         companyRepository.delete(companyToDelete)
     }
 

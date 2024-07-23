@@ -1,6 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.dataprovider
 
-import br.com.santanna.ponto_eletronico.domain.entity.Employee
+import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.core.userdetails.UserDetails
