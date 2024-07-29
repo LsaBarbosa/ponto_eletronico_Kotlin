@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 
 @RestController
-@RequestMapping("time")
+@RequestMapping("/time")
 @Tag(name = "Controle de Horas", description = "End-point para gestão do banco de horas")
 @SecurityRequirement(name = "Bearer Authentication")
 class TimeRecordController(
@@ -41,7 +41,7 @@ class TimeRecordController(
     }
 
 
-    @GetMapping("search/report")
+    @GetMapping("/search/report")
     @Operation(summary = "Busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRange(
         @RequestBody searchByDateTimeRecordDto:SearchByDateTimeRecordDto,
@@ -51,7 +51,7 @@ class TimeRecordController(
     }
 
 
-    @GetMapping("search/balance")
+    @GetMapping("/search/balance")
     @Operation(summary = "Busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRange(
         @RequestBody searchByDateTimeRecordDto:SearchByDateTimeRecordDto
@@ -64,7 +64,7 @@ class TimeRecordController(
     }
 
 
-    @GetMapping("search/adm/report")
+    @GetMapping("/search/adm/report")
     @Operation(summary = "Administrador busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRangeForManager(
         @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto,
@@ -75,7 +75,7 @@ class TimeRecordController(
     }
 
 
-    @GetMapping("search/adm/balance")
+    @GetMapping("/search/adm/balance")
     @Operation(summary = "Administrador busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRangeForManager(
         @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto
