@@ -18,7 +18,7 @@ import java.net.URI
 @Tag(name = "Colaborador", description = "End-point para gestão do colaborador")
 class EmployeeController(val employeeService: EmployeeService) {
 
-    @GetMapping("search/id")
+    @GetMapping("/search/id")
     @Operation(
         summary = "Buscar funcionário pelo id",
         description = "Usuário tem acesso as suas própias informações.\n Requer role USER para acesso"
@@ -47,7 +47,7 @@ class EmployeeController(val employeeService: EmployeeService) {
         return ResponseEntity.ok().build()
     }
 
-    @GetMapping("search/adm/all")
+    @GetMapping("/search/adm/all")
     @Operation(
         summary = "Administrador busca todos os funcionários",
         description = "Retorna uma lista com todos os usuários da empresa.\n Requer role MANAGER para acesso"
@@ -57,7 +57,7 @@ class EmployeeController(val employeeService: EmployeeService) {
         return ResponseEntity.ok(employees)
     }
 
-    @GetMapping("search/adm/name")
+    @GetMapping("/search/adm/name")
     @Operation(
         summary = "Administrador busca funcionário pelo nome",
         description = "Retorna um usuario.\n Requer role MANAGER para acesso"
@@ -71,7 +71,7 @@ class EmployeeController(val employeeService: EmployeeService) {
 
     }
 
-    @GetMapping("search/adm/cpf")
+    @GetMapping("/search/adm/cpf")
     @Operation(
         summary = "Administrador busca funcionário pelo cpf",
         description = "Retorna um usuario.\n Requer role MANAGER para acesso"
@@ -81,7 +81,7 @@ class EmployeeController(val employeeService: EmployeeService) {
         return ResponseEntity.ok(employee)
     }
 
-    @PostMapping("adm/register")
+    @PostMapping("/adm/register")
     @Operation(
         summary = "Administrador registra um funcionário",
         description = "Cadastra um colaborador na empresa.\n A empresa em que está o usuário MANAGER é automaticamente atribuida ao novo colaborador.\n Requer role MANAGER para acesso"

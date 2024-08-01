@@ -41,7 +41,7 @@ class TimeRecordController(
     }
 
 
-    @GetMapping("/search/report")
+    @PostMapping("/search/report")
     @Operation(summary = "Busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRange(
         @RequestBody searchByDateTimeRecordDto:SearchByDateTimeRecordDto,
