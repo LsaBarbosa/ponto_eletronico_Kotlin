@@ -47,7 +47,7 @@ data class TimeRecordServiceImpl(
         val employee = employeeDataProvider.findById(id)
 
         timeRecordUtils.findLastTimeRecord(employee, timeRecordDataProvider)?.let {
-            throw Exception(CHECKIN_EXCEPTION)
+            throw DataIntegrityViolationException(CHECKIN_EXCEPTION)
         }
 
         val newRegister = TimeRecord().apply {
