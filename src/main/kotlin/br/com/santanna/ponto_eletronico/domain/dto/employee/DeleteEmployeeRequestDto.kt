@@ -1,10 +1,9 @@
 package br.com.santanna.ponto_eletronico.domain.dto.employee
 
-import org.hibernate.validator.constraints.br.CPF
+
+import java.util.*
 
 data class DeleteEmployeeRequestDto(
-    @field:CPF
-    val employeeCpfTarget: String,
-
+    val employeeId: UUID,
     val passwords: String
 )

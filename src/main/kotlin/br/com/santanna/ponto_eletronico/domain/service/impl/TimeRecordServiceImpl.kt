@@ -155,7 +155,6 @@ data class TimeRecordServiceImpl(
         }
         timeRecordUtils.validateSameCompany(cpf,manager)
         val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(
-
             cpf, startDate.atStartOfDay(), endDate.atTime(23, 59, 59), pageable
         )
         return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }

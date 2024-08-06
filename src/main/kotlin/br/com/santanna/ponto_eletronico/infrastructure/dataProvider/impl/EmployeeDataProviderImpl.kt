@@ -40,9 +40,9 @@ class EmployeeDataProviderImpl(val employeeRepository: EmployeeRepository) : Emp
     override fun findCpf(cpf: String?): Employee? {
         return employeeRepository.findByCpfIgnoreCase(cpf)
     }
-    override fun deleteByCpf(cpf: String) {
-        val employeeToDelete = findCpf(cpf)
-            ?: throw ObjectNotFoundException("Colaborador não encontrado")
+    override fun deleteById(id: UUID) {
+        val employeeToDelete = findById(id)
+
         employeeRepository.delete(employeeToDelete)
     }
 }

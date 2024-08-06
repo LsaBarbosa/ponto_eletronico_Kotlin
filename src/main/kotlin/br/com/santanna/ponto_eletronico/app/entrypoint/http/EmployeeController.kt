@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.net.URI
+import java.util.*
 
 @RestController
 @RequestMapping("/employee")
@@ -55,6 +56,16 @@ class EmployeeController(val employeeService: EmployeeService) {
     fun getAllEmployeeDataAsManager(pageable: Pageable): ResponseEntity<Page<EmployeeGetDto>> {
         val employees = employeeService.getEmployeesAsManager(pageable)
         return ResponseEntity.ok(employees)
+    }
+
+    @GetMapping("/search/adm/{id}")
+    @Operation(
+        summary = "Manager busca funcionário pelo ID",
+        description = "Permite que um usuário com role MANAGER busque um funcionário pelo ID.\n Requer role MANAGER para acesso"
+    )
+    fun getEmployeeByIdAsManager(@PathVariable id: UUID): ResponseEntity<EmployeeGetDto> {
+        val employee = employeeService.getEmployeeByIdAsManager(id)
+        return ResponseEntity.ok(employee)
     }
 
     @GetMapping("/search/adm/name")

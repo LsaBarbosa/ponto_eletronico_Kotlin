@@ -50,6 +50,14 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
         }
     }
 
+    fun validateSameCompany(employeeId: UUID, manager: Employee) {
+        val employee = employeeDataProvider.findById(employeeId)
+        if (employee.company?.id != manager.company?.id) {
+            throw IllegalArgumentException("The specified employee does not belong to the manager's company.")
+        }
+    }
+
+
     fun generateRandomPassword(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
         val random = SecureRandom()
