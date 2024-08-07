@@ -47,7 +47,7 @@ data class TimeRecordServiceImpl(
         val employee = employeeDataProvider.findById(id)
 
         timeRecordUtils.findLastTimeRecord(employee, timeRecordDataProvider)?.let {
-            throw Exception(CHECKIN_EXCEPTION)
+            throw DataIntegrityViolationException(CHECKIN_EXCEPTION)
         }
 
         val newRegister = TimeRecord().apply {
@@ -155,7 +155,6 @@ data class TimeRecordServiceImpl(
         }
         timeRecordUtils.validateSameCompany(cpf,manager)
         val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(
-
             cpf, startDate.atStartOfDay(), endDate.atTime(23, 59, 59), pageable
         )
         return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }

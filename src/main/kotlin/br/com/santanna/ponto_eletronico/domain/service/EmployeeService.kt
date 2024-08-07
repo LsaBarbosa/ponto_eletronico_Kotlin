@@ -4,6 +4,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import java.util.*
 
 interface EmployeeService {
     fun getEmployeeEntityByCpf(cpf: String): Employee?
@@ -12,6 +13,7 @@ interface EmployeeService {
     fun updatePassword(updatePasswordDto: UpdatePassword)
     fun getEmployeesAsManager(  pageable: Pageable): Page<EmployeeGetDto>
     fun getEmployeeByCpfAsManager(request: ManagerEmployeeRequestByCPFDto): EmployeeGetDto?
+    fun getEmployeeByIdAsManager(id: UUID): EmployeeGetDto
     fun getEmployeeByNameAndSurnameAsManager(name: String, surname: String): EmployeeGetDto?
     fun registerEmployeeAsManager(createEmployeeDto: CreateEmployeeDto): EmployeeDto
     fun updateEmployeeAsManager(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto

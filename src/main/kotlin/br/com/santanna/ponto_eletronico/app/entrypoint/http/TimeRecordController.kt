@@ -41,12 +41,17 @@ class TimeRecordController(
     }
 
 
-    @PostMapping("/search/report")
+    @GetMapping("/search/report")
     @Operation(summary = "Busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRange(
-        @RequestBody searchByDateTimeRecordDto:SearchByDateTimeRecordDto,
-        @PageableDefault(size = 5) pageable: Pageable
+        @RequestParam startDate: String?,
+        @RequestParam endDate: String?,
+        pageable: Pageable
     ): Page<DetailedTimeRecordDto> {
+        val searchByDateTimeRecordDto = SearchByDateTimeRecordDto(
+            startDate = startDate,
+            endDate = endDate
+        )
         return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageable(searchByDateTimeRecordDto, pageable)
     }
 
@@ -54,23 +59,35 @@ class TimeRecordController(
     @GetMapping("/search/balance")
     @Operation(summary = "Busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRange(
-        @RequestBody searchByDateTimeRecordDto:SearchByDateTimeRecordDto
+        @RequestParam startDate: String?,
+        @RequestParam endDate: String?
     ): ResponseEntity<BalanceHoursDto> {
+        val searchByDateTimeRecordDto = SearchByDateTimeRecordDto(
+            startDate = startDate,
+            endDate = endDate
+        )
 
         val timeRecords = timeRecordService.balanceHoursByDate(searchByDateTimeRecordDto)
         val balanceHoursDto = modelMapper.map(timeRecords, BalanceHoursDto::class.java)
         return ResponseEntity.ok().body(balanceHoursDto)
-
     }
+
 
 
     @GetMapping("/search/adm/report")
     @Operation(summary = "Administrador busca o registro de horas do funcionário")
     fun getTimeRecordsByEmployeeNameAndDateRangeForManager(
-        @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto,
-        @PageableDefault(size = 5) pageable: Pageable
+        @RequestParam employeeCpfTarget: String,
+        @RequestParam passwords: String,
+        @RequestParam startDate: String?,
+        @RequestParam endDate: String?,
+        pageable: Pageable
     ): Page<DetailedTimeRecordDto> {
-
+        val searchByDateTimeRecordRequestDto = SearchByDateTimeRecordRequestDto(
+            employeeCpfTarget = employeeCpfTarget,
+            passwords = passwords,
+            searchByDateTimeRecordDto = SearchByDateTimeRecordDto(startDate, endDate)
+        )
         return timeRecordService.getTimeRecordsByEmployeeCpfAndDateRangePageableAsManager(searchByDateTimeRecordRequestDto, pageable)
     }
 
@@ -78,12 +95,19 @@ class TimeRecordController(
     @GetMapping("/search/adm/balance")
     @Operation(summary = "Administrador busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeNameAndDateRangeForManager(
-        @RequestBody searchByDateTimeRecordRequestDto: SearchByDateTimeRecordRequestDto
+        @RequestParam employeeCpfTarget: String,
+        @RequestParam passwords: String,
+        @RequestParam startDate: String?,
+        @RequestParam endDate: String?
     ): ResponseEntity<BalanceHoursDto> {
+        val searchByDateTimeRecordRequestDto = SearchByDateTimeRecordRequestDto(
+            employeeCpfTarget = employeeCpfTarget,
+            passwords = passwords,
+            searchByDateTimeRecordDto = SearchByDateTimeRecordDto(startDate, endDate)
+        )
         val timeRecords = timeRecordService.balanceHoursByDateAsManager(searchByDateTimeRecordRequestDto)
         val balanceHoursDto = modelMapper.map(timeRecords, BalanceHoursDto::class.java)
         return ResponseEntity.ok().body(balanceHoursDto)
-
     }
 
     @DeleteMapping("/adm/delete")

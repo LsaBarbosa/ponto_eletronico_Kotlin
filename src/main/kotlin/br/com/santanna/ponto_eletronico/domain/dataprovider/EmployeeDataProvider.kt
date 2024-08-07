@@ -14,6 +14,6 @@ interface EmployeeDataProvider {
     fun findByNameAndSurnameIgnoreCase(name: String?, surname: String?): Employee?
     fun findByCpf(cpf: String): UserDetails?
     fun findCpf(cpf: String?): Employee?
-    fun deleteByCpf(cpf: String)
+    fun deleteById(id: UUID)
     fun findByCompany(companyId: Long, pageable: Pageable): Page<Employee>
 }

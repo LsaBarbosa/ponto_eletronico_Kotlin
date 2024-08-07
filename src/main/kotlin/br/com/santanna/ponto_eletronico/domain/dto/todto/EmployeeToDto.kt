@@ -39,9 +39,10 @@ class EmployeeToDto {
     }
 
     fun convertToGetEmployeeDto(employee: Employee?): EmployeeGetDto {
-        employee?.timeWorked?.map { convertToTimeRecordDto(it!!) }
+        employee?.timeWorked?.map { convertToTimeRecordDto(it) }
 
         return EmployeeGetDto(
+            id = employee?.id,
             name = employee?.name,
             surname = employee?.surname,
             salary = employee?.salary,

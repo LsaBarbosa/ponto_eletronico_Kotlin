@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import java.util.*
 
 
 private const val EMPLOYEE_NOT_FOUND = "Colaborador com CPF:"
@@ -85,7 +86,7 @@ class EmployeeServiceImpl(
     @Transactional
     override fun registerEmployeeAsManager(createEmployeeDto: CreateEmployeeDto): EmployeeDto {
         val manager = employeeServiceUtils.validateManager(createEmployeeDto.passwordsManager)
-        employeeServiceUtils.validateSameCompany(createEmployeeDto.cpf,manager)
+
         val employeeCpf = createEmployeeDto.cpf.let { employeeDataProvider.findCpf(it) }
         if (employeeCpf != null) {
             throw DataIntegrityViolationException("Colaborador já existe no sistema")
@@ -112,14 +113,10 @@ class EmployeeServiceImpl(
     override fun updateEmployeeAsManager(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto {
         val id = employeeServiceUtils.getCurrentUserId()
         val manager = employeeDataProvider.findById(id)
-        employeeServiceUtils.validateSameCompany(updateEmployeeRequestDto.employeeCpfTarget,manager)
+        employeeServiceUtils.validateSameCompany(updateEmployeeRequestDto.employeeId, manager)
 
-        val employeeToUpdate = employeeDataProvider.findCpf(updateEmployeeRequestDto.employeeCpfTarget)
-            ?: throw IllegalArgumentException("$EMPLOYEE_NOT_FOUND ${updateEmployeeRequestDto.employeeCpfTarget} $NOT_FOUND")
+        val employeeToUpdate = employeeDataProvider.findById(updateEmployeeRequestDto.employeeId)
 
-        if (employeeToUpdate.company?.id != manager.company!!.id) {
-            throw IllegalArgumentException(EMPLOYEE_DIFERENT_COMPANY)
-        }
 
         updateEmployeeRequestDto.updateEmployeeDto.apply {
             name?.let { employeeToUpdate.name = it }
@@ -134,15 +131,14 @@ class EmployeeServiceImpl(
         return employeeToDto.convertToUpdateEmployeeDto(updatedEmployeeEntity)
     }
 
+
     @Transactional
     override fun deleteEmployeeAsManager(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
-
-         employeeDataProvider.findCpf(deleteEmployeeRequestDto.employeeCpfTarget)
-            ?: throw IllegalArgumentException("$EMPLOYEE_NOT_FOUND: ${deleteEmployeeRequestDto.employeeCpfTarget} $NOT_FOUND")
-
         val manager = employeeServiceUtils.validateManager(deleteEmployeeRequestDto.passwords)
-        employeeServiceUtils.validateSameCompany(deleteEmployeeRequestDto.employeeCpfTarget,manager)
-        employeeDataProvider.deleteByCpf(deleteEmployeeRequestDto.employeeCpfTarget)
+        employeeServiceUtils.validateSameCompany(deleteEmployeeRequestDto.employeeId, manager)
+
+        employeeDataProvider.findById(deleteEmployeeRequestDto.employeeId)
+        employeeDataProvider.deleteById(deleteEmployeeRequestDto.employeeId)
     }
 
     override fun getEmployeesAsManager(pageable: Pageable): Page<EmployeeGetDto> {
@@ -158,6 +154,24 @@ class EmployeeServiceImpl(
 
         val employees = employeeDataProvider.findByCompany(company.id!!, pageable)
         return employees.map { employeeToDto.convertToGetEmployeeDto(it) }
+    }
+
+    @Transactional
+    override fun getEmployeeByIdAsManager(id: UUID): EmployeeGetDto {
+        val managerId = employeeServiceUtils.getCurrentUserId()
+        val manager = employeeDataProvider.findById(managerId)
+
+        if (manager.role != EmployeeRole.MANAGER) {
+            throw IllegalArgumentException("The specified employee is not a manager.")
+        }
+
+        val employee = employeeDataProvider.findById(id)
+
+        if (employee.company?.id != manager.company?.id) {
+            throw IllegalArgumentException("The specified employee does not belong to the manager's company.")
+        }
+
+        return employeeToDto.convertToGetEmployeeDto(employee)
     }
 
     override fun getEmployeeByNameAndSurnameAsManager(name: String, surname: String): EmployeeGetDto? {
