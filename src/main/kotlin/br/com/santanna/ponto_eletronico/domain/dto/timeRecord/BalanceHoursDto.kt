@@ -4,5 +4,3 @@ data class BalanceHoursDto(
     val employeeId: String? = null,
     val balance: String? = null
 )
-
-

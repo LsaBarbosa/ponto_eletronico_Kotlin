@@ -6,7 +6,6 @@ import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
-import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
 import br.com.santanna.ponto_eletronico.domain.service.util.timerecord.TimeRecordUtils
 import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
@@ -20,7 +19,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlin.math.abs
 
 
@@ -139,25 +137,6 @@ data class TimeRecordServiceImpl(
             startDateTime!!,
             endDateTime!!,
             pageable
-        )
-        return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }
-    }
-
-    override fun getTimeRecordsByEmployeeIdAndDateRangePageableToPDFAsManager(
-        employeeId: UUID,
-        startDate: LocalDate,
-        endDate: LocalDate,
-        pageable: Pageable
-    ): Page<DetailedTimeRecordDto> {
-        val id = timeRecordUtils.getCurrentUserId()
-        val manager = employeeDataProvider.findById(id)
-
-        if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("Colaborador não tem permissão")
-        }
-        timeRecordUtils.validateSameCompanyById(employeeId, manager)
-        val timeRecords = timeRecordDataProvider.findByEmployeeIdAndDateRange(
-            employeeId, startDate.atStartOfDay(), endDate.atTime(23, 59, 59), pageable
         )
         return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }
     }
