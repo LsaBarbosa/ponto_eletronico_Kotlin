@@ -1,10 +1,9 @@
 package br.com.santanna.ponto_eletronico.domain.dto.timeRecord
 
-import org.hibernate.validator.constraints.br.CPF
+import java.util.*
 
 data class SearchByDateTimeRecordRequestDto(
-    @field:CPF
-    val employeeCpfTarget: String,
+    val employeeIdTarget: UUID,
     val passwords: String,
     val searchByDateTimeRecordDto: SearchByDateTimeRecordDto
 )

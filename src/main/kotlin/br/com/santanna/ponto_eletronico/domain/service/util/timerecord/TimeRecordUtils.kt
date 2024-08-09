@@ -31,11 +31,12 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
                        private val jwtTokenUtil: JwtTokenUtil
 ) {
 
-    fun findTimeRecordsByDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate, timeRecordDataProvider: TimeRecordDataProvider): List<TimeRecord> {
+    fun findTimeRecordsByDateRange(employeeId: UUID, startDate: LocalDate, endDate: LocalDate, timeRecordDataProvider: TimeRecordDataProvider): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = endDate.atTime(23, 59, 59)
-        return timeRecordDataProvider.findByEmployeeCpfAndDateRange(cpf, startDateTime, endDateTime)
+        return timeRecordDataProvider.findByEmployeeIdAndDateRange(employeeId, startDateTime, endDateTime)
     }
+
 
     fun findLastTimeRecord(employee: Employee?, timeRecordDataProvider: TimeRecordDataProvider): TimeRecord? {
         return timeRecordDataProvider.findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee)
@@ -138,9 +139,9 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
         return manager
     }
 
-    fun validateSameCompany(employeeCpf: String, manager: Employee) {
-        val employee = employeeDataProvider.findCpf(employeeCpf)
-            ?: throw IllegalArgumentException("Colaborador com CPF: $employeeCpf não encontrado")
+    fun validateSameCompanyById(employeeId: UUID, manager: Employee) {
+        val employee = employeeDataProvider.findById(employeeId)
+
 
         if (employee.company?.id != manager.company?.id) {
             throw IllegalArgumentException("Colaborador não está na empresa do gerente")
@@ -168,5 +169,4 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
             timeWorked = formatTimeWorked(timeRecord.timeWorked)
         )
     }
-
 }

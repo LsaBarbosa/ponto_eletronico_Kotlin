@@ -34,6 +34,10 @@ class EmployeeServiceImpl(
         return employeeToDto.convertToGetEmployeeDto(employee)
     }
 
+    override fun getEmployeeEntityById(employeeId: UUID): Employee? {
+        return employeeDataProvider.findById(employeeId)
+    }
+
     @Transactional
     override fun updatePassword(updatePasswordDto: UpdatePassword) {
         val id = employeeServiceUtils.getCurrentUserId()

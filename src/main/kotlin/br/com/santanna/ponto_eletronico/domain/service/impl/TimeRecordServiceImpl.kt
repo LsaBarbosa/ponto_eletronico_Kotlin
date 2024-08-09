@@ -20,6 +20,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlin.math.abs
 
 
@@ -78,7 +79,7 @@ data class TimeRecordServiceImpl(
     @Transactional
     override fun updateTimeRecordAsManager(updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): UpdateTimeRecordDto {
         val manager = timeRecordUtils.validateManager(updateTimeRecordRequestDto.passwords)
-        timeRecordUtils.validateSameCompany(updateTimeRecordRequestDto.employeeCpfTarget, manager)
+        timeRecordUtils.validateSameCompanyById(updateTimeRecordRequestDto.employeeIdTarget, manager)
 
         val timeRecord = timeRecordDataProvider.findById(updateTimeRecordRequestDto.timeRecordId)
             ?: throw ObjectNotFoundException("$TIME_RECORD_NOT_FOUND ${updateTimeRecordRequestDto.timeRecordId}")
@@ -93,12 +94,13 @@ data class TimeRecordServiceImpl(
 
     override fun balanceHoursByDateAsManager(searchRequestDto: SearchByDateTimeRecordRequestDto): BalanceHoursDto {
         val manager = timeRecordUtils.validateManager(searchRequestDto.passwords)
-        timeRecordUtils.validateSameCompany(searchRequestDto.employeeCpfTarget, manager)
+        timeRecordUtils.validateSameCompanyById(searchRequestDto.employeeIdTarget, manager)
 
         val startDate = searchRequestDto.searchByDateTimeRecordDto.startDate?.let { LocalDate.parse(it, dateFormatter) }
         val endDate = searchRequestDto.searchByDateTimeRecordDto.endDate?.let { LocalDate.parse(it, dateFormatter) }
+
         val timeRecords = timeRecordUtils.findTimeRecordsByDateRange(
-            searchRequestDto.employeeCpfTarget,
+            searchRequestDto.employeeIdTarget,
             startDate!!,
             endDate!!,
             timeRecordDataProvider
@@ -116,15 +118,15 @@ data class TimeRecordServiceImpl(
         val balance = totalWorkedMinutes - totalExpectedMinutes
         val formattedBalance = timeRecordUtils.formatBalance(balance)
 
-        return BalanceHoursDto(employeeCpf = searchRequestDto.employeeCpfTarget, balance = formattedBalance)
+        return BalanceHoursDto(employeeId = searchRequestDto.employeeIdTarget.toString(), balance = formattedBalance)
     }
 
-    override fun getTimeRecordsByEmployeeCpfAndDateRangePageableAsManager(
+    override fun getTimeRecordsByEmployeeIdAndDateRangePageableAsManager(
         searchRequestDto: SearchByDateTimeRecordRequestDto,
         pageable: Pageable
     ): Page<DetailedTimeRecordDto> {
         val manager = timeRecordUtils.validateManager(searchRequestDto.passwords)
-        timeRecordUtils.validateSameCompany(searchRequestDto.employeeCpfTarget, manager)
+        timeRecordUtils.validateSameCompanyById(searchRequestDto.employeeIdTarget, manager)
 
         val startDate = searchRequestDto.searchByDateTimeRecordDto.startDate?.let { LocalDate.parse(it, dateFormatter) }
         val endDate = searchRequestDto.searchByDateTimeRecordDto.endDate?.let { LocalDate.parse(it, dateFormatter) }
@@ -132,8 +134,8 @@ data class TimeRecordServiceImpl(
         val startDateTime = startDate?.atStartOfDay()
         val endDateTime = endDate?.atTime(23, 59, 59)
 
-        val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(
-            searchRequestDto.employeeCpfTarget,
+        val timeRecords = timeRecordDataProvider.findByEmployeeIdAndDateRange(
+            searchRequestDto.employeeIdTarget,
             startDateTime!!,
             endDateTime!!,
             pageable
@@ -141,8 +143,8 @@ data class TimeRecordServiceImpl(
         return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }
     }
 
-    override fun getTimeRecordsByEmployeeCpfAndDateRangePageableToPDFAsManager(
-        cpf: String,
+    override fun getTimeRecordsByEmployeeIdAndDateRangePageableToPDFAsManager(
+        employeeId: UUID,
         startDate: LocalDate,
         endDate: LocalDate,
         pageable: Pageable
@@ -153,27 +155,28 @@ data class TimeRecordServiceImpl(
         if (manager.role != EmployeeRole.MANAGER) {
             throw IllegalArgumentException("Colaborador não tem permissão")
         }
-        timeRecordUtils.validateSameCompany(cpf,manager)
-        val timeRecords = timeRecordDataProvider.findByEmployeeCpfAndDateRange(
-            cpf, startDate.atStartOfDay(), endDate.atTime(23, 59, 59), pageable
+        timeRecordUtils.validateSameCompanyById(employeeId, manager)
+        val timeRecords = timeRecordDataProvider.findByEmployeeIdAndDateRange(
+            employeeId, startDate.atStartOfDay(), endDate.atTime(23, 59, 59), pageable
         )
         return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }
     }
+
 
     override fun balanceHoursByDate(searchByDateTimeRecordDto: SearchByDateTimeRecordDto): BalanceHoursDto {
         val id = timeRecordUtils.getCurrentUserId()
         val employee = employeeDataProvider.findById(id)
 
-        val startDate =  searchByDateTimeRecordDto.startDate?.let { LocalDate.parse(it, dateFormatter) }
-        val endDate =  searchByDateTimeRecordDto.endDate?.let { LocalDate.parse(it, dateFormatter) }
+        val startDate = searchByDateTimeRecordDto.startDate?.let { LocalDate.parse(it, dateFormatter) }
+        val endDate = searchByDateTimeRecordDto.endDate?.let { LocalDate.parse(it, dateFormatter) }
+
         val timeRecords = timeRecordUtils.findTimeRecordsByDateRange(
-            employee.cpf,
+            employeeId = id,
             startDate!!,
             endDate!!,
             timeRecordDataProvider
         )
         val recordsByDate = timeRecords.groupBy { it.startWorkTime?.toLocalDate() }
-
 
         var totalWorkedMinutes = 0L
         var totalExpectedMinutes = 0L
@@ -194,12 +197,13 @@ data class TimeRecordServiceImpl(
         val formattedBalance = String.format("%s%02d:%02d", sign, balanceHours, balanceRemainingMinutes)
 
         return BalanceHoursDto(
-            employeeCpf = employee.cpf,
+            employeeId = employee.id.toString(),
             balance = formattedBalance
         )
     }
 
-    override fun getTimeRecordsByEmployeeCpfAndDateRangePageable(
+
+    override fun getTimeRecordsByEmployeeIdAndDateRangePageable(
         searchByDateTimeRecordDto: SearchByDateTimeRecordDto,
         pageable: Pageable
     ): Page<DetailedTimeRecordDto> {
@@ -213,22 +217,23 @@ data class TimeRecordServiceImpl(
         val endDateTime = endDate?.atTime(23, 59, 59)
 
         val timeRecords =
-            timeRecordDataProvider.findByEmployeeCpfAndDateRange(employee.cpf, startDateTime!!, endDateTime!!, pageable)
+            timeRecordDataProvider.findByEmployeeIdAndDateRange(employee.id!!, startDateTime!!, endDateTime!!, pageable)
         return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }
     }
 
     @Transactional
     override fun deleteTimeRecordAsManager(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto) {
         val manager = timeRecordUtils.validateManager(deleteTimeRecordRequestDto.passwords)
-        timeRecordUtils.validateSameCompany(deleteTimeRecordRequestDto.employeeCpfTarget, manager)
+        timeRecordUtils.validateSameCompanyById(deleteTimeRecordRequestDto.employeeIdTarget, manager)
 
         val timeRecord = timeRecordDataProvider.findById(deleteTimeRecordRequestDto.timeRecordId)
             ?: throw ObjectNotFoundException("$TIME_RECORD_NOT_FOUND ${deleteTimeRecordRequestDto.timeRecordId}")
 
-        if (timeRecord.employee?.cpf != deleteTimeRecordRequestDto.employeeCpfTarget) {
-            throw DataIntegrityViolationException("Registro não pertence ao cpf: ${deleteTimeRecordRequestDto.employeeCpfTarget} informado")
+        if (timeRecord.employee?.id != deleteTimeRecordRequestDto.employeeIdTarget) {
+            throw DataIntegrityViolationException("Registro não pertence ao funcionário com ID: ${deleteTimeRecordRequestDto.employeeIdTarget} informado")
         }
 
         timeRecordDataProvider.delete(timeRecord)
     }
+
 }
