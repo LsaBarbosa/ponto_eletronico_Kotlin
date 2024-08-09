@@ -41,19 +41,10 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
         return manager
     }
 
-    fun validateSameCompany(employeeCpf: String, manager: Employee) {
-        val employee = employeeDataProvider.findCpf(employeeCpf)
-            ?: throw IllegalArgumentException("Colaborador com CPF:$employeeCpf não encontrado")
-
-        if (employee.company?.id != manager.company?.id) {
-            throw IllegalArgumentException("Colaborador não está na empresa do gerente")
-        }
-    }
-
     fun validateSameCompany(employeeId: UUID, manager: Employee) {
         val employee = employeeDataProvider.findById(employeeId)
         if (employee.company?.id != manager.company?.id) {
-            throw IllegalArgumentException("The specified employee does not belong to the manager's company.")
+            throw IllegalArgumentException("Colaborador não está na mesma empresa que o gestor.")
         }
     }
 

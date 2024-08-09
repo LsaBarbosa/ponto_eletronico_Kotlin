@@ -15,22 +15,22 @@ data class Employee(
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     var id: UUID? = null,
 
-    var name: String = "",
+    var name: String? = "",
 
-    var surname: String = "",
+    var surname: String? = "",
 
-    var salary: Double = 0.0,
+    var salary: Double? = 0.0,
 
-    var position: String = "",
+    var position: String? = "",
 
-    var passwords: String = "",
+    var passwords: String? = "",
 
-    var email: String = "",
+    var email: String? = "",
 
-    var cpf: String = "",
+    var cpf: String? = "",
 
     @Enumerated(EnumType.STRING)
-    var role: EmployeeRole = EmployeeRole.USER,
+    var role: EmployeeRole? = EmployeeRole.USER,
 
     @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     @JsonIgnoreProperties("employee")
@@ -62,9 +62,9 @@ data class Employee(
         }
     }
 
-    override fun getPassword(): String = passwords
+    override fun getPassword(): String? = passwords
 
-    override fun getUsername(): String = cpf
+    override fun getUsername(): String? = cpf
 
     override fun isAccountNonExpired(): Boolean = true
     override fun isAccountNonLocked(): Boolean = true

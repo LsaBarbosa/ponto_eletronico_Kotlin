@@ -68,34 +68,13 @@ class EmployeeController(val employeeService: EmployeeService) {
         return ResponseEntity.ok(employee)
     }
 
-    @GetMapping("/search/adm/name")
-    @Operation(
-        summary = "Administrador busca funcionário pelo nome",
-        description = "Retorna um usuario.\n Requer role MANAGER para acesso"
-    )
-    fun getEmployeeDataByNameAndSurnameAsManager(
-        @RequestParam("name") name: String, @RequestParam("surname") surname: String
-    ): ResponseEntity<EmployeeGetDto?> {
-
-        val employee = employeeService.getEmployeeByNameAndSurnameAsManager(name, surname)
-        return ResponseEntity.ok(employee)
-
-    }
-
-    @GetMapping("/search/adm/cpf")
-    @Operation(
-        summary = "Administrador busca funcionário pelo cpf",
-        description = "Retorna um usuario.\n Requer role MANAGER para acesso"
-    )
-    fun getEmployeeDataByCpfAsManage(@Valid @RequestBody request: ManagerEmployeeRequestByCPFDto): ResponseEntity<EmployeeGetDto?> {
-        val employee = employeeService.getEmployeeByCpfAsManager(request)
-        return ResponseEntity.ok(employee)
-    }
 
     @PostMapping("/adm/register")
     @Operation(
         summary = "Administrador registra um funcionário",
-        description = "Cadastra um colaborador na empresa.\n A empresa em que está o usuário MANAGER é automaticamente atribuida ao novo colaborador.\n Requer role MANAGER para acesso"
+        description = "Cadastra um colaborador na empresa.\n " +
+                "A empresa em que está o usuário MANAGER é automaticamente atribuida ao novo colaborador.\n " +
+                "Requer role MANAGER para acesso"
     )
     fun registerNewEmployeeAsManager(
         @Valid @RequestBody createEmployeeDto: CreateEmployeeDto
@@ -106,11 +85,15 @@ class EmployeeController(val employeeService: EmployeeService) {
     }
 
     @PutMapping("/adm/update")
-    @Operation(summary = "Administrador atualiza dados do funcionário", description = "Atualiza dados de um colaborador.\n Requer role MANAGER para acesso")
+    @Operation(
+        summary = "Administrador atualiza dados do funcionário",
+        description = "Atualiza dados de um colaborador.\n Requer role MANAGER para acesso"
+    )
     fun updateEmployeeAsManager(@Valid @RequestBody updateEmployeeRequestDto: UpdateEmployeeRequestDto): ResponseEntity<UpdateEmployeeDto> {
         val updatedEmployeeDto = employeeService.updateEmployeeAsManager(updateEmployeeRequestDto)
         return ResponseEntity.ok(updatedEmployeeDto)
     }
+
 
     @DeleteMapping("/adm/delete")
     @Operation(summary = "Administrador apaga funcionário")

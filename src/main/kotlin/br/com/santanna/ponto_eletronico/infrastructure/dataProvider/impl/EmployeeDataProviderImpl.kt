@@ -1,12 +1,11 @@
 package br.com.santanna.ponto_eletronico.infrastructure.dataProvider.impl
 
+import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.infrastructure.repository.EmployeeRepository
-import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -27,14 +26,6 @@ class EmployeeDataProviderImpl(val employeeRepository: EmployeeRepository) : Emp
         val employee = employeeRepository.findById(id)
             .orElseThrow { ObjectNotFoundException("Colaborador não encontrado") }
         return employee
-    }
-    override fun findByNameAndSurnameIgnoreCase(name: String?, surname: String?): Employee {
-        val employee = employeeRepository.findByNameAndSurnameIgnoreCase(name, surname)
-            ?: throw ObjectNotFoundException("Colaborador com nome: $name $surname não encontrado")
-        return employee
-    }
-    override fun findByCpf(cpf: String): UserDetails? {
-        return employeeRepository.findByCpf(cpf)
     }
 
     override fun findCpf(cpf: String?): Employee? {
