@@ -7,14 +7,13 @@ import org.springframework.data.domain.Pageable
 import java.util.*
 
 interface EmployeeService {
-    fun getEmployeeEntityByCpf(cpf: String): Employee?
+
     fun getEmployeeById(): EmployeeGetDto?
+    fun getEmployeeEntityById(employeeId: UUID): Employee?
     fun resetPassword(resetPasswordDto: ResetPasswordDto)
     fun updatePassword(updatePasswordDto: UpdatePassword)
     fun getEmployeesAsManager(  pageable: Pageable): Page<EmployeeGetDto>
-    fun getEmployeeByCpfAsManager(request: ManagerEmployeeRequestByCPFDto): EmployeeGetDto?
     fun getEmployeeByIdAsManager(id: UUID): EmployeeGetDto
-    fun getEmployeeByNameAndSurnameAsManager(name: String, surname: String): EmployeeGetDto?
     fun registerEmployeeAsManager(createEmployeeDto: CreateEmployeeDto): EmployeeDto
     fun updateEmployeeAsManager(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto
     fun deleteEmployeeAsManager(deleteEmployeeRequestDto: DeleteEmployeeRequestDto)

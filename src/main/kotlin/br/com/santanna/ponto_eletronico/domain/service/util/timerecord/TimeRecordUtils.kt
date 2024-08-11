@@ -27,15 +27,22 @@ private const val DATE_PATTERN = "dd-MM-yyyy"
 private const val TIME_PATTERN = "HH:mm"
 
 @Component
-class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
-                       private val jwtTokenUtil: JwtTokenUtil
+class TimeRecordUtils(
+    private val employeeDataProvider: EmployeeDataProvider,
+    private val jwtTokenUtil: JwtTokenUtil
 ) {
 
-    fun findTimeRecordsByDateRange(cpf: String, startDate: LocalDate, endDate: LocalDate, timeRecordDataProvider: TimeRecordDataProvider): List<TimeRecord> {
+    fun findTimeRecordsByDateRange(
+        employeeId: UUID,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        timeRecordDataProvider: TimeRecordDataProvider
+    ): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = endDate.atTime(23, 59, 59)
-        return timeRecordDataProvider.findByEmployeeCpfAndDateRange(cpf, startDateTime, endDateTime)
+        return timeRecordDataProvider.findByEmployeeIdAndDateRange(employeeId, startDateTime, endDateTime)
     }
+
 
     fun findLastTimeRecord(employee: Employee?, timeRecordDataProvider: TimeRecordDataProvider): TimeRecord? {
         return timeRecordDataProvider.findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee)
@@ -61,8 +68,20 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
     }
 
     fun updateRecordFields(timeRecord: TimeRecord, updateTimeRecordDto: UpdateTimeRecordDto) {
-        updateTimeRecordField(timeRecord, updateTimeRecordDto.startWorkDate, updateTimeRecordDto.startWorkTime, TimeRecord::startWorkTime, "start")
-        updateTimeRecordField(timeRecord, updateTimeRecordDto.endWorkDate, updateTimeRecordDto.endWorkTime, TimeRecord::endWorkTime, "end")
+        updateTimeRecordField(
+            timeRecord,
+            updateTimeRecordDto.startWorkDate,
+            updateTimeRecordDto.startWorkTime,
+            TimeRecord::startWorkTime,
+            "start"
+        )
+        updateTimeRecordField(
+            timeRecord,
+            updateTimeRecordDto.endWorkDate,
+            updateTimeRecordDto.endWorkTime,
+            TimeRecord::endWorkTime,
+            "end"
+        )
     }
 
     private fun updateTimeRecordField(
@@ -116,6 +135,7 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
             String.format("%02d:%02d", hours, minutes)
         }
     }
+
     fun getCurrentUserId(): UUID {
         val authentication = SecurityContextHolder.getContext().authentication
         val token = authentication.credentials.toString()
@@ -138,9 +158,9 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
         return manager
     }
 
-    fun validateSameCompany(employeeCpf: String, manager: Employee) {
-        val employee = employeeDataProvider.findCpf(employeeCpf)
-            ?: throw IllegalArgumentException("Colaborador com CPF: $employeeCpf não encontrado")
+    fun validateSameCompanyById(employeeId: UUID, manager: Employee) {
+        val employee = employeeDataProvider.findById(employeeId)
+
 
         if (employee.company?.id != manager.company?.id) {
             throw IllegalArgumentException("Colaborador não está na empresa do gerente")
@@ -168,5 +188,4 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
             timeWorked = formatTimeWorked(timeRecord.timeWorked)
         )
     }
-
 }

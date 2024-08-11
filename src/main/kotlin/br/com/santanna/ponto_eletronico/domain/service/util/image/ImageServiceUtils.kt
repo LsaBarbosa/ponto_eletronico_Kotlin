@@ -1,13 +1,11 @@
 package br.com.santanna.ponto_eletronico.domain.service.util.image
 
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
-import br.com.santanna.ponto_eletronico.domain.dto.image.manager.ManagerImageRequestDto
 import br.com.santanna.ponto_eletronico.domain.dto.image.search.ImageListDto
+import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.domain.entity.company.Company
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
-import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -65,9 +63,9 @@ class ImageServiceUtils (private val employeeDataProvider: EmployeeDataProvider,
         )
     }
 
-     fun validateSameCompany(managerImageRequestDto: ManagerImageRequestDto): Employee {
+    fun validateSameCompanyById(employeeId: UUID): Employee {
         val company = validateManagerRole()
-        val employee = validateEmployee(managerImageRequestDto.employeeCpf)
+        val employee = employeeDataProvider.findById(employeeId)
 
         if (employee.company?.id != company.id) {
             throw IllegalArgumentException("The specified employee does not belong to the manager's company.")
@@ -75,7 +73,7 @@ class ImageServiceUtils (private val employeeDataProvider: EmployeeDataProvider,
         return employee
     }
 
-     fun validateManagerRole(): Company {
+    fun validateManagerRole(): Company {
         val id = getCurrentUserId()
         val manager = employeeDataProvider.findById(id)
 
@@ -87,11 +85,6 @@ class ImageServiceUtils (private val employeeDataProvider: EmployeeDataProvider,
             ?: throw IllegalArgumentException("Manager does not belong to any company.")
 
         return company
-    }
-
-     fun validateEmployee(cpf: String): Employee {
-        return employeeDataProvider.findCpf(cpf)
-            ?: throw ObjectNotFoundException("Employee not found with CPF: $cpf")
     }
 
      fun getCurrentUserId(): UUID {

@@ -11,6 +11,7 @@ import java.util.*
 @Repository
 interface ImageRepository: JpaRepository<Image, Long> {
     fun findByIdAndEmployeeId(imageId: Long, employeeId: UUID): Image?
+
     @Query("SELECT i FROM Image i WHERE i.employee.id = :employeeId AND i.uploadDate BETWEEN :startDate AND :endDate")
     fun findAllByEmployeeIdAndDateRange(
         @Param("employeeId") employeeId: UUID,

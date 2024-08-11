@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import java.util.*
 
 @Service
 class TimeRecordDataProviderImpl(private val timeRecordRepository: TimeRecordRepository) : TimeRecordDataProvider {
@@ -16,12 +17,13 @@ class TimeRecordDataProviderImpl(private val timeRecordRepository: TimeRecordRep
         return timeRecordRepository.findTopByEmployeeAndEndWorkTimeIsNullOrderByStartWorkTimeDesc(employee)
     }
 
-    override fun findByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDateTime, endDate: LocalDateTime): List<TimeRecord> {
-        return timeRecordRepository.findByEmployeeCpfAndDateRange(cpf, startDate, endDate)
+    override fun findByEmployeeIdAndDateRange(employeeId: UUID, startDate: LocalDateTime, endDate: LocalDateTime): List<TimeRecord> {
+        return timeRecordRepository.findByEmployeeIdAndDateRange(employeeId, startDate, endDate)
     }
 
-    override fun findByEmployeeCpfAndDateRange(cpf: String, startDate: LocalDateTime, endDate: LocalDateTime, pageable: Pageable): Page<TimeRecord> {
-        return timeRecordRepository.findByEmployeeCpfAndDateRange(cpf, startDate, endDate, pageable)
+
+    override fun findByEmployeeIdAndDateRange(employeeId: UUID, startDate: LocalDateTime, endDate: LocalDateTime, pageable: Pageable): Page<TimeRecord> {
+        return timeRecordRepository.findByEmployeeIdAndDateRange(employeeId, startDate, endDate, pageable)
     }
 
     override fun save(timeRecord: TimeRecord): TimeRecord {
