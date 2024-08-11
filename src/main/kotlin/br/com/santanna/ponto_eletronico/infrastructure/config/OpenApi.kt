@@ -6,7 +6,6 @@ import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.info.License
 import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.security.SecurityScheme
-import io.swagger.v3.oas.models.security.SecurityScheme.In
 import io.swagger.v3.oas.models.security.SecurityScheme.Type
 import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.context.annotation.Bean

@@ -1,5 +1,6 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security
+package br.com.santanna.ponto_eletronico.infrastructure.security.jwt
 
+import br.com.santanna.ponto_eletronico.infrastructure.security.CustomUserDetailsService
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import jakarta.servlet.FilterChain

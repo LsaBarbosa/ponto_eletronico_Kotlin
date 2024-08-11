@@ -1,6 +1,9 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security
+package br.com.santanna.ponto_eletronico.infrastructure.security.auth
 
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
+import br.com.santanna.ponto_eletronico.infrastructure.security.CustomUserDetailsService
+import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtResponse
+import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtTokenUtil
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
