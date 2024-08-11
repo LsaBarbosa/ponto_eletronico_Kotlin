@@ -13,11 +13,8 @@ interface ImageService {
     fun getImageByIdForCurrentUser(imageId: Long): ByteArray
     fun deleteImageByIdForCurrentUser(imageId: Long)
     fun updateImageMessageForCurrentUser(imageId: Long, updateImageMessageDto: UpdateImageMessageDto): ImageListDto
-    fun getImagesByEmployeeCpfAsManager(managerImageRequestDto: ManagerImageRequestDto, imageSearchDto: ImageSearchDto): List<ImageListDto>
+    fun getImagesByEmployeeIdAsManager(managerImageRequestDto: ManagerImageRequestDto, imageSearchDto: ImageSearchDto): List<ImageListDto>
     fun getImageByIdAsManager(managerImageRequestDto: ManagerImageRequestDto): ByteArray
     fun deleteImageByIdAsManager(managerImageRequestDto: ManagerImageRequestDto)
     fun updateImageMessageAsManager(managerImageRequestDto: ManagerImageRequestDto): ImageListDto
-
-
-
 }

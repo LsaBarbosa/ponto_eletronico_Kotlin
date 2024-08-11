@@ -27,11 +27,17 @@ private const val DATE_PATTERN = "dd-MM-yyyy"
 private const val TIME_PATTERN = "HH:mm"
 
 @Component
-class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
-                       private val jwtTokenUtil: JwtTokenUtil
+class TimeRecordUtils(
+    private val employeeDataProvider: EmployeeDataProvider,
+    private val jwtTokenUtil: JwtTokenUtil
 ) {
 
-    fun findTimeRecordsByDateRange(employeeId: UUID, startDate: LocalDate, endDate: LocalDate, timeRecordDataProvider: TimeRecordDataProvider): List<TimeRecord> {
+    fun findTimeRecordsByDateRange(
+        employeeId: UUID,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        timeRecordDataProvider: TimeRecordDataProvider
+    ): List<TimeRecord> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = endDate.atTime(23, 59, 59)
         return timeRecordDataProvider.findByEmployeeIdAndDateRange(employeeId, startDateTime, endDateTime)
@@ -62,8 +68,20 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
     }
 
     fun updateRecordFields(timeRecord: TimeRecord, updateTimeRecordDto: UpdateTimeRecordDto) {
-        updateTimeRecordField(timeRecord, updateTimeRecordDto.startWorkDate, updateTimeRecordDto.startWorkTime, TimeRecord::startWorkTime, "start")
-        updateTimeRecordField(timeRecord, updateTimeRecordDto.endWorkDate, updateTimeRecordDto.endWorkTime, TimeRecord::endWorkTime, "end")
+        updateTimeRecordField(
+            timeRecord,
+            updateTimeRecordDto.startWorkDate,
+            updateTimeRecordDto.startWorkTime,
+            TimeRecord::startWorkTime,
+            "start"
+        )
+        updateTimeRecordField(
+            timeRecord,
+            updateTimeRecordDto.endWorkDate,
+            updateTimeRecordDto.endWorkTime,
+            TimeRecord::endWorkTime,
+            "end"
+        )
     }
 
     private fun updateTimeRecordField(
@@ -117,6 +135,7 @@ class TimeRecordUtils (private val employeeDataProvider: EmployeeDataProvider,
             String.format("%02d:%02d", hours, minutes)
         }
     }
+
     fun getCurrentUserId(): UUID {
         val authentication = SecurityContextHolder.getContext().authentication
         val token = authentication.credentials.toString()

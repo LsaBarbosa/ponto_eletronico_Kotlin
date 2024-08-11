@@ -9,13 +9,13 @@ import br.com.santanna.ponto_eletronico.domain.service.ImageService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.util.*
 
 @RestController
 @RequestMapping("/files")
@@ -26,24 +26,25 @@ class ImageController(private val imageService: ImageService) {
     @PostMapping("/upload")
     @Operation(summary = "Upload de imagem")
     fun uploadImage(
-
         @RequestPart("file") file: MultipartFile,
-        @RequestPart("message", required = false) message: String?
+        @RequestParam("message", required = false) message: String?
     ): ResponseEntity<Void> {
-        val uploadImageRequestDto = UploadImageRequestDto(
-            file = file,
-            message = message
-        )
+        val uploadImageRequestDto = UploadImageRequestDto(file = file, message = message)
         imageService.storeImageForCurrentUser(uploadImageRequestDto)
         return ResponseEntity.ok().build()
     }
 
     @GetMapping("/search/all")
     @Operation(summary = "Lista todas as imagens do funcionário logado")
-    fun getImages(@RequestBody imageSearchDto: ImageSearchDto): ResponseEntity<List<ImageListDto>> {
+    fun getImages(
+        @RequestParam("startDate") startDate: String,
+        @RequestParam("endDate") endDate: String
+    ): ResponseEntity<List<ImageListDto>> {
+        val imageSearchDto = ImageSearchDto(startDate = startDate, endDate = endDate)
         val images = imageService.getImagesForCurrentUser(imageSearchDto)
         return ResponseEntity.ok(images)
     }
+
 
     @GetMapping("/download/{imageId}")
     @Operation(summary = "Download de imagem")
@@ -61,11 +62,13 @@ class ImageController(private val imageService: ImageService) {
     @Operation(summary = "Altera a descrição da imagem")
     fun updateImageMessage(
         @PathVariable imageId: Long,
-        @Valid @RequestBody updateImageMessageDto: UpdateImageMessageDto
+        @RequestParam("message") message: String
     ): ResponseEntity<ImageListDto> {
+        val updateImageMessageDto = UpdateImageMessageDto(message = message)
         val imageDto = imageService.updateImageMessageForCurrentUser(imageId, updateImageMessageDto)
         return ResponseEntity.ok(imageDto)
     }
+
 
     @DeleteMapping("/{imageId}")
     @Operation(summary = "Deleta imagem por ID")
@@ -74,22 +77,41 @@ class ImageController(private val imageService: ImageService) {
         return ResponseEntity.noContent().build()
     }
 
-    @GetMapping("search/adm/imagens/{cpf}")
+    @GetMapping("search/adm/imagens")
     @Operation(summary = "Busca todas as imagens do funcionário pelo manager")
-    fun getImagesByEmployeeCpfAsManager(
-        @PathVariable cpf: String,
-        @RequestBody imageSearchDto: ImageSearchDto
+    fun getImagesByEmployeeIdAsManager(
+        @RequestParam employeeId: UUID,
+        @RequestParam startDate: String,
+        @RequestParam endDate: String
     ): ResponseEntity<List<ImageListDto>> {
-        val managerImageRequestDto =
-            ManagerImageRequestDto(employeeCpf = cpf, imageId = null, updateImageMessageDto = null)
-        val images = imageService.getImagesByEmployeeCpfAsManager(managerImageRequestDto, imageSearchDto)
+        val managerImageRequestDto = ManagerImageRequestDto(employeeId = employeeId, imageId = null, updateImageMessageDto = null)
+        val imageSearchDto = ImageSearchDto(startDate = startDate, endDate = endDate)
+        val images = imageService.getImagesByEmployeeIdAsManager(managerImageRequestDto, imageSearchDto)
         return ResponseEntity.ok(images)
     }
 
+
+    @PatchMapping("/adm/update-message/{imageId}")
+    @Operation(summary = "Altera a descrição da imagem pelo manager")
+    fun updateImageMessageAsManager(
+        @PathVariable imageId: Long,
+        @RequestParam employeeId: UUID,
+        @RequestParam message: String
+    ): ResponseEntity<ImageListDto> {
+        val updateImageMessageDto = UpdateImageMessageDto(message = message)
+        val managerImageRequestDto = ManagerImageRequestDto(employeeId = employeeId, imageId = imageId, updateImageMessageDto = updateImageMessageDto)
+        val imageDto = imageService.updateImageMessageAsManager(managerImageRequestDto)
+        return ResponseEntity.ok(imageDto)
+    }
+
+
     @GetMapping("/adm/download/{imageId}")
     @Operation(summary = "Download de imagem pelo manager")
-    fun downloadImageAsManager(@PathVariable imageId: Long, @RequestParam("cpf") cpf: String): ResponseEntity<ByteArrayResource> {
-        val managerImageRequestDto = ManagerImageRequestDto(employeeCpf = cpf, imageId = imageId, updateImageMessageDto = null)
+    fun downloadImageAsManager(
+        @PathVariable imageId: Long,
+        @RequestParam("employeeId") employeeId: UUID
+    ): ResponseEntity<ByteArrayResource> {
+        val managerImageRequestDto = ManagerImageRequestDto(employeeId = employeeId, imageId = imageId, updateImageMessageDto = null)
         val imageData = imageService.getImageByIdAsManager(managerImageRequestDto)
         val resource = ByteArrayResource(imageData)
 
@@ -99,26 +121,14 @@ class ImageController(private val imageService: ImageService) {
             .body(resource)
     }
 
-    @PatchMapping("/adm/delete/{imageId}")
-    @Operation(summary = "Altera a descrição da imagem pelo manager")
-    fun updateImageMessageAsManager(
-        @PathVariable imageId: Long,
-        @Valid @RequestBody updateImageMessageDto: UpdateImageMessageDto,
-        @RequestParam("cpf") cpf: String
-    ): ResponseEntity<ImageListDto> {
-        val managerImageRequestDto =
-            ManagerImageRequestDto(employeeCpf = cpf, imageId = imageId, updateImageMessageDto = updateImageMessageDto)
-        val imageDto = imageService.updateImageMessageAsManager(managerImageRequestDto)
-        return ResponseEntity.ok(imageDto)
-    }
-
-
 
     @DeleteMapping("/adm/delete/{imageId}")
     @Operation(summary = "Deleta imagem por ID pelo manager")
-    fun deleteImageByIdAsManager(@PathVariable imageId: Long, @RequestParam("cpf") cpf: String): ResponseEntity<Void> {
-        val managerImageRequestDto =
-            ManagerImageRequestDto(employeeCpf = cpf, imageId = imageId, updateImageMessageDto = null)
+    fun deleteImageByIdAsManager(
+        @PathVariable imageId: Long,
+        @RequestParam employeeId: UUID
+    ): ResponseEntity<Void> {
+        val managerImageRequestDto = ManagerImageRequestDto(employeeId = employeeId, imageId = imageId, updateImageMessageDto = null)
         imageService.deleteImageByIdAsManager(managerImageRequestDto)
         return ResponseEntity.noContent().build()
     }
