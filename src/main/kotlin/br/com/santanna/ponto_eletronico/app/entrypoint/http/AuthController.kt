@@ -1,8 +1,8 @@
 package br.com.santanna.ponto_eletronico.app.entrypoint.http
 
-import br.com.santanna.ponto_eletronico.infrastructure.security.AuthService
-import br.com.santanna.ponto_eletronico.infrastructure.security.JwtResponse
-import br.com.santanna.ponto_eletronico.infrastructure.security.AuthenticationRequest
+import br.com.santanna.ponto_eletronico.infrastructure.security.auth.AuthService
+import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtResponse
+import br.com.santanna.ponto_eletronico.infrastructure.security.auth.AuthenticationRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity

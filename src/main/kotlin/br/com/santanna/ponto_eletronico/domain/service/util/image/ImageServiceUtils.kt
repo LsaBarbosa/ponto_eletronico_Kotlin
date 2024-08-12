@@ -6,7 +6,7 @@ import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.domain.entity.company.Company
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
-import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
+import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtTokenUtil
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component

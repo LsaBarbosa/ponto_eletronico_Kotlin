@@ -10,7 +10,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.UpdateTimeRecordDt
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
-import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
+import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtTokenUtil
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component

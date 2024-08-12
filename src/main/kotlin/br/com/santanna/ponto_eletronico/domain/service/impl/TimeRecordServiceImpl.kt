@@ -8,7 +8,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
 import br.com.santanna.ponto_eletronico.domain.service.util.timerecord.TimeRecordUtils
-import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
+import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtTokenUtil
 import jakarta.transaction.Transactional
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page

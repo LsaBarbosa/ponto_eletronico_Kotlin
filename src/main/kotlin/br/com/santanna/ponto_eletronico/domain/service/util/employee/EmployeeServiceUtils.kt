@@ -4,7 +4,7 @@ package br.com.santanna.ponto_eletronico.domain.service.util.employee
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
-import br.com.santanna.ponto_eletronico.infrastructure.security.JwtTokenUtil
+import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtTokenUtil
 import org.springframework.mail.javamail.JavaMailSenderImpl
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken

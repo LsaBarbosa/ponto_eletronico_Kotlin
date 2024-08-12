@@ -1,5 +1,7 @@
 package br.com.santanna.ponto_eletronico.infrastructure.security
 
+import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtAuthenticationEntryPoint
+import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtRequestFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager

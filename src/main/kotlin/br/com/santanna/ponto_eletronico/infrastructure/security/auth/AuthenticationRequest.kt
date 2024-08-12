@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.infrastructure.security
+package br.com.santanna.ponto_eletronico.infrastructure.security.auth
 
 data class AuthenticationRequest(val cpf: String,
                                  val password: String)
