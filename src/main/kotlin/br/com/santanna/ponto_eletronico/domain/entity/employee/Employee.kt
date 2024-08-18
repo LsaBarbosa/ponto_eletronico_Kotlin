@@ -1,6 +1,5 @@
 package br.com.santanna.ponto_eletronico.domain.entity.employee
 
-import br.com.santanna.ponto_eletronico.domain.entity.Image
 import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.entity.company.Company
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
@@ -39,9 +38,6 @@ data class Employee(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     var company: Company? = null,
-
-    @OneToMany(mappedBy = "employee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    var images: List<Image> = listOf()
 
 ) : UserDetails {
 

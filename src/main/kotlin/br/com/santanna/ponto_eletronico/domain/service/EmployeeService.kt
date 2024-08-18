@@ -12,6 +12,7 @@ interface EmployeeService {
     fun getEmployeeEntityById(employeeId: UUID): Employee?
     fun resetPassword(resetPasswordDto: ResetPasswordDto)
     fun updatePassword(updatePasswordDto: UpdatePassword)
+    fun updateEmail(updateEmail: UpdateEmail)
     fun getEmployeesAsManager(  pageable: Pageable): Page<EmployeeGetDto>
     fun getEmployeeByIdAsManager(id: UUID): EmployeeGetDto
     fun registerEmployeeAsManager(createEmployeeDto: CreateEmployeeDto): EmployeeDto
