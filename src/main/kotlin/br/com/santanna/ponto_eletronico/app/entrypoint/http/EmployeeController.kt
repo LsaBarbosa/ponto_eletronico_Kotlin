@@ -48,6 +48,16 @@ class EmployeeController(val employeeService: EmployeeService) {
         return ResponseEntity.ok().build()
     }
 
+    @PutMapping("/email/update")
+    @Operation(
+        summary = "Alteração de email",
+        description = "Altera o email.\n Requer role USER para acesso"
+    )
+    fun updateEmailForCurrentEmployee(@Valid @RequestBody updateEmail: UpdateEmail): ResponseEntity<Void> {
+        employeeService.updateEmail(updateEmail)
+        return ResponseEntity.ok().build()
+    }
+
     @GetMapping("/search/adm/all")
     @Operation(
         summary = "Administrador busca todos os funcionários",

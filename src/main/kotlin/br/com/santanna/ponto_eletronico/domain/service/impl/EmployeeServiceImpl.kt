@@ -59,6 +59,17 @@ class EmployeeServiceImpl(
     }
 
     @Transactional
+    override fun updateEmail(updateEmail: UpdateEmail) {
+        val id = employeeServiceUtils.getCurrentUserId()
+        val employee = employeeDataProvider.findById(id)
+
+        updateEmail.apply {
+            newEmail?.let { employee.email = it }
+        }
+        employeeDataProvider.save(employee)
+    }
+
+    @Transactional
     override fun resetPassword(resetPasswordDto: ResetPasswordDto) {
         val employee = employeeDataProvider.findCpf(resetPasswordDto.cpf)
             ?: throw ObjectNotFoundException("$EMPLOYEE_NOT_FOUND ${resetPasswordDto.cpf} $NOT_FOUND")
@@ -77,14 +88,19 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun registerEmployeeAsManager(createEmployeeDto: CreateEmployeeDto): EmployeeDto {
-        val manager = employeeServiceUtils.validateManager(createEmployeeDto.passwordsManager)
+        val manager = employeeServiceUtils.validateManager(createEmployeeDto.passwordsManager
+            ?: throw IllegalArgumentException("Senha do manager não pode ser nula ou vazia"))
 
         val employeeCpf = createEmployeeDto.employeeDto?.cpf.let { employeeDataProvider.findCpf(it) }
         if (employeeCpf != null) {
             throw DataIntegrityViolationException("Colaborador já existe no sistema")
         }
 
-        val encryptedPassword = BCryptPasswordEncoder().encode(createEmployeeDto.employeeDto?.passwords)
+        val rawPassword = createEmployeeDto.employeeDto?.passwords
+            ?: throw IllegalArgumentException("Senha do colaborador não pode ser nula ou vazia")
+
+        val encryptedPassword = BCryptPasswordEncoder().encode(rawPassword)
+
         val employeeEntity = Employee(
             name = createEmployeeDto.employeeDto?.name,
             surname = createEmployeeDto.employeeDto?.surname,
