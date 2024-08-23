@@ -1,10 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.dto.company
 
 import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Size
-import org.hibernate.validator.constraints.br.CNPJ
-import org.hibernate.validator.constraints.br.CPF
 
 data class CreateCompanyDto(
     @field:NotBlank(message = "O nome da empresa é obrigatório")

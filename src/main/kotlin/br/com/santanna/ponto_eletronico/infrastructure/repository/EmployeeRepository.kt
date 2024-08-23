@@ -12,7 +12,7 @@ interface EmployeeRepository: JpaRepository<Employee, UUID> {
 
     fun findByNameAndSurnameIgnoreCase(name: String?, surname: String?): Employee?
     fun findByCpfIgnoreCase(cpf: String?): Employee?
-    fun findByCompanyId(companyId: Long, pageable: Pageable): Page<Employee>
+    fun findByCompanyId(companyId: UUID, pageable: Pageable): Page<Employee>
 
 
 }

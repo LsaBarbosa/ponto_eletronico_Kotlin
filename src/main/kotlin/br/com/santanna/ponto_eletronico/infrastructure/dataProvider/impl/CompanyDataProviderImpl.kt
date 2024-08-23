@@ -17,7 +17,7 @@ class CompanyDataProviderImpl(val companyRepository: CompanyRepository): Company
 
     }
 
-    override fun findByNameCompanyContainsIgnoreCase(nameCompany: String?): Company {
+    override fun findByNameCompanyContainsIgnoreCase(nameCompany: String?): Company? {
      return companyRepository.findByNameCompanyContainsIgnoreCase(nameCompany)
     }
 
@@ -27,7 +27,9 @@ class CompanyDataProviderImpl(val companyRepository: CompanyRepository): Company
 
     override fun deleteByCompanyCNPJ(companyCNPJ: String) {
         val companyToDelete = companyRepository.findByCompanyCNPJ(companyCNPJ)
-        companyRepository.delete(companyToDelete)
+        if (companyToDelete != null) {
+            companyRepository.delete(companyToDelete)
+        }
     }
 
     override fun findAll(pageable: Pageable): Page<Company> {

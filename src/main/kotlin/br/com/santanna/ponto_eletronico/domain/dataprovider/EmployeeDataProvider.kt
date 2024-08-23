@@ -12,5 +12,5 @@ interface EmployeeDataProvider {
     fun findById(id: UUID): Employee
     fun findCpf(cpf: String?): Employee?
     fun deleteById(id: UUID)
-    fun findByCompany(companyId: Long, pageable: Pageable): Page<Employee>
+    fun findByCompany(companyId: UUID, pageable: Pageable): Page<Employee>
 }

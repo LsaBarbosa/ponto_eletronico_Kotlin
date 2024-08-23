@@ -3,6 +3,7 @@ package br.com.santanna.ponto_eletronico.domain.entity.company
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
+import java.util.UUID
 
 @Entity
 @Table(name = "company", uniqueConstraints = [
@@ -11,8 +12,8 @@ import jakarta.persistence.*
 ])
 data class Company (
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    var id: UUID? = null,
 
     @Column(nullable = false)
     var nameCompany: String,
