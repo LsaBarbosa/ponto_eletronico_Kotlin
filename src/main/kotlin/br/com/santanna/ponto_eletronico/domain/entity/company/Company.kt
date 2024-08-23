@@ -13,13 +13,25 @@ data class Company (
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
-    var nameCompany:String? = null,
+
+    @Column(nullable = false)
+    var nameCompany: String,
+
     @Column(nullable = false, unique = true)
-    var companyCNPJ: String? = null,
+    var companyCNPJ: String,
+
     @Embedded
-    var address: Address? = null,
+    var address: Address,
+
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     @JsonIgnoreProperties("timeWorked")
-    var employees: List<Employee?> = ArrayList()
-
-)
+    var employees: List<Employee> = ArrayList()
+){
+    constructor() : this(
+        id = null,
+        nameCompany = "",
+        companyCNPJ = "",
+        address = Address(),
+        employees = ArrayList()
+    )
+}

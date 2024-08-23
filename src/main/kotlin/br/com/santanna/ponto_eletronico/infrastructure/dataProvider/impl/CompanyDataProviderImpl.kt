@@ -1,6 +1,5 @@
 package br.com.santanna.ponto_eletronico.infrastructure.dataProvider.impl
 
-import br.com.santanna.ponto_eletronico.app.handler.model.NotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.domain.entity.company.Company
 import br.com.santanna.ponto_eletronico.infrastructure.repository.CompanyRepository
@@ -13,25 +12,21 @@ private const val CNPJ_NOT_FOUND= "Não foi encontrado o CNPJ:"
 @Service
 class CompanyDataProviderImpl(val companyRepository: CompanyRepository): CompanyDataprovider {
 
-    override fun findByCompanyCNPJ(companyCNPJ: String?): Company {
-        val company = companyRepository.findByCompanyCNPJ(companyCNPJ)
-            ?: throw NotFoundException("$CNPJ_NOT_FOUND: $companyCNPJ")
-        return company
+    override fun findByCompanyCNPJ(companyCNPJ: String?): Company? {
+        return companyRepository.findByCompanyCNPJ(companyCNPJ)
+
     }
 
     override fun findByNameCompanyContainsIgnoreCase(nameCompany: String?): Company {
-        val company = companyRepository.findByNameCompanyContainsIgnoreCase(nameCompany)
-            ?: throw NotFoundException("Não foi encontrado a empresa de nome $nameCompany no sistema")
-        return company
+     return companyRepository.findByNameCompanyContainsIgnoreCase(nameCompany)
     }
 
-    override fun existsByNameCompanyIgnoreCase(nameCompany: String?): Boolean {
+    override fun existsByNameCompanyIgnoreCase(nameCompany: String): Boolean {
         return companyRepository.existsByNameCompanyIgnoreCase(nameCompany)
     }
 
     override fun deleteByCompanyCNPJ(companyCNPJ: String) {
         val companyToDelete = companyRepository.findByCompanyCNPJ(companyCNPJ)
-            ?: throw NotFoundException("$CNPJ_NOT_FOUND $companyCNPJ")
         companyRepository.delete(companyToDelete)
     }
 

@@ -39,7 +39,7 @@ data class Employee(
     @JoinColumn(name = "company_id")
     var company: Company? = null,
 
-) : UserDetails {
+    ) : UserDetails {
 
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return when (this.role) {

@@ -8,5 +8,5 @@ data class AddressDTO(
     var state: String? = null,
     var number: String? = null,
     @field:NotBlank(message = "Campo CEP deve ser preenchido")
-    var postalCode: String? = null,
+    var postalCode: String
 )

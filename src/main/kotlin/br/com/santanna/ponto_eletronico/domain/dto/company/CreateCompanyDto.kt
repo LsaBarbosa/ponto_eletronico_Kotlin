@@ -7,25 +7,29 @@ import org.hibernate.validator.constraints.br.CNPJ
 import org.hibernate.validator.constraints.br.CPF
 
 data class CreateCompanyDto(
-    @field:NotBlank(message = "O nome da empresa não pode estar em branco")
+    @field:NotBlank(message = "O nome da empresa é obrigatório")
     var nameCompany: String,
-    @field:Size(min = 14, max = 14, message = "O CNPJ deve ter exatamente 14 caracteres")
-    @field:CNPJ(message = "CNPJ inválido")
+
+    @field:NotBlank(message = "O CNPJ da empresa é obrigatório")
     var companyCNPJ: String,
-    @field:NotBlank(message = "O nome do gerente não pode estar em branco")
+
+    @field:NotBlank(message = "O nome do gerente é obrigatório")
     var managerName: String,
-    @field:NotBlank(message = "O sobrenome do gerente não pode estar em branco")
+
+    @field:NotBlank(message = "O sobrenome do gerente é obrigatório")
     var managerSurname: String,
-    @field:NotNull(message = "O email do gerente não pode estar em branco")
-    var managerEmail:String,
-    @field:Size(min = 1, max = 100, message = "A posição deve ter entre 1 e 100 caracteres")
+
+    @field:NotBlank(message = "O cargo do gerente é obrigatório")
     var managerPosition: String,
-    @field:Size(min = 11, max = 11, message = "O CPF do gerente deve ter exatamente 11 caracteres")
-    @field:CPF(message = "CPF inválido")
+
+    @field:NotBlank(message = "O CPF do gerente é obrigatório")
     var managerCpf: String,
-    @field:NotBlank(message = "A senha do gerente não pode estar em branco")
-    @field:Size(min = 8, max = 50, message = "A senha do gerente deve ter no mínimo 8 caracteres")
+
+    @field:NotBlank(message = "O e-mail do gerente é obrigatório")
+    var managerEmail: String,
+
+    @field:NotBlank(message = "A senha do gerente é obrigatória")
     var managerPasswords: String,
 
-    var address: AddressDTO? = null,
+    var address: AddressDTO,
 )

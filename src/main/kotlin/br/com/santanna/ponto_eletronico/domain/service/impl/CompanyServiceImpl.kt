@@ -4,10 +4,7 @@ import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
 import br.com.santanna.ponto_eletronico.app.handler.model.NotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
-import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
-import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyWithEmployeeCountDto
-import br.com.santanna.ponto_eletronico.domain.dto.company.CreateCompanyDto
-import br.com.santanna.ponto_eletronico.domain.dto.company.DeleteCompanyRequestDto
+import br.com.santanna.ponto_eletronico.domain.dto.company.*
 import br.com.santanna.ponto_eletronico.domain.dto.todto.CompanyToDto
 import br.com.santanna.ponto_eletronico.domain.entity.company.Address
 import br.com.santanna.ponto_eletronico.domain.entity.company.Company
@@ -34,34 +31,33 @@ class CompanyServiceImpl(
         return companies.map { companyToDto.convertToCompanyWithEmployeeCountDto(it) }
     }
 
-    override fun getCompanyByCNPJ(companyCNPJ: String?): CompanyDTO {
+    override fun getCompanyByCNPJ(companyCNPJ: String): CompanyDTO {
         val company = companyDataProvider.findByCompanyCNPJ(companyCNPJ)
-        return companyToDto.convertToDtoCompany(company)
+            ?: throw NotFoundException("Empresa não encontrada: $companyCNPJ")
+        return companyToDto.convertToDto(company)
     }
 
     override fun getCompaniesByName(nameCompany: String): CompanyDTO {
         val company = companyDataProvider.findByNameCompanyContainsIgnoreCase(nameCompany)
-        return companyToDto.convertToDtoCompany(company)
+            ?: throw NotFoundException("Empresa não encontrada: $nameCompany")
+        return companyToDto.convertToDto(company)
     }
 
     @Transactional
     override fun registerCompany(createCompanyDto: CreateCompanyDto): CompanyDTO {
         val isExistCompany = companyDataProvider.existsByNameCompanyIgnoreCase(createCompanyDto.nameCompany)
         if (isExistCompany) {
-            throw BadRequestException("Empresa já cadastrada")
+            throw BadRequestException("Empresa já cadastrada no sistema")
         }
-        val addressDto = createCompanyDto.address?.postalCode?.let { cepService.getEnderecoByCep(it) }
 
-        if (addressDto == null) {
-            throw IllegalArgumentException("CEP inválido ou não encontrado")
-        }
+        val addressDto = cepService.getEnderecoByCep(createCompanyDto.address.postalCode)
 
         val address = Address(
             postalCode = addressDto.postalCode,
             street = addressDto.street,
             city = addressDto.city,
             state = addressDto.state,
-            number = createCompanyDto.address?.number // Manter o número do DTO original
+            number = createCompanyDto.address.number
         )
 
         val companyEntity = Company(
@@ -83,55 +79,57 @@ class CompanyServiceImpl(
             role = EmployeeRole.MANAGER,
             passwords = encryptedPassword,
             company = savedCompanyEntity,
-
         )
 
         employeeDataProvider.save(managerEntity)
 
         return companyToDto.convertToDto(savedCompanyEntity)
-}
-
-@Transactional
-override fun updateCompany(companyCNPJ: String?, companyDto: CompanyDTO): CompanyDTO {
-    val existingCompany = companyDataProvider.findByCompanyCNPJ(companyCNPJ)
-
-    existingCompany?.nameCompany = companyDto.nameCompany ?: existingCompany?.nameCompany
-    existingCompany?.nameCompany = companyDto.nameCompany ?: existingCompany?.nameCompany
-    val updatedAddress = companyDto.address?.postalCode?.let { postalCode ->
-        val addressDto = cepService.getEnderecoByCep(postalCode)
-
-
-        Address(
-            street = addressDto.street,
-            city = addressDto.city,
-            state = addressDto.state,
-            postalCode = postalCode,
-            number = companyDto.address?.number
-        )
-
-    } ?: existingCompany?.address
-
-    existingCompany?.address = updatedAddress
-
-    val updatedCompanyEntity = existingCompany?.let { companyDataProvider.save(it) }
-    return companyToDto.convertToDto(updatedCompanyEntity)
-}
-
-@Transactional
-override fun deleteCompanyByCNPJ(deleteCompanyRequestDto: DeleteCompanyRequestDto) {
-    companyDataProvider.findByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
-        ?: throw NotFoundException("Company not found with CNPJ: ${deleteCompanyRequestDto.companyCNPJ}")
-
-    val employee = employeeDataProvider.findCpf(deleteCompanyRequestDto.employeeCpf)
-        ?: throw NotFoundException("Employee not found with CPF: ${deleteCompanyRequestDto.employeeCpf}")
-
-    val encryptedPassword = BCryptPasswordEncoder().matches(deleteCompanyRequestDto.passwords, employee.password)
-    if (!encryptedPassword) {
-        throw IllegalArgumentException("Invalid password")
     }
 
-    companyDataProvider.deleteByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
-}
+    @Transactional
+    override fun updateCompany(companyCNPJ: String, companyDto: CompanyDTO): CompanyDTO {
+        val company = companyDataProvider.findByCompanyCNPJ(companyCNPJ)
+            ?: throw NotFoundException("Empresa não encontrada para o CNPJ: $companyCNPJ")
+
+        // Atualiza apenas os campos que foram fornecidos no DTO
+        companyDto.nameCompany?.let { company.nameCompany = it }
+
+        // Atualiza o endereço, se o DTO de endereço for fornecido
+        companyDto.address?.let { dtoAddress ->
+            // Se o postalCode foi fornecido, consulta o endereço atualizado via CepService
+            val updatedAddress = cepService.getEnderecoByCep(dtoAddress.postalCode)
+
+            // Atualiza os campos de endereço que foram fornecidos
+            company.address = company.address.apply {
+                street = dtoAddress.street ?: updatedAddress.street
+                city = dtoAddress.city ?: updatedAddress.city
+                state = dtoAddress.state ?: updatedAddress.state
+                number = dtoAddress.number ?: this.number // Mantém o número atual se não for atualizado
+                postalCode = updatedAddress.postalCode
+            }
+        }
+
+        // Salva a empresa atualizada no banco de dados
+        val updatedCompany = companyDataProvider.save(company)
+
+        // Converte a entidade atualizada para DTO e retorna
+        return companyToDto.convertToDto(updatedCompany)
+    }
+    @Transactional
+    override fun deleteCompanyByCNPJ(deleteCompanyRequestDto: DeleteCompanyRequestDto) {
+        companyDataProvider.findByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
+            ?: throw NotFoundException("Empresa não encontrada: $deleteCompanyRequestDto.companyCNPJ")
+
+        val employee = employeeDataProvider.findCpf(deleteCompanyRequestDto.employeeCpf)
+            ?: throw NotFoundException("Employee not found with CPF: ${deleteCompanyRequestDto.employeeCpf}")
+
+        val encryptedPassword = BCryptPasswordEncoder().matches(deleteCompanyRequestDto.passwords, employee.password)
+        if (!encryptedPassword) {
+            throw IllegalArgumentException("Invalid password")
+        }
+
+        companyDataProvider.deleteByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
+    }
 
 
 }

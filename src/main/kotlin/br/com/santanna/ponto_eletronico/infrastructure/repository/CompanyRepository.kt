@@ -6,10 +6,10 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface CompanyRepository: JpaRepository<Company, Long>{
-     fun findByCompanyCNPJ(companyCNPJ: String?): Company?
+     fun findByCompanyCNPJ(companyCNPJ: String?): Company
 
-     fun findByNameCompanyContainsIgnoreCase(nameCompany: String?): Company?
-     fun existsByNameCompanyIgnoreCase(nameCompany: String?): Boolean
+     fun findByNameCompanyContainsIgnoreCase(nameCompany: String?): Company
+     fun existsByNameCompanyIgnoreCase(nameCompany: String): Boolean
 
 
 }

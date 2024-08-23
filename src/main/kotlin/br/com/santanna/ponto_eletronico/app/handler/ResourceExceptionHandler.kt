@@ -68,7 +68,6 @@ class ResourceExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
     }
 
-    // Captura todas as exceções não tratadas
     @ExceptionHandler(Exception::class)
     fun handleAllExceptions(ex: Exception, request: HttpServletRequest): ResponseEntity<StandardError> {
         val error = StandardError(
