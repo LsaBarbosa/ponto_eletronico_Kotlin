@@ -58,7 +58,7 @@ class CompanyController(private val companyService: CompanyService) {
         return ResponseEntity.created(uri).body(companyCreated)
     }
 
-    @PutMapping
+    @PatchMapping
     @Operation(summary = "Altera dados da empresa", description = "Altera alguns dados da empresa no sistema.\n Requer role ADMIN para acesso")
     fun updateCompany(
         @RequestParam companyCNPJ: String,

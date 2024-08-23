@@ -14,7 +14,7 @@ class EmployeeDataProviderImpl(val employeeRepository: EmployeeRepository) : Emp
 
 
 
-    override fun findByCompany(companyId: Long, pageable: Pageable): Page<Employee> {
+    override fun findByCompany(companyId: UUID, pageable: Pageable): Page<Employee> {
         return employeeRepository.findByCompanyId(companyId, pageable)
     }
 

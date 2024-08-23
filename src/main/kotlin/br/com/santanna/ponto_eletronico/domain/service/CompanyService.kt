@@ -9,9 +9,9 @@ import org.springframework.data.domain.Pageable
 
 interface CompanyService {
     fun getAllCompanies(pageable: Pageable): Page<CompanyWithEmployeeCountDto>
-    fun getCompanyByCNPJ(companyCNPJ: String?): CompanyDTO
+    fun getCompanyByCNPJ(companyCNPJ: String): CompanyDTO
     fun getCompaniesByName(nameCompany: String): CompanyDTO
     fun registerCompany(createCompanyDto: CreateCompanyDto): CompanyDTO
-    fun updateCompany(companyCNPJ: String?, companyDto: CompanyDTO): CompanyDTO
+    fun updateCompany(companyCNPJ: String, companyDto: CompanyDTO): CompanyDTO
     fun deleteCompanyByCNPJ(deleteCompanyRequestDto: DeleteCompanyRequestDto)
 }

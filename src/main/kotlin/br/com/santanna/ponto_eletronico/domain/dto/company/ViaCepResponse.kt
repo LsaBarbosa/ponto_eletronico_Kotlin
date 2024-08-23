@@ -1,15 +1,16 @@
 package br.com.santanna.ponto_eletronico.domain.dto.company
 
-data class ViaCepResponse (
+data class ViaCepResponse(
     val logradouro: String?,
     val localidade: String?,
     val uf: String?,
-    val cep: String?
+    val cep: String
 ) {
     fun toAddressDTO() = AddressDTO(
-        street = this.logradouro,
-        city = this.localidade,
-        state = this.uf,
+        street = this.logradouro ?: "",
+        city = this.localidade ?: "",
+        state = this.uf ?: "",
+        number = "",
         postalCode = this.cep
     )
 }
