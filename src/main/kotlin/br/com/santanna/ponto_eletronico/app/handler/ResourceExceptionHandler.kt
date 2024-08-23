@@ -1,9 +1,6 @@
 package br.com.santanna.ponto_eletronico.app.handler
 
-import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
-import br.com.santanna.ponto_eletronico.app.handler.model.StandardError
-import br.com.santanna.ponto_eletronico.app.handler.model.ValidationError
+import br.com.santanna.ponto_eletronico.app.handler.model.*
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -16,61 +13,70 @@ import java.time.LocalDateTime
 
 @ControllerAdvice
 class ResourceExceptionHandler {
-
-    @ExceptionHandler(Exception::class)
-    fun handleAllExceptions(ex: Exception, request: HttpServletRequest): ResponseEntity<StandardError> {
-        val status = HttpStatus.INTERNAL_SERVER_ERROR
-        val error = ex.message
-        val timestamp = LocalDateTime.now()
-        val path = request.requestURI
-
-        val errorResponse = StandardError(timestamp, status.value(), error, path)
-
-        return ResponseEntity.status(status).body(errorResponse)
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException::class)
-    fun handleDataIntegrityViolationException(ex: DataIntegrityViolationException, request: HttpServletRequest): ResponseEntity<StandardError> {
-        val status = HttpStatus.BAD_REQUEST
-        val error = ex.message
-        val timestamp = LocalDateTime.now()
-        val path = request.requestURI
-
-        val errorResponse = StandardError(timestamp, status.value(), error, path)
-
-        return ResponseEntity.status(status).body(errorResponse)
-    }
-
-    @ExceptionHandler(ObjectNotFoundException::class)
-    fun handleObjectNotFoundException(ex: ObjectNotFoundException, request: HttpServletRequest): ResponseEntity<StandardError> {
-        val status = HttpStatus.NOT_FOUND
-        val error = ex.message
-        val timestamp = LocalDateTime.now()
-        val path = request.requestURI
-
-        val errorResponse = StandardError(timestamp, status.value(), error, path)
-
-        return ResponseEntity.status(status).body(errorResponse)
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException::class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleValidationExceptions(ex: MethodArgumentNotValidException, request: HttpServletRequest): ResponseEntity<ValidationError> {
-        val errors: MutableMap<String, String?> = HashMap()
-        ex.bindingResult.allErrors.forEach { error ->
-            val fieldName = (error as FieldError).field
-            val errorMessage = error.getDefaultMessage()
-            errors[fieldName] = errorMessage
-        }
-
-        val errorResponse = ValidationError(
+    @ExceptionHandler(BadRequestException::class)
+    fun handleBadRequestException(ex: BadRequestException, request: HttpServletRequest): ResponseEntity<StandardError> {
+        val error = StandardError(
             timestamp = LocalDateTime.now(),
             status = HttpStatus.BAD_REQUEST.value(),
-            error = ex.message,
-            path = request.requestURI,
-            validationErrors = errors
+            error = ex.message ?: "Requisição inválida",
+            path = request.requestURI
         )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
+    }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
+    @ExceptionHandler(NotFoundException::class)
+    fun handleNotFoundException(ex: NotFoundException, request: HttpServletRequest): ResponseEntity<StandardError> {
+        val error = StandardError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.NOT_FOUND.value(),
+            error = ex.message ?: "Recurso não encontrado",
+            path = request.requestURI
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error)
+    }
+
+    @ExceptionHandler(UnauthorizedException::class)
+    fun handleUnauthorizedException(ex: UnauthorizedException, request: HttpServletRequest): ResponseEntity<StandardError> {
+        val error = StandardError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.UNAUTHORIZED.value(),
+            error = ex.message ?: "Não autorizado",
+            path = request.requestURI
+        )
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error)
+    }
+
+    @ExceptionHandler(ForbiddenException::class)
+    fun handleForbiddenException(ex: ForbiddenException, request: HttpServletRequest): ResponseEntity<StandardError> {
+        val error = StandardError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.FORBIDDEN.value(),
+            error = ex.message ?: "Acesso proibido",
+            path = request.requestURI
+        )
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error)
+    }
+
+    @ExceptionHandler(InternalServerErrorException::class)
+    fun handleInternalServerErrorException(ex: InternalServerErrorException, request: HttpServletRequest): ResponseEntity<StandardError> {
+        val error = StandardError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            error = ex.message ?: "Erro interno no servidor",
+            path = request.requestURI
+        )
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
+    }
+
+    // Captura todas as exceções não tratadas
+    @ExceptionHandler(Exception::class)
+    fun handleAllExceptions(ex: Exception, request: HttpServletRequest): ResponseEntity<StandardError> {
+        val error = StandardError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            error = ex.message ?: "Erro inesperado",
+            path = request.requestURI
+        )
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
     }
 }

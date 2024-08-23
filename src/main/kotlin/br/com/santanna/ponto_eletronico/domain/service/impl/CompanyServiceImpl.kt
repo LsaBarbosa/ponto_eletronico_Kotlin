@@ -1,7 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
-import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
+import br.com.santanna.ponto_eletronico.app.handler.model.NotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.CompanyDataprovider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.company.CompanyDTO
@@ -48,7 +48,7 @@ class CompanyServiceImpl(
     override fun registerCompany(createCompanyDto: CreateCompanyDto): CompanyDTO {
         val isExistCompany = companyDataProvider.existsByNameCompanyIgnoreCase(createCompanyDto.nameCompany)
         if (isExistCompany) {
-            throw DataIntegrityViolationException("Empresa já cadastrada")
+            throw BadRequestException("Empresa já cadastrada")
         }
         val addressDto = createCompanyDto.address?.postalCode?.let { cepService.getEnderecoByCep(it) }
 
@@ -120,10 +120,10 @@ override fun updateCompany(companyCNPJ: String?, companyDto: CompanyDTO): Compan
 @Transactional
 override fun deleteCompanyByCNPJ(deleteCompanyRequestDto: DeleteCompanyRequestDto) {
     companyDataProvider.findByCompanyCNPJ(deleteCompanyRequestDto.companyCNPJ)
-        ?: throw ObjectNotFoundException("Company not found with CNPJ: ${deleteCompanyRequestDto.companyCNPJ}")
+        ?: throw NotFoundException("Company not found with CNPJ: ${deleteCompanyRequestDto.companyCNPJ}")
 
     val employee = employeeDataProvider.findCpf(deleteCompanyRequestDto.employeeCpf)
-        ?: throw ObjectNotFoundException("Employee not found with CPF: ${deleteCompanyRequestDto.employeeCpf}")
+        ?: throw NotFoundException("Employee not found with CPF: ${deleteCompanyRequestDto.employeeCpf}")
 
     val encryptedPassword = BCryptPasswordEncoder().matches(deleteCompanyRequestDto.passwords, employee.password)
     if (!encryptedPassword) {

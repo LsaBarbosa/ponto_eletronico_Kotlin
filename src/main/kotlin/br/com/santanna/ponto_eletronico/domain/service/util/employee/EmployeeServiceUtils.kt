@@ -1,6 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.service.util.employee
 
 
+import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
@@ -30,12 +31,12 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
         val manager = employeeDataProvider.findById(id)
 
         if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("Colaborador sem permissão para o recurso")
+            throw BadRequestException("Colaborador sem permissão para o recurso")
         }
 
         val isPasswordValid = BCryptPasswordEncoder().matches(password, manager.password)
         if (!isPasswordValid) {
-            throw IllegalArgumentException("Senha Inválida")
+            throw BadRequestException("Senha Inválida")
         }
 
         return manager
@@ -44,7 +45,7 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
     fun validateSameCompany(employeeId: UUID, manager: Employee) {
         val employee = employeeDataProvider.findById(employeeId)
         if (employee.company?.id != manager.company?.id) {
-            throw IllegalArgumentException("Colaborador não está na mesma empresa que o gestor.")
+            throw BadRequestException("Colaborador não está na mesma empresa que o gestor.")
         }
     }
 
@@ -60,13 +61,14 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
     }
 
     fun sendEmail(to: String, newPassword: String) {
-        val message = mailSender.createMimeMessage()
-        val helper = MimeMessageHelper(message, true)
+        try {
+            val message = mailSender.createMimeMessage()
+            val helper = MimeMessageHelper(message, true)
 
-        helper.setTo(to)
-        helper.setSubject("Redefinição de Senha usuário Kronos")
-        helper.setText("Olá,espero que tudo esteja bem!\n\n\n Aqui está sua senha provisória $newPassword \n\n\n\n Você no controle do seu TEMPO")
-        val htmlContent = """
+            helper.setTo(to)
+            helper.setSubject("Redefinição de Senha usuário Kronos")
+            helper.setText("Olá,espero que tudo esteja bem!\n\n\n Aqui está sua senha provisória $newPassword \n\n\n\n Você no controle do seu TEMPO")
+            val htmlContent = """
             <html>
             <body>
                 <h1>Redefinição de Senha</h1>
@@ -80,7 +82,10 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
             </html>
         """.trimIndent()
 
-        helper.setText(htmlContent, true)
-        mailSender.send(message)
+            helper.setText(htmlContent, true)
+            mailSender.send(message)
+        } catch (e: Exception) {
+            throw BadRequestException("Falha ao enviar o e-mail de redefinição de senha: ${e.message}")
+        }
     }
 }
