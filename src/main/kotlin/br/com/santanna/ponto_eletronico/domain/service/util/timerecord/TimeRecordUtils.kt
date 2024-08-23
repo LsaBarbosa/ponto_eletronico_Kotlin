@@ -1,6 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.service.util.timerecord
 
-import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
+import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.DetailedTimeRecordDto
@@ -105,19 +105,19 @@ class TimeRecordUtils(
 
     private fun validateDateChange(currentDateTime: LocalDateTime?, newDateTime: LocalDateTime, dateType: String) {
         if (currentDateTime == null) {
-            throw DataIntegrityViolationException("$dateType Data nao pode ser vazia ")
+            throw BadRequestException("$dateType Data nao pode ser vazia ")
         }
 
         if (currentDateTime.year != newDateTime.year) {
-            throw DataIntegrityViolationException("Ano nao pode ser alterado, deve permanecer o ano vigente")
+            throw BadRequestException("Ano nao pode ser alterado, deve permanecer o ano vigente")
         }
 
         if (currentDateTime.month != newDateTime.month) {
-            throw DataIntegrityViolationException("O mês deve ser o mesmo do registro que será alterado")
+            throw BadRequestException("O mês deve ser o mesmo do registro que será alterado")
         }
 
         if (newDateTime.dayOfMonth > currentDateTime.dayOfMonth) {
-            throw DataIntegrityViolationException("O dia deve ser igual ou anterior ao do registro atual")
+            throw BadRequestException("O dia deve ser igual ou anterior ao do registro atual")
         }
     }
 

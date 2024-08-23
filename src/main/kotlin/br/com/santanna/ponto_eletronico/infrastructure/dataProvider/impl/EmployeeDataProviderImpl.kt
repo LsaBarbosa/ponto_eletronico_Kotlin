@@ -1,6 +1,6 @@
 package br.com.santanna.ponto_eletronico.infrastructure.dataProvider.impl
 
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import br.com.santanna.ponto_eletronico.app.handler.model.NotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.infrastructure.repository.EmployeeRepository
@@ -24,13 +24,14 @@ class EmployeeDataProviderImpl(val employeeRepository: EmployeeRepository) : Emp
 
     override fun findById(id: UUID): Employee {
         val employee = employeeRepository.findById(id)
-            .orElseThrow { ObjectNotFoundException("Colaborador não encontrado") }
+            .orElseThrow { NotFoundException("Colaborador não encontrado") }
         return employee
     }
 
     override fun findCpf(cpf: String?): Employee? {
         return employeeRepository.findByCpfIgnoreCase(cpf)
     }
+
     override fun deleteById(id: UUID) {
         val employeeToDelete = findById(id)
 

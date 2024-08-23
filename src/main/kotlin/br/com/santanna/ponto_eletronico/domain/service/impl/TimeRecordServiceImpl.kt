@@ -1,7 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
-import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
+import br.com.santanna.ponto_eletronico.app.handler.model.NotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
@@ -46,7 +46,7 @@ data class TimeRecordServiceImpl(
         val employee = employeeDataProvider.findById(id)
 
         timeRecordUtils.findLastTimeRecord(employee, timeRecordDataProvider)?.let {
-            throw DataIntegrityViolationException(CHECKIN_EXCEPTION)
+            throw BadRequestException(CHECKIN_EXCEPTION)
         }
 
         val newRegister = TimeRecord().apply {
@@ -80,7 +80,7 @@ data class TimeRecordServiceImpl(
         timeRecordUtils.validateSameCompanyById(updateTimeRecordRequestDto.employeeIdTarget, manager)
 
         val timeRecord = timeRecordDataProvider.findById(updateTimeRecordRequestDto.timeRecordId)
-            ?: throw ObjectNotFoundException("$TIME_RECORD_NOT_FOUND ${updateTimeRecordRequestDto.timeRecordId}")
+            ?: throw NotFoundException("$TIME_RECORD_NOT_FOUND ${updateTimeRecordRequestDto.timeRecordId}")
 
         updateTimeRecordRequestDto.updateTimeRecordDto.let {
             timeRecordUtils.updateRecordFields(timeRecord, it)
@@ -206,10 +206,10 @@ data class TimeRecordServiceImpl(
         timeRecordUtils.validateSameCompanyById(deleteTimeRecordRequestDto.employeeIdTarget, manager)
 
         val timeRecord = timeRecordDataProvider.findById(deleteTimeRecordRequestDto.timeRecordId)
-            ?: throw ObjectNotFoundException("$TIME_RECORD_NOT_FOUND ${deleteTimeRecordRequestDto.timeRecordId}")
+            ?: throw NotFoundException("$TIME_RECORD_NOT_FOUND ${deleteTimeRecordRequestDto.timeRecordId}")
 
         if (timeRecord.employee?.id != deleteTimeRecordRequestDto.employeeIdTarget) {
-            throw DataIntegrityViolationException("Registro não pertence ao funcionário com ID: ${deleteTimeRecordRequestDto.employeeIdTarget} informado")
+            throw BadRequestException("Registro não pertence ao funcionário com ID: ${deleteTimeRecordRequestDto.employeeIdTarget} informado")
         }
 
         timeRecordDataProvider.delete(timeRecord)

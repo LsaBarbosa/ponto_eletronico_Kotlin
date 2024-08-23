@@ -105,7 +105,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     }
 
 
-    @DeleteMapping("/adm/delete")
+    @PostMapping("/adm/delete")
     @Operation(summary = "Administrador apaga funcionário")
     fun deleteEmployee(@RequestBody deleteEmployeeRequestDto: DeleteEmployeeRequestDto): ResponseEntity<Void> {
         employeeService.deleteEmployeeAsManager(deleteEmployeeRequestDto)

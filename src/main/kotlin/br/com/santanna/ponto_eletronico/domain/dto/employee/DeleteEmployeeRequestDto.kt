@@ -5,5 +5,5 @@ import java.util.*
 
 data class DeleteEmployeeRequestDto(
     val employeeId: UUID,
-    val passwords: String
+
 )

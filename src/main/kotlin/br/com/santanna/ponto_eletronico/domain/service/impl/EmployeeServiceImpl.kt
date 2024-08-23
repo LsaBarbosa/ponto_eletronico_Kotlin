@@ -1,7 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.service.impl
 
-import br.com.santanna.ponto_eletronico.app.handler.model.DataIntegrityViolationException
-import br.com.santanna.ponto_eletronico.app.handler.model.ObjectNotFoundException
+import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
+import br.com.santanna.ponto_eletronico.app.handler.model.NotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.dto.todto.EmployeeToDto
@@ -16,7 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.*
 
-private const val EMPLOYEE_NOT_FOUND = "Colaborador com CPF:"
+private const val EMPLOYEE_NOT_FOUND = "Colaborador não encontrado:"
 private const val IS_NOT_MANAGER = "Colaborador não possui permissão para esse recurso."
 private const val NOT_FOUND = "não encontrado"
 private const val MANAGER_WITHOUT_COMPANY = "Gerente não cadastrado em nenhuma empresa."
@@ -45,11 +45,11 @@ class EmployeeServiceImpl(
 
         val isOldPasswordValid = BCryptPasswordEncoder().matches(updatePasswordDto.oldPassword, employee.password)
         if (!isOldPasswordValid) {
-            throw IllegalArgumentException("Senha antiga inválida")
+            throw BadRequestException("Senha antiga inválida")
         }
 
         if (updatePasswordDto.newPassword != updatePasswordDto.confirmPassword) {
-            throw IllegalArgumentException("Nova senha e confirmação de senha não correspondem")
+            throw BadRequestException("Nova senha e confirmação de senha não correspondem")
         }
 
         val newEncryptedPassword = BCryptPasswordEncoder().encode(updatePasswordDto.newPassword)
@@ -72,10 +72,10 @@ class EmployeeServiceImpl(
     @Transactional
     override fun resetPassword(resetPasswordDto: ResetPasswordDto) {
         val employee = employeeDataProvider.findCpf(resetPasswordDto.cpf)
-            ?: throw ObjectNotFoundException("$EMPLOYEE_NOT_FOUND ${resetPasswordDto.cpf} $NOT_FOUND")
+            ?: throw NotFoundException("$EMPLOYEE_NOT_FOUND ${resetPasswordDto.cpf} $NOT_FOUND")
 
         if (employee.email != resetPasswordDto.email) {
-            throw IllegalArgumentException("Email inválido")
+            throw BadRequestException("Email inválido")
         }
 
         val newPassword = employeeServiceUtils.generateRandomPassword()
@@ -88,16 +88,15 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun registerEmployeeAsManager(createEmployeeDto: CreateEmployeeDto): EmployeeDto {
-        val manager = employeeServiceUtils.validateManager(createEmployeeDto.passwordsManager
-            ?: throw IllegalArgumentException("Senha do manager não pode ser nula ou vazia"))
+        val manager = employeeServiceUtils.validateManager(createEmployeeDto.passwordsManager)
 
         val employeeCpf = createEmployeeDto.employeeDto?.cpf.let { employeeDataProvider.findCpf(it) }
         if (employeeCpf != null) {
-            throw DataIntegrityViolationException("Colaborador já existe no sistema")
+            throw BadRequestException("Colaborador já existe no sistema")
         }
 
         val rawPassword = createEmployeeDto.employeeDto?.passwords
-            ?: throw IllegalArgumentException("Senha do colaborador não pode ser nula ou vazia")
+            ?: throw BadRequestException("Senha do colaborador não pode ser nula ou vazia")
 
         val encryptedPassword = BCryptPasswordEncoder().encode(rawPassword)
 
@@ -141,7 +140,12 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun deleteEmployeeAsManager(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
-        val manager = employeeServiceUtils.validateManager(deleteEmployeeRequestDto.passwords)
+        val id = employeeServiceUtils.getCurrentUserId()
+        val manager = employeeDataProvider.findById(id)
+
+        if (manager.role != EmployeeRole.MANAGER) {
+            throw BadRequestException("Colaborador sem permissão para o recurso")
+        }
         employeeServiceUtils.validateSameCompany(deleteEmployeeRequestDto.employeeId, manager)
 
         employeeDataProvider.findById(deleteEmployeeRequestDto.employeeId)
@@ -149,30 +153,33 @@ class EmployeeServiceImpl(
     }
 
     override fun getEmployeesAsManager(pageable: Pageable): Page<EmployeeGetDto> {
-        val id = employeeServiceUtils.getCurrentUserId()
-        val manager = employeeDataProvider.findById(id)
 
 
-        if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException(IS_NOT_MANAGER)
+            val id = employeeServiceUtils.getCurrentUserId()
+            val manager = employeeDataProvider.findById(id)
+
+
+            if (manager.role != EmployeeRole.MANAGER) {
+                throw IllegalArgumentException(IS_NOT_MANAGER)
+            }
+
+            val company = manager.company
+                ?: throw BadRequestException(MANAGER_WITHOUT_COMPANY)
+
+            val employees = employeeDataProvider.findByCompany(company.id!!, pageable)
+            return employees.map { employeeToDto.convertToGetEmployeeDto(it) }
         }
 
-        val company = manager.company
-            ?: throw IllegalArgumentException(MANAGER_WITHOUT_COMPANY)
-
-        val employees = employeeDataProvider.findByCompany(company.id!!, pageable)
-        return employees.map { employeeToDto.convertToGetEmployeeDto(it) }
-    }
 
     @Transactional
     override fun getEmployeeByIdAsManager(id: UUID): EmployeeGetDto {
         val managerId = employeeServiceUtils.getCurrentUserId()
         val manager = employeeDataProvider.findById(managerId)
 
-        employeeServiceUtils.validateSameCompany(id,manager)
+        employeeServiceUtils.validateSameCompany(id, manager)
 
         if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("Colaborador não tem permissão.")
+            throw BadRequestException("Colaborador não tem permissão.")
         }
 
         val employee = employeeDataProvider.findById(id)
