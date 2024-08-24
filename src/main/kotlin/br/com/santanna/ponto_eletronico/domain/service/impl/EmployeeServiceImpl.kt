@@ -2,12 +2,10 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
 import br.com.santanna.ponto_eletronico.app.handler.model.NotFoundException
-import br.com.santanna.ponto_eletronico.app.handler.model.UnauthorizedException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.dto.todto.EmployeeToDto
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
-import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
 import br.com.santanna.ponto_eletronico.domain.service.EmployeeService
 import br.com.santanna.ponto_eletronico.domain.service.util.employee.EmployeeServiceUtils
 import jakarta.transaction.Transactional
@@ -65,7 +63,7 @@ class EmployeeServiceImpl(
         val employee = employeeDataProvider.findById(id)
 
         updateEmail.apply {
-            newEmail?.let { employee.email = it }
+            newEmail.let { employee.email = it }
         }
         employeeDataProvider.save(employee)
     }
@@ -102,13 +100,13 @@ class EmployeeServiceImpl(
         val encryptedPassword = BCryptPasswordEncoder().encode(rawPassword)
 
         val employeeEntity = Employee(
-            name = createEmployeeDto.employeeDto?.name,
-            surname = createEmployeeDto.employeeDto?.surname,
-            salary = createEmployeeDto.employeeDto?.salary,
-            position = createEmployeeDto.employeeDto?.position,
-            cpf = createEmployeeDto.employeeDto?.cpf,
-            email = createEmployeeDto.employeeDto?.email,
-            role = createEmployeeDto.employeeDto?.role,
+            name = createEmployeeDto.employeeDto.name,
+            surname = createEmployeeDto.employeeDto.surname,
+            salary = createEmployeeDto.employeeDto.salary,
+            position = createEmployeeDto.employeeDto.position,
+            cpf = createEmployeeDto.employeeDto.cpf,
+            email = createEmployeeDto.employeeDto.email,
+            role = createEmployeeDto.employeeDto.role,
             passwords = encryptedPassword,
             company = manager.company
         )
