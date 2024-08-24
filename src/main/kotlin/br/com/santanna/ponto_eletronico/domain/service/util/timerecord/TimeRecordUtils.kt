@@ -1,6 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.service.util.timerecord
 
 import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
+import br.com.santanna.ponto_eletronico.app.handler.model.UnauthorizedException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.DetailedTimeRecordDto
@@ -147,12 +148,12 @@ class TimeRecordUtils(
         val manager = employeeDataProvider.findById(id)
 
         if (manager.role != EmployeeRole.MANAGER) {
-            throw IllegalArgumentException("Colaborador sem permissão para o recurso")
+            throw UnauthorizedException("Colaborador sem permissão para o recurso")
         }
 
         val isPasswordValid = BCryptPasswordEncoder().matches(password, manager.password)
         if (!isPasswordValid) {
-            throw IllegalArgumentException("Senha Inválida")
+            throw UnauthorizedException("Senha Inválida")
         }
 
         return manager
@@ -163,7 +164,7 @@ class TimeRecordUtils(
 
 
         if (employee.company?.id != manager.company?.id) {
-            throw IllegalArgumentException("Colaborador não está na empresa do gerente")
+            throw UnauthorizedException("Colaborador não está na empresa do gerente")
         }
     }
 
