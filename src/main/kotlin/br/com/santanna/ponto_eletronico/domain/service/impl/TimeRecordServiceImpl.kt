@@ -77,6 +77,7 @@ data class TimeRecordServiceImpl(
     @Transactional
     override fun updateTimeRecordAsManager(updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): UpdateTimeRecordDto {
         val manager = timeRecordUtils.validateManager(updateTimeRecordRequestDto.passwords)
+
         timeRecordUtils.validateSameCompanyById(updateTimeRecordRequestDto.employeeIdTarget, manager)
 
         val timeRecord = timeRecordDataProvider.findById(updateTimeRecordRequestDto.timeRecordId)
@@ -92,6 +93,7 @@ data class TimeRecordServiceImpl(
 
     override fun balanceHoursByDateAsManager(searchRequestDto: SearchByDateTimeRecordRequestDto): BalanceHoursDto {
         val manager = timeRecordUtils.validateManager(searchRequestDto.passwords)
+
         timeRecordUtils.validateSameCompanyById(searchRequestDto.employeeIdTarget, manager)
 
         val startDate = searchRequestDto.searchByDateTimeRecordDto.startDate?.let { LocalDate.parse(it, dateFormatter) }

@@ -2,6 +2,7 @@ package br.com.santanna.ponto_eletronico.domain.service.util.employee
 
 
 import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
+import br.com.santanna.ponto_eletronico.app.handler.model.UnauthorizedException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component
 import java.security.SecureRandom
 import java.util.*
 
+private const val EMPLOYEE_UNAUTHORIZED = "Colaborador sem permissão para o recurso"
 @Component
 class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvider, private val jwtTokenUtil: JwtTokenUtil,
                             private val mailSender: JavaMailSenderImpl,) {
@@ -27,16 +29,21 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
 
 
     fun validateManager(password: String): Employee {
-        val id = getCurrentUserId()
-        val manager = employeeDataProvider.findById(id)
-
-        if (manager.role != EmployeeRole.MANAGER) {
-            throw BadRequestException("Colaborador sem permissão para o recurso")
-        }
+        val manager = validateManagerWithoutPassword()
 
         val isPasswordValid = BCryptPasswordEncoder().matches(password, manager.password)
         if (!isPasswordValid) {
-            throw BadRequestException("Senha Inválida")
+            throw UnauthorizedException("Senha Inválida")
+        }
+
+        return manager
+    }
+  fun validateManagerWithoutPassword(): Employee {
+        val id = getCurrentUserId()
+        val manager = employeeDataProvider.findById(id)
+
+        if (manager.role != EmployeeRole.ADMIN && manager.role != EmployeeRole.MANAGER) {
+            throw UnauthorizedException(EMPLOYEE_UNAUTHORIZED)
         }
 
         return manager

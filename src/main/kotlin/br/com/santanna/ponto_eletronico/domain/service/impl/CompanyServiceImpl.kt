@@ -76,7 +76,7 @@ class CompanyServiceImpl(
             position = createCompanyDto.managerPosition,
             cpf = createCompanyDto.managerCpf,
             email = createCompanyDto.managerEmail,
-            role = EmployeeRole.MANAGER,
+            role = EmployeeRole.ADMIN,
             passwords = encryptedPassword,
             company = savedCompanyEntity,
         )

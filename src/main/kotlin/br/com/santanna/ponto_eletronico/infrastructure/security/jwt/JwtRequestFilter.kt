@@ -31,12 +31,12 @@ class JwtRequestFilter (
                 val claims = Jwts.parser().setSigningKey(jwtTokenUtil.secretKey).parseClaimsJws(jwtToken).body
                 username = claims.subject
             } catch (e: IllegalArgumentException) {
-                logger.warn("Unable to get JWT Token")
+                logger.warn("Não foi possivel capturar o Token")
             } catch (e: ExpiredJwtException) {
-                logger.warn("JWT Token has expired")
+                logger.warn("JWT Token expirado")
             }
         } else {
-            logger.warn("JWT Token does not begin with Bearer String")
+            logger.warn("JWT Token não possui Bearer no início")
         }
 
         if (username != null && SecurityContextHolder.getContext().authentication == null) {

@@ -12,6 +12,7 @@ import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 
@@ -22,6 +23,7 @@ import java.net.URI
 class CompanyController(private val companyService: CompanyService) {
 
     @GetMapping("/search/all")
+    @PreAuthorize("hasRole('CTO')")
     @Operation(
         summary = "Lista todas as empresas",
         description = "Lista todas as empresas cadastradas, infromando a quantidade de funcionarios no sistema.\n Requer role ADMIN para acesso"
@@ -32,6 +34,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @GetMapping("/search/cnpj")
+    @PreAuthorize("hasRole('CTO')")
     @Operation(
         summary = "Retorna uma empresa pelo atributo cnpj",
         description = "Retorna dados detalhados da empresa.\n Requer role ADMIN para acesso"
@@ -42,6 +45,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @GetMapping("/search/name")
+    @PreAuthorize("hasRole('CTO')")
     @Operation(summary = "Retorna uma empresa pelo atributo nome")
     fun getCompanybyName(@RequestParam nameCompany: String): ResponseEntity<CompanyDTO> {
         val company = companyService.getCompaniesByName(nameCompany)
@@ -50,6 +54,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('CTO')")
     @Operation(summary = "Registra a empresa no sistema",
         description = "Cadastra uma empresa no sistema passando os dados do administrador da empresa.\n Requer role ADMIN para acesso")
     fun registerCompany(@Valid @RequestBody createCompanyDto: CreateCompanyDto): ResponseEntity<CompanyDTO> {
@@ -59,6 +64,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @PatchMapping
+    @PreAuthorize("hasRole('CTO')")
     @Operation(summary = "Altera dados da empresa", description = "Altera alguns dados da empresa no sistema.\n Requer role ADMIN para acesso")
     fun updateCompany(
         @RequestParam companyCNPJ: String,
@@ -69,6 +75,7 @@ class CompanyController(private val companyService: CompanyService) {
     }
 
     @DeleteMapping
+    @PreAuthorize("hasRole('CTO')")
     @Operation(summary = "Exclui a empresa do sistema pelo cnpj")
     fun deleteCompany(@RequestBody deleteCompanyRequestDto: DeleteCompanyRequestDto): ResponseEntity<Void> {
         companyService.deleteCompanyByCNPJ(deleteCompanyRequestDto)
