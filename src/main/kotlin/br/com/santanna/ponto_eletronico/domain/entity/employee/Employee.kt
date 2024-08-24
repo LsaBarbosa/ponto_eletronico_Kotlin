@@ -43,6 +43,12 @@ data class Employee(
 
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return when (this.role) {
+            EmployeeRole.CTO -> listOf(
+                SimpleGrantedAuthority("ROLE_CTO"),
+                SimpleGrantedAuthority("ROLE_ADMIN"),
+                SimpleGrantedAuthority("ROLE_MANAGER"),
+                SimpleGrantedAuthority("ROLE_USER")
+            )
             EmployeeRole.ADMIN -> listOf(
                 SimpleGrantedAuthority("ROLE_ADMIN"),
                 SimpleGrantedAuthority("ROLE_MANAGER"),

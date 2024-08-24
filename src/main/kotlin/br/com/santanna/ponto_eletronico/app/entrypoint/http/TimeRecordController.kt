@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -24,12 +25,14 @@ class TimeRecordController(
 
     @PostMapping("/checkin")
     @Operation(summary = "Registra a entrada do funcionário")
+    @PreAuthorize("hasRole('USER')")
     fun checkin(): ResponseEntity<RecordCheckinDto> {
         return ResponseEntity.ok(timeRecordService.registerCheckin())
     }
 
     @PostMapping("/checkout")
     @Operation(summary = "Registra a saída do funcionário")
+    @PreAuthorize("hasRole('USER')")
     fun checkout(): ResponseEntity<RecordCheckoutDto> {
         return ResponseEntity.ok(timeRecordService.registerCheckout())
     }
@@ -37,6 +40,7 @@ class TimeRecordController(
 
     @GetMapping("/search/report")
     @Operation(summary = "Busca o registro de horas do funcionário")
+    @PreAuthorize("hasRole('USER')")
     fun getTimeRecordsByEmployeeIdAndDateRange(
         @RequestParam startDate: String?,
         @RequestParam endDate: String?,
@@ -52,6 +56,7 @@ class TimeRecordController(
 
 
     @GetMapping("/search/balance")
+    @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeIdAndDateRange(
         @RequestParam startDate: String?,
@@ -67,11 +72,9 @@ class TimeRecordController(
         return ResponseEntity.ok().body(balanceHoursDto)
     }
 
-
-
-
     @GetMapping("/search/adm/report")
     @Operation(summary = "Administrador busca o registro de horas do funcionário")
+    @PreAuthorize("hasRole('MANAGER')")
     fun getTimeRecordsByEmployeeIdAndDateRangeForManager(@RequestParam employeeIdTarget: UUID, @RequestParam passwords: String, @RequestParam startDate: String?, @RequestParam endDate: String?, pageable: Pageable): Page<DetailedTimeRecordDto> {
         val searchByDateTimeRecordRequestDto = SearchByDateTimeRecordRequestDto(
             employeeIdTarget = employeeIdTarget,
@@ -84,6 +87,7 @@ class TimeRecordController(
 
     @GetMapping("/search/adm/balance")
     @Operation(summary = "Administrador busca as horas extras do funcionário")
+    @PreAuthorize("hasRole('MANAGER')")
     fun getBalanceHoursByDateByEmployeeIdAndDateRangeForManager(
         @RequestParam employeeIdTarget: UUID,
         @RequestParam passwords: String,
@@ -102,6 +106,7 @@ class TimeRecordController(
 
     @PutMapping("/adm/update")
     @Operation(summary = "Altera o registro do funcionário")
+    @PreAuthorize("hasRole('MANAGER')")
     fun updateTimeRecord(@Valid @RequestBody updateTimeRecordRequestDto: UpdateTimeRecordRequestDto): ResponseEntity<UpdateTimeRecordDto> {
         val updatedTimeRecordDto = timeRecordService.updateTimeRecordAsManager(updateTimeRecordRequestDto)
         return ResponseEntity.ok(updatedTimeRecordDto)
@@ -109,6 +114,7 @@ class TimeRecordController(
 
     @DeleteMapping("/adm/delete")
     @Operation(summary = "Administrador deleta o registro de horas do funcionário")
+    @PreAuthorize("hasRole('MANAGER')")
     fun deleteTimeRecord(@RequestBody deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto): ResponseEntity<Void> {
         timeRecordService.deleteTimeRecordAsManager(deleteTimeRecordRequestDto)
         return ResponseEntity.noContent().build()

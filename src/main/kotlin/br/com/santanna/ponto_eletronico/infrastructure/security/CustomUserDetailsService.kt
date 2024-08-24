@@ -12,7 +12,7 @@ class CustomUserDetailsService (
 ) : UserDetailsService {
     override fun loadUserByUsername(cpf: String): UserDetails {
         val employee = employeeDataProvider.findCpf(cpf)
-            ?: throw UsernameNotFoundException("User not found with CPF: $cpf")
+            ?: throw UsernameNotFoundException("Colaborador do CPF: $cpf não encontrado")
         return org.springframework.security.core.userdetails.User(employee.cpf, employee.password, emptyList())
     }
 }

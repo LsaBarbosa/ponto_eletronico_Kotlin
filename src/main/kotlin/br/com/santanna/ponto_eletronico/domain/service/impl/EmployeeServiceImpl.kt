@@ -2,6 +2,7 @@ package br.com.santanna.ponto_eletronico.domain.service.impl
 
 import br.com.santanna.ponto_eletronico.app.handler.model.BadRequestException
 import br.com.santanna.ponto_eletronico.app.handler.model.NotFoundException
+import br.com.santanna.ponto_eletronico.app.handler.model.UnauthorizedException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.employee.*
 import br.com.santanna.ponto_eletronico.domain.dto.todto.EmployeeToDto
@@ -17,9 +18,9 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 private const val EMPLOYEE_NOT_FOUND = "Colaborador não encontrado:"
-private const val IS_NOT_MANAGER = "Colaborador não possui permissão para esse recurso."
 private const val NOT_FOUND = "não encontrado"
 private const val MANAGER_WITHOUT_COMPANY = "Gerente não cadastrado em nenhuma empresa."
+
 
 @Service
 class EmployeeServiceImpl(
@@ -118,8 +119,8 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun updateEmployeeAsManager(updateEmployeeRequestDto: UpdateEmployeeRequestDto): UpdateEmployeeDto {
-        val id = employeeServiceUtils.getCurrentUserId()
-        val manager = employeeDataProvider.findById(id)
+     val manager = employeeServiceUtils.validateManagerWithoutPassword()
+
         employeeServiceUtils.validateSameCompany(updateEmployeeRequestDto.employeeId, manager)
 
         val employeeToUpdate = employeeDataProvider.findById(updateEmployeeRequestDto.employeeId)
@@ -140,28 +141,17 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun deleteEmployeeAsManager(deleteEmployeeRequestDto: DeleteEmployeeRequestDto) {
-        val id = employeeServiceUtils.getCurrentUserId()
-        val manager = employeeDataProvider.findById(id)
+        val manager = employeeServiceUtils.validateManagerWithoutPassword()
 
-        if (manager.role != EmployeeRole.MANAGER) {
-            throw BadRequestException("Colaborador sem permissão para o recurso")
-        }
         employeeServiceUtils.validateSameCompany(deleteEmployeeRequestDto.employeeId, manager)
 
         employeeDataProvider.findById(deleteEmployeeRequestDto.employeeId)
+
         employeeDataProvider.deleteById(deleteEmployeeRequestDto.employeeId)
     }
 
     override fun getEmployeesAsManager(pageable: Pageable): Page<EmployeeGetDto> {
-
-
-            val id = employeeServiceUtils.getCurrentUserId()
-            val manager = employeeDataProvider.findById(id)
-
-
-            if (manager.role != EmployeeRole.MANAGER) {
-                throw IllegalArgumentException(IS_NOT_MANAGER)
-            }
+           val manager = employeeServiceUtils.validateManagerWithoutPassword()
 
             val company = manager.company
                 ?: throw BadRequestException(MANAGER_WITHOUT_COMPANY)
@@ -173,14 +163,8 @@ class EmployeeServiceImpl(
 
     @Transactional
     override fun getEmployeeByIdAsManager(id: UUID): EmployeeGetDto {
-        val managerId = employeeServiceUtils.getCurrentUserId()
-        val manager = employeeDataProvider.findById(managerId)
-
+        val manager = employeeServiceUtils.validateManagerWithoutPassword()
         employeeServiceUtils.validateSameCompany(id, manager)
-
-        if (manager.role != EmployeeRole.MANAGER) {
-            throw BadRequestException("Colaborador não tem permissão.")
-        }
 
         val employee = employeeDataProvider.findById(id)
 

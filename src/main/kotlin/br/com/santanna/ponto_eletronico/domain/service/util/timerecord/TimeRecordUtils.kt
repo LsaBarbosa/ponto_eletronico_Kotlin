@@ -8,9 +8,9 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.DetailedTimeRecord
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.RecordCheckinDto
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.RecordCheckoutDto
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.UpdateTimeRecordDto
+import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
-import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
 import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtTokenUtil
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -26,7 +26,7 @@ import kotlin.reflect.KMutableProperty1
 private const val DATE_PATTERN = "dd-MM-yyyy"
 
 private const val TIME_PATTERN = "HH:mm"
-
+private const val EMPLOYEE_UNAUTHORIZED = "Colaborador sem permissão para o recurso"
 @Component
 class TimeRecordUtils(
     private val employeeDataProvider: EmployeeDataProvider,
@@ -144,12 +144,7 @@ class TimeRecordUtils(
     }
 
     fun validateManager(password: String): Employee {
-        val id = getCurrentUserId()
-        val manager = employeeDataProvider.findById(id)
-
-        if (manager.role != EmployeeRole.MANAGER) {
-            throw UnauthorizedException("Colaborador sem permissão para o recurso")
-        }
+        val manager = validateManagerWithoutPassword()
 
         val isPasswordValid = BCryptPasswordEncoder().matches(password, manager.password)
         if (!isPasswordValid) {
@@ -159,10 +154,19 @@ class TimeRecordUtils(
         return manager
     }
 
+    fun validateManagerWithoutPassword(): Employee {
+        val id = getCurrentUserId()
+        val manager = employeeDataProvider.findById(id)
+
+        if (manager.role != EmployeeRole.ADMIN && manager.role != EmployeeRole.MANAGER) {
+            throw UnauthorizedException(EMPLOYEE_UNAUTHORIZED)
+        }
+
+        return manager
+    }
+
     fun validateSameCompanyById(employeeId: UUID, manager: Employee) {
         val employee = employeeDataProvider.findById(employeeId)
-
-
         if (employee.company?.id != manager.company?.id) {
             throw UnauthorizedException("Colaborador não está na empresa do gerente")
         }

@@ -9,6 +9,7 @@ import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 import java.net.URI
 import java.util.*
@@ -20,6 +21,7 @@ import java.util.*
 class EmployeeController(val employeeService: EmployeeService) {
 
     @GetMapping("/search/id")
+    @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Buscar funcionário pelo id",
         description = "Usuário tem acesso as suas própias informações.\n Requer role USER para acesso"
@@ -39,6 +41,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     }
 
     @PutMapping("/password/update")
+    @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Alteração de senha",
         description = "Uma nova senha é gerada ao confirmar a senha antiga.\n Requer role USER para acesso"
@@ -49,6 +52,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     }
 
     @PutMapping("/email/update")
+    @PreAuthorize("hasRole('USER')")
     @Operation(
         summary = "Alteração de email",
         description = "Altera o email.\n Requer role USER para acesso"
@@ -59,6 +63,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     }
 
     @GetMapping("/search/adm/all")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
         summary = "Administrador busca todos os funcionários",
         description = "Retorna uma lista com todos os usuários da empresa.\n Requer role MANAGER para acesso"
@@ -69,6 +74,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     }
 
     @GetMapping("/search/adm/{id}")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
         summary = "Manager busca funcionário pelo ID",
         description = "Permite que um usuário com role MANAGER busque um funcionário pelo ID.\n Requer role MANAGER para acesso"
@@ -80,6 +86,7 @@ class EmployeeController(val employeeService: EmployeeService) {
 
 
     @PostMapping("/adm/register")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
         summary = "Administrador registra um funcionário",
         description = "Cadastra um colaborador na empresa.\n " +
@@ -95,6 +102,7 @@ class EmployeeController(val employeeService: EmployeeService) {
     }
 
     @PutMapping("/adm/update")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(
         summary = "Administrador atualiza dados do funcionário",
         description = "Atualiza dados de um colaborador.\n Requer role MANAGER para acesso"
@@ -106,6 +114,7 @@ class EmployeeController(val employeeService: EmployeeService) {
 
 
     @PostMapping("/adm/delete")
+    @PreAuthorize("hasRole('MANAGER')")
     @Operation(summary = "Administrador apaga funcionário")
     fun deleteEmployee(@RequestBody deleteEmployeeRequestDto: DeleteEmployeeRequestDto): ResponseEntity<Void> {
         employeeService.deleteEmployeeAsManager(deleteEmployeeRequestDto)
