@@ -10,10 +10,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class AdminUserInitializer(
-    private val employeeDataProvider: EmployeeDataProvider
+    private val employeeDataProvider: EmployeeDataProvider,
+    private val passwordEncoder: BCryptPasswordEncoder
 
 ) : ApplicationListener<ApplicationReadyEvent> {
-    private lateinit var passwordEncoder: BCryptPasswordEncoder
+
     override fun onApplicationEvent(event: ApplicationReadyEvent) {
         val adminCpf = "11366653742"  // CPF do admin
         val adminEmail = "kronos.time.tech.solutions@gmail.com"
