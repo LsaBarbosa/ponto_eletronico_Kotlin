@@ -23,7 +23,7 @@ import org.springframework.web.filter.CorsFilter
 class WebSecurityConfig (
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
     private val jwtRequestFilter: JwtRequestFilter,
-    @Value("\${CORS.URL}")
+    @Value("\${url}")
     private val corsURL: String
 ) {
 
