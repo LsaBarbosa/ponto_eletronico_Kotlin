@@ -75,7 +75,7 @@ class WebSecurityConfig (
         val source = UrlBasedCorsConfigurationSource()
         val config = CorsConfiguration()
         config.allowCredentials = true
-        config.allowedOrigins = listOf(corsURL) // Substitua pela URL do seu front-end
+        config.allowedOrigins = listOf(corsURL)
         config.allowedHeaders = listOf("*")
         config.allowedMethods = listOf("*")
         source.registerCorsConfiguration("/**", config)
