@@ -2,6 +2,7 @@ package br.com.santanna.ponto_eletronico.infrastructure.security
 
 import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtAuthenticationEntryPoint
 import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtRequestFilter
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -21,8 +22,9 @@ import org.springframework.web.filter.CorsFilter
 @EnableWebSecurity
 class WebSecurityConfig (
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
-
-    private val jwtRequestFilter: JwtRequestFilter
+    private val jwtRequestFilter: JwtRequestFilter,
+    @Value("\${url}")
+    private val corsURL: String
 ) {
 
     @Bean
@@ -73,7 +75,7 @@ class WebSecurityConfig (
         val source = UrlBasedCorsConfigurationSource()
         val config = CorsConfiguration()
         config.allowCredentials = true
-        config.allowedOrigins = listOf("https://kronos-pearl.vercel.app") // Substitua pela URL do seu front-end
+        config.allowedOrigins = listOf(corsURL)
         config.allowedHeaders = listOf("*")
         config.allowedMethods = listOf("*")
         source.registerCorsConfiguration("/**", config)
