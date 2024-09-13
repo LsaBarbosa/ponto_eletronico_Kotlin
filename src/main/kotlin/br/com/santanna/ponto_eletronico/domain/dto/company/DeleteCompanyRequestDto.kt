@@ -6,8 +6,6 @@ import org.hibernate.validator.constraints.br.CNPJ
 import org.hibernate.validator.constraints.br.CPF
 
 data class DeleteCompanyRequestDto(
-
-
     @field:Size(min = 14, max = 14, message = "O CNPJ deve ter exatamente 14 caracteres")
     @field:CNPJ(message = "CNPJ inválido")
     var companyCNPJ: String,

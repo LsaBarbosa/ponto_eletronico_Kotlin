@@ -158,7 +158,6 @@ class EmployeeServiceImpl(
             return employees.map { employeeToDto.convertToGetEmployeeDto(it) }
         }
 
-
     @Transactional
     override fun getEmployeeByIdAsManager(id: UUID): EmployeeGetDto {
         val manager = employeeServiceUtils.validateManagerWithoutPassword()
