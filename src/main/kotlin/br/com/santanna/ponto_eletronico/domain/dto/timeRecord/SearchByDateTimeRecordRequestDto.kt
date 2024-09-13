@@ -5,5 +5,6 @@ import java.util.*
 data class SearchByDateTimeRecordRequestDto(
     val employeeIdTarget: UUID,
     val passwords: String,
+    val referenceMinutes: Long? = null,
     val searchByDateTimeRecordDto: SearchByDateTimeRecordDto
 )
