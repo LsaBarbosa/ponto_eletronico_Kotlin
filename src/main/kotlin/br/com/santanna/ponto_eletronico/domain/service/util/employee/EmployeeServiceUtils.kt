@@ -17,16 +17,18 @@ import java.security.SecureRandom
 import java.util.*
 
 private const val EMPLOYEE_UNAUTHORIZED = "Colaborador sem permissão para o recurso"
+
 @Component
-class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvider, private val jwtTokenUtil: JwtTokenUtil,
-                            private val mailSender: JavaMailSenderImpl,) {
+class EmployeeServiceUtils(
+    private val employeeDataProvider: EmployeeDataProvider, private val jwtTokenUtil: JwtTokenUtil,
+    private val mailSender: JavaMailSenderImpl,
+) {
 
     fun getCurrentUserId(): UUID {
         val authentication = SecurityContextHolder.getContext().authentication as UsernamePasswordAuthenticationToken
         val token = authentication.credentials as String
         return jwtTokenUtil.getUserIdFromToken(token)
     }
-
 
     fun validateManager(password: String): Employee {
         val manager = validateManagerWithoutPassword()
@@ -38,7 +40,8 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
 
         return manager
     }
-  fun validateManagerWithoutPassword(): Employee {
+
+    fun validateManagerWithoutPassword(): Employee {
         val id = getCurrentUserId()
         val manager = employeeDataProvider.findById(id)
 
@@ -55,7 +58,6 @@ class EmployeeServiceUtils (private val employeeDataProvider: EmployeeDataProvid
             throw BadRequestException("Colaborador não está na mesma empresa que o gestor.")
         }
     }
-
 
     fun generateRandomPassword(): String {
         val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"

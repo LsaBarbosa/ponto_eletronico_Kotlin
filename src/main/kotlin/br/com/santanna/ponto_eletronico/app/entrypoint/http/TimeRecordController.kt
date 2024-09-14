@@ -92,12 +92,14 @@ class TimeRecordController(
         @RequestParam employeeIdTarget: UUID,
         @RequestParam passwords: String,
         @RequestParam startDate: String?,
-        @RequestParam endDate: String?
+        @RequestParam endDate: String?,
+        @RequestParam referenceMinutes: Long
     ): ResponseEntity<BalanceHoursDto> {
         val searchByDateTimeRecordRequestDto = SearchByDateTimeRecordRequestDto(
             employeeIdTarget = employeeIdTarget,
             passwords = passwords,
-            searchByDateTimeRecordDto = SearchByDateTimeRecordDto(startDate, endDate)
+            searchByDateTimeRecordDto = SearchByDateTimeRecordDto(startDate, endDate),
+            referenceMinutes = referenceMinutes
         )
         val timeRecords = timeRecordService.balanceHoursByDateAsManager(searchByDateTimeRecordRequestDto)
         val balanceHoursDto = modelMapper.map(timeRecords, BalanceHoursDto::class.java)
