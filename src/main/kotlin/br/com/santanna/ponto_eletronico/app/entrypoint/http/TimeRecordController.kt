@@ -60,13 +60,14 @@ class TimeRecordController(
     @Operation(summary = "Busca as horas extras do funcionário")
     fun getBalanceHoursByDateByEmployeeIdAndDateRange(
         @RequestParam startDate: String?,
-        @RequestParam endDate: String?
+        @RequestParam endDate: String?,
+        @RequestParam referenceMinutes: Long?,
     ): ResponseEntity<BalanceHoursDto> {
         val searchByDateTimeRecordDto = SearchByDateTimeRecordDto(
             startDate = startDate,
-            endDate = endDate
+            endDate = endDate,
+            referenceMinutes = referenceMinutes
         )
-
         val timeRecords = timeRecordService.balanceHoursByDate(searchByDateTimeRecordDto)
         val balanceHoursDto = modelMapper.map(timeRecords, BalanceHoursDto::class.java)
         return ResponseEntity.ok().body(balanceHoursDto)

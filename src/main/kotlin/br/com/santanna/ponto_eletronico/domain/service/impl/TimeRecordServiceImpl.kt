@@ -165,7 +165,7 @@ data class TimeRecordServiceImpl(
         for ((_, records) in recordsByDate) {
             val workedMinutesPerDay = records.sumOf { it.timeWorked ?: 0 }
             totalWorkedMinutes += workedMinutesPerDay
-            totalExpectedMinutes += 8 * 60
+            totalExpectedMinutes += searchByDateTimeRecordDto.referenceMinutes!!
         }
 
         val balance = totalWorkedMinutes - totalExpectedMinutes
