@@ -24,7 +24,9 @@ class WebSecurityConfig (
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint,
     private val jwtRequestFilter: JwtRequestFilter,
     @Value("\${url}")
-    private val corsURL: String
+    private val corsURL: String,
+    @Value("\${urls}")
+    private val corsURLTest: String
 ) {
 
     @Bean
@@ -75,7 +77,7 @@ class WebSecurityConfig (
         val source = UrlBasedCorsConfigurationSource()
         val config = CorsConfiguration()
         config.allowCredentials = true
-        config.allowedOrigins = listOf(corsURL)
+        config.allowedOrigins = listOf(corsURL,corsURLTest)
         config.allowedHeaders = listOf("*")
         config.allowedMethods = listOf("*")
         source.registerCorsConfiguration("/**", config)
