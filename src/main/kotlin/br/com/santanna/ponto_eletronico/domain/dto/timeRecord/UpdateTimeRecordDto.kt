@@ -5,5 +5,7 @@ data class UpdateTimeRecordDto(
     val startWorkDate: String?,
     val startWorkTime: String?,
     val endWorkDate: String?,
-    val endWorkTime: String?
+    val endWorkTime: String?,
+    val edited: Boolean = false
+
 )

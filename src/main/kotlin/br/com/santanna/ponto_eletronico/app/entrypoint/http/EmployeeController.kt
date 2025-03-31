@@ -7,7 +7,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
@@ -69,7 +71,8 @@ class EmployeeController(val employeeService: EmployeeService) {
         description = "Retorna uma lista com todos os usuários da empresa.\n Requer role MANAGER para acesso"
     )
     fun getAllEmployeeDataAsManager(pageable: Pageable): ResponseEntity<Page<EmployeeGetDto>> {
-        val employees = employeeService.getEmployeesAsManager(pageable)
+    val fixedPageable = PageRequest.of(pageable.pageNumber, 365, Sort.by(Sort.Direction.ASC,"name"))
+        val employees = employeeService.getEmployeesAsManager(fixedPageable)
         return ResponseEntity.ok(employees)
     }
 

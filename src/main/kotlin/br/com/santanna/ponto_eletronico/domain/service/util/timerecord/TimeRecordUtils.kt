@@ -190,7 +190,8 @@ class TimeRecordUtils(
             endWorkTime = timeRecord.endWorkTime?.format(DateTimeFormatter.ofPattern(TIME_PATTERN)),
             startWorkDate = timeRecord.startWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
             endWorkDate = timeRecord.endWorkTime?.toLocalDate()?.format(DateTimeFormatter.ISO_DATE),
-            timeWorked = formatTimeWorked(timeRecord.timeWorked)
+            timeWorked = formatTimeWorked(timeRecord.timeWorked),
+            edited = timeRecord.edited
         )
     }
 }

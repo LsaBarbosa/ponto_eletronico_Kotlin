@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.modelmapper.ModelMapper
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -76,13 +77,18 @@ class TimeRecordController(
     @GetMapping("/search/adm/report")
     @Operation(summary = "Administrador busca o registro de horas do funcionário")
     @PreAuthorize("hasRole('MANAGER')")
-    fun getTimeRecordsByEmployeeIdAndDateRangeForManager(@RequestParam employeeIdTarget: UUID, @RequestParam passwords: String, @RequestParam startDate: String?, @RequestParam endDate: String?, pageable: Pageable): Page<DetailedTimeRecordDto> {
+    fun getTimeRecordsByEmployeeIdAndDateRangeForManager(@RequestParam employeeIdTarget: UUID,
+                                                         @RequestParam passwords: String,
+                                                         @RequestParam startDate: String?,
+                                                         @RequestParam endDate: String?,
+                                                         pageable: Pageable): Page<DetailedTimeRecordDto> {
+        val fixedPageable = PageRequest.of(pageable.pageNumber, 365)
         val searchByDateTimeRecordRequestDto = SearchByDateTimeRecordRequestDto(
             employeeIdTarget = employeeIdTarget,
             passwords = passwords,
             searchByDateTimeRecordDto = SearchByDateTimeRecordDto(startDate, endDate)
         )
-        return timeRecordService.getTimeRecordsByEmployeeIdAndDateRangePageableAsManager(searchByDateTimeRecordRequestDto, pageable)
+        return timeRecordService.getTimeRecordsByEmployeeIdAndDateRangePageableAsManager(searchByDateTimeRecordRequestDto, fixedPageable)
     }
 
 

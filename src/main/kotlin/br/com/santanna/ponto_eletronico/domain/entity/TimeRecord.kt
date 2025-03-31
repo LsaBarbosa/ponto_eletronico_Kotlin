@@ -13,6 +13,7 @@ data class TimeRecord(
     var startWorkTime: LocalDateTime? = null,
     var endWorkTime: LocalDateTime? = null,
     var timeWorked: Long? = null,
+    var edited: Boolean = false,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")

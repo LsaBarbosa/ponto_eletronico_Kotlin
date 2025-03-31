@@ -87,7 +87,9 @@ data class TimeRecordServiceImpl(
             timeRecordUtils.updateRecordFields(timeRecord, it)
         }
 
+        timeRecord.edited = true
         val savedUpdate = timeRecordDataProvider.save(timeRecord)
+
         return timeRecordUtils.convertToUpdateTimeRecordDto(savedUpdate)
     }
 
