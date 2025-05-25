@@ -13,4 +13,5 @@ interface TimeRecordService {
     fun balanceHoursByDateAsManager(searchRequestDto: SearchByDateTimeRecordRequestDto): BalanceHoursDto
     fun getTimeRecordsByEmployeeIdAndDateRangePageableAsManager(searchRequestDto: SearchByDateTimeRecordRequestDto, pageable: Pageable): Page<DetailedTimeRecordDto>
     fun deleteTimeRecordAsManager(deleteTimeRecordRequestDto: DeleteTimeRecordRequestDto)
+    fun createTimeRecordsByRange(request: CreateTimeRecordByRangeRequest)
     }

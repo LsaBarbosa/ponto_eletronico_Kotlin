@@ -129,4 +129,10 @@ class TimeRecordController(
         return ResponseEntity.noContent().build()
     }
 
+    @PostMapping("/adm/doctor-apointment")
+    fun createByRange(@RequestBody request: CreateTimeRecordByRangeRequest): ResponseEntity<Void> {
+        timeRecordService.createTimeRecordsByRange(request)
+        return ResponseEntity.ok().build()
+    }
+
 }

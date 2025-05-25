@@ -5,7 +5,8 @@ import br.com.santanna.ponto_eletronico.app.handler.model.NotFoundException
 import br.com.santanna.ponto_eletronico.domain.dataprovider.EmployeeDataProvider
 import br.com.santanna.ponto_eletronico.domain.dataprovider.TimeRecordDataProvider
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.*
-import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.entity.timerecord.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.entity.timerecord.TimeRecordStatus
 import br.com.santanna.ponto_eletronico.domain.service.TimeRecordService
 import br.com.santanna.ponto_eletronico.domain.service.util.timerecord.TimeRecordUtils
 import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtTokenUtil
@@ -145,7 +146,6 @@ data class TimeRecordServiceImpl(
         return timeRecords.map { timeRecordUtils.convertToDetailedTimeRecordDto(it) }
     }
 
-
     override fun balanceHoursByDate(searchByDateTimeRecordDto: SearchByDateTimeRecordDto): BalanceHoursDto {
         val id = timeRecordUtils.getCurrentUserId()
         val employee = employeeDataProvider.findById(id)
@@ -185,7 +185,6 @@ data class TimeRecordServiceImpl(
         )
     }
 
-
     override fun getTimeRecordsByEmployeeIdAndDateRangePageable(
         searchByDateTimeRecordDto: SearchByDateTimeRecordDto,
         pageable: Pageable
@@ -217,6 +216,40 @@ data class TimeRecordServiceImpl(
         }
 
         timeRecordDataProvider.delete(timeRecord)
+    }
+
+    @Transactional
+    override fun createTimeRecordsByRange(request: CreateTimeRecordByRangeRequest) {
+        val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        val startDate = LocalDate.parse(request.startDate, formatter)
+        val endDate = LocalDate.parse(request.endDate, formatter)
+
+        val employee = employeeDataProvider.findById(request.employeeId)
+
+        val dailyMinutes = when (request.status) {
+            TimeRecordStatus.FALTA -> 0
+            TimeRecordStatus.ATESTADO, TimeRecordStatus.FOLGA -> 450 // 7h30 em minutos
+            else -> throw BadRequestException("Status inválido para este tipo de operação")
+        }
+
+        val records = mutableListOf<TimeRecord>()
+
+        var currentDate = startDate
+        while (!currentDate.isAfter(endDate)) {
+            val start = currentDate.atStartOfDay()
+            val end = currentDate.atTime(0, 0)
+            val timeRecord = TimeRecord(
+                employee = employee,
+                startWorkTime = start,
+                endWorkTime = end,
+                timeWorked = dailyMinutes.toLong(),
+                status = request.status
+            )
+            records.add(timeRecord)
+            currentDate = currentDate.plusDays(1)
+        }
+
+        records.forEach { timeRecordDataProvider.save(it) }
     }
 
 }

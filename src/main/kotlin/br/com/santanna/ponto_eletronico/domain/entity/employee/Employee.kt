@@ -1,6 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.entity.employee
 
-import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.entity.timerecord.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.entity.company.Company
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*

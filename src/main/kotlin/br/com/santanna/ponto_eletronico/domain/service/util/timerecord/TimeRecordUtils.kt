@@ -8,7 +8,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.DetailedTimeRecord
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.RecordCheckinDto
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.RecordCheckoutDto
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.UpdateTimeRecordDto
-import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.entity.timerecord.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import br.com.santanna.ponto_eletronico.domain.entity.employee.EmployeeRole
 import br.com.santanna.ponto_eletronico.infrastructure.security.jwt.JwtTokenUtil

@@ -1,7 +1,7 @@
 package br.com.santanna.ponto_eletronico.domain.dataprovider
 
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
-import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.entity.timerecord.TimeRecord
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import java.time.LocalDateTime

@@ -1,4 +1,4 @@
-package br.com.santanna.ponto_eletronico.domain.entity
+package br.com.santanna.ponto_eletronico.domain.entity.timerecord
 
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
@@ -6,7 +6,6 @@ import jakarta.persistence.*
 import java.time.LocalDateTime
 
 @Entity
-
 data class TimeRecord(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long  = 0,
@@ -14,6 +13,8 @@ data class TimeRecord(
     var endWorkTime: LocalDateTime? = null,
     var timeWorked: Long? = null,
     var edited: Boolean = false,
+    @Enumerated(EnumType.STRING)
+    var status: TimeRecordStatus = TimeRecordStatus.TRABALHADO,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")

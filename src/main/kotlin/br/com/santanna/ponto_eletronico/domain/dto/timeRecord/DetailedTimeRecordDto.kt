@@ -7,5 +7,7 @@ data class DetailedTimeRecordDto(
     val startWorkDate: String? = null,
     val endWorkDate: String? = null,
     val timeWorked: String? = null,
-    val edited: Boolean = false
+    val edited: Boolean = false,
+    val status: String? = null
+
 )

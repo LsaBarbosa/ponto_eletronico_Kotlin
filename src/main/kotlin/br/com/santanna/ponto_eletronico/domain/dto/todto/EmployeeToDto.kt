@@ -7,7 +7,7 @@ import br.com.santanna.ponto_eletronico.domain.dto.employee.EmployeeGetDto
 import br.com.santanna.ponto_eletronico.domain.dto.employee.UpdateEmployeeDto
 import br.com.santanna.ponto_eletronico.domain.dto.timeRecord.TimeRecordDto
 import br.com.santanna.ponto_eletronico.domain.entity.employee.Employee
-import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.entity.timerecord.TimeRecord
 import br.com.santanna.ponto_eletronico.domain.entity.company.Company
 import org.springframework.stereotype.Component
 

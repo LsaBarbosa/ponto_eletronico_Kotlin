@@ -1,6 +1,6 @@
 package br.com.santanna.ponto_eletronico.domain.dto.timeRecord
 
-import br.com.santanna.ponto_eletronico.domain.entity.TimeRecord
+import br.com.santanna.ponto_eletronico.domain.entity.timerecord.TimeRecord
 import java.time.format.DateTimeFormatter
 
 data class RecordCheckinDto (
