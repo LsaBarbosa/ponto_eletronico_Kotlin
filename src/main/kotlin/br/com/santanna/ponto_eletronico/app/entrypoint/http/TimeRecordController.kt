@@ -130,6 +130,8 @@ class TimeRecordController(
     }
 
     @PostMapping("/adm/doctor-apointment")
+    @Operation(summary = "Administrador altera o status do registro de horas do funcionário")
+    @PreAuthorize("hasRole('MANAGER')")
     fun createByRange(@RequestBody request: CreateTimeRecordByRangeRequest): ResponseEntity<Void> {
         timeRecordService.createTimeRecordsByRange(request)
         return ResponseEntity.ok().build()
