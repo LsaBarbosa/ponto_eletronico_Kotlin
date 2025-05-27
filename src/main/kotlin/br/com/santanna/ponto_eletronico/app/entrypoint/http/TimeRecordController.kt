@@ -29,6 +29,7 @@ class TimeRecordController(
     @PreAuthorize("hasRole('USER')")
     fun checkin(): ResponseEntity<RecordCheckinDto> {
         return ResponseEntity.ok(timeRecordService.registerCheckin())
+
     }
 
     @PostMapping("/checkout")
